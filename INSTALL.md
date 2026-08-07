@@ -82,11 +82,9 @@ mount --mkdir -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL
 mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
 mount --mkdir LABEL=EFI /mnt/efi
 
-reflector --verbose -c 'ec,de,us,co,pe,cl,*' -p https,http --save /mnt/etc/pacman.d/mirrorlist --latest 250 --sort score --ipv4 --threads 4 --fastest 50 --age 6
-reflector --save /mnt/etc/pacman.d/mirrorlist --protocol http,https \
-          --country Norway,Sweden,France,Germany,Finland,Iceland,US \
-          --latest 250 --sort score --ipv4 --threads 4 --fastest 50 --age 6
-          
+reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6
+mkdir -p /mnt/etc/pacman.d
+cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 
 pacstrap -iK /mnt base base-devel \
 micro helix \
@@ -98,7 +96,7 @@ networkmanager
 genfstab -L -p /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 
-arch-chroot /mnt
+arch-chroot -S /mnt
 
 
 ln -sf /usr/share/zoneinfo/America/Guayaquil /etc/localtime

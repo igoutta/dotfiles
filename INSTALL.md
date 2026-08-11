@@ -1,29 +1,72 @@
-https://gist.github.com/WELL1NGTON/47ab9f38ace6368636bebd75c1e17f8c#set-the-keyboard-layout
-https://gist.github.com/mjkstra/96ce7a5689d753e7a6bdd92cdc169bae#packages-installation
-https://wiki.archlinux.org/title/User:ZachHilman/Installation_-_Btrfs_%2B_LUKS2_%2B_Secure_Boot
-https://dev.to/thes1lv3r/installing-arch-linux-on-btrfs-with-luks-and-automatic-tpm2-unlocking-3oio
+[BTRFS + LUKS2 + GRUB](https://gist.github.com/WELL1NGTON/47ab9f38ace6368636bebd75c1e17f8c)
+[BTRFS + GRUB2: Simple but detailed](https://gist.github.com/mjkstra/96ce7a5689d753e7a6bdd92cdc169bae)
+[BTRFS + LUKS2 + Systemd-boot: Simple guide](https://wiki.archlinux.org/title/User:ZachHilman/Installation_-_Btrfs_%2B_LUKS2_%2B_Secure_Boot)
+[BTRFS + LUKS2 + UKI: Detailed guide](https://dev.to/thes1lv3r/installing-arch-linux-on-btrfs-with-luks-and-automatic-tpm2-unlocking-3oio)
+[GRUB Crypted 1](https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Encrypted_boot_partition_(GRUB))
+[GRUB Crypted 2](https://wiki.archlinux.org/title/GRUB#Encrypted_/boot)
 
+# Guía de instalación de Arch avanzada
+
+# Pasos preliminares
+
+Primero configure el diseño de su teclado:
 ~~~sh
 loadkeys la-latin1 / es / us
-setfont ter-132b
+~~~
+
+Comprueba la conexión a internet:
+~~~sh
+ping -c 3 archlinux.org
 ~~~
 
 ~~~sh
-ping -c 3 archlinux.org
-iwctl station wlan0 connect 'NombreDeRed' --passphrase 'contraseña' 
+iwctl station wlan0 connect 'NombreDeRed' --passphrase 'contraseña'
 ~~~
 
-timedatectl set-ntp true
+Compruebe el reloj del sistema:
+~~~sh
+timedatectl set-ntp 1
+~~~
 
-(optional ssh) 
-systemctl status sshd
-systemctl start sshd
-passwd  (for installer root)
-
+Verifica el número de bits de la UEFI:
+~~~sh
 cat /sys/firmware/efi/fw_platform_size
+~~~
 
+## Conexión SSH
+
+1. Chequear estatus del servicio *sshd*
+~~~sh
+systemctl status sshd
+~~~
+
+2. Si no esta activo, iniciarlo con este comando
+~~~sh
+systemctl start sshd
+~~~
+
+3. Cambia la contraseña del usuario root del instalador.
+~~~sh
+passwd
+~~~
+
+4. En la terminal de otro dispositivo, inicia la conexión de esta manera.
+~~~sh
+ssh root@archiso
+~~~
+
+# Instalación base
+
+## Particionado del Disco
+~~~sh
 lsblk -fpo NAME,SIZE,FSTYPE,FSVER,LABEL,UUID,MOUNTPOINTS
-(optional deleting SSD) blkdiscard -f *DRIVE*
+~~~
+
+optional deleting SSD
+~~~sh
+blkdiscard -f *DRIVE*
+~~~
+
 
 ~~~sh
 sgdisk --clear \
@@ -34,67 +77,99 @@ sgdisk --clear \
 
 ~~~sh
 cryptsetup luksFormat \
-  --type luks2 \
-  --cipher aes-xts-plain64 \
-  --hash sha512 \
-  --iter-time 2000 \
-  --key-size 512 \
-  --pbkdf argon2id \
-  --use-urandom \
-  --verify-passphrase \
-  /dev/disk/by-partlabel/cryptsystem
+           --type luks2 \
+           --cipher aes-xts-plain64 \
+           --key-size 512 \
+           --hash sha512 \
+           --iter-time 2000 \
+           --pbkdf argon2id \
+           --use-urandom \
+           --verify-passphrase \
+           /dev/disk/by-partlabel/cryptsystem
 ~~~
-cryptsetup open /dev/disk/by-partlabel/cryptsystem system
 
-(optional cryptoswap)
-cryptsetup open --type plain --key-file /dev/urandom /dev/disk/by-partlabel/cryptswap swap (Kinda DEPRECATED)
-cryptsetup open --type plain --use-urandom /dev/disk/by-partlabel/cryptswap swap
+~~~sh
+cryptsetup open /dev/disk/by-partlabel/cryptsystem system
+~~~
+
+~~~sh
+cryptsetup open
+           --type plain \
+           --cipher aes-xts-plain64 \
+           --key-size 512 \
+           --hash sha512 \
+           --key-file /dev/urandom \
+           --use-urandom \
+           /dev/disk/by-partlabel/cryptswap swap
+~~~
+
+~~~sh
 mkswap -L swap /dev/mapper/swap
 swapon -L swap
- 
-mkfs.btrfs --label system -n 16k /dev/mapper/system
+~~~
+
+~~~sh
+mkfs.btrfs --label system -n 32k /dev/mapper/system
 mount -t btrfs LABEL=system /mnt
-btrfs subvolume create /mnt/@root
-btrfs subvolume create /mnt/@home
+btrfs subvolume create /mnt/@
+btrfs subvolume create /mnt/@boot
 btrfs subvolume create /mnt/@snapshots
+btrfs subvolume create /mnt/@home
 btrfs subvolume create /mnt/@opt
+btrfs subvolume create /mnt/@srv
+btrfs subvolume create /mnt/@spool
 btrfs subvolume create /mnt/@log
 btrfs subvolume create /mnt/@cache
 btrfs subvolume create /mnt/@tmp
-btrfs subvolume create /mnt/@spool
 btrfs subvolume create /mnt/@containers
 btrfs subvolume create /mnt/@libvirt
+~~~
 
-
+~~~sh
 umount -R /mnt
+~~~
 
-mount -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@root LABEL=system /mnt
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@home LABEL=system /mnt/home
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@snapshots LABEL=system /mnt/.snapshots
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@opt LABEL=system /mnt/opt
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@log LABEL=system /mnt/var/log
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@cache LABEL=system /mnt/var/cache
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@tmp LABEL=system /mnt/var/tmp
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=lzo,subvol=@spool LABEL=system /mnt/var/spool
+~~~sh
+mount -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@boot LABEL=system /mnt/boot
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@home LABEL=system /mnt/home
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@opt LABEL=system /mnt/opt
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@srv LABEL=system /mnt/srv
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool LABEL=system /mnt/var/spool
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
+mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
 mount --mkdir -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
 mount --mkdir -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
+~~~
 
+~~~sh
 mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
 mount --mkdir LABEL=EFI /mnt/efi
+~~~
 
+~~~sh
 reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6
 mkdir -p /mnt/etc/pacman.d
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
+~~~
 
-pacstrap -iK /mnt base base-devel \
-micro helix \
-efibootmgr grub grub-btrfs btrfs-progs inotify-tools os-prober fuse3 ntfs-3g ntfsprogs \
-zsh zsh-autosuggestions zsh-completions zsh-doc zsh-syntax-highlighting \
-linux linux-headers linux-firmware intel-ucode mkinitcpio \
-networkmanager
-
+~~~sh
+genfstab -U -p /mnt >> /mnt/etc/fstab
 genfstab -L -p /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
+~~~
+
+~~~sh
+pacstrap -iK /mnt base base-devel \
+                  micro helix \
+                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs \
+                  grub grub-btrfs os-prober \
+                  zsh zsh-autosuggestions zsh-completions zsh-doc zsh-syntax-highlighting \
+                  linux linux-headers linux-firmware intel-ucode mkinitcpio \
+                  networkmanager openssh git
+~~~
 
 arch-chroot -S /mnt
 
@@ -124,7 +199,10 @@ pacman -S git xdg-utils xdg-user-dirs dialog
 pacman -S bat fzf eza ripgrep helix
 
 /etc/mkinitcpio.conf
+
 HOOKS=(base udev autodetect microcode modconf kms keyboard keymap sd-vconsole block encrypt btrfs filesystems fsck)
+COMPRESSION="zstd"
+COMPRESSION_OPTIONS=(-9)
 mkinitcpio -P
 
 

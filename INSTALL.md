@@ -103,7 +103,7 @@ swapon -L swap
 ~~~
 
 ~~~sh
-mkfs.btrfs --label system -n 32k /dev/mapper/system
+mkfs.btrfs --label system --nodesize 32k /dev/mapper/system
 mount -t btrfs LABEL=system /mnt
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@snapshots
@@ -123,17 +123,17 @@ umount -R /mnt
 ~~~
 
 ~~~sh
-mount -t btrfs  -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@home LABEL=system /mnt/home
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@opt LABEL=system /mnt/opt
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@srv LABEL=system /mnt/srv
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool LABEL=system /mnt/var/spool
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
-mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@home LABEL=system /mnt/home
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@opt LABEL=system /mnt/opt
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@srv LABEL=system /mnt/srv
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool LABEL=system /mnt/var/spool
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
 ~~~
 
 In case you need to change some option, you should use this 
@@ -149,13 +149,15 @@ mount --mkdir LABEL=EFI /mnt/boot
 
 ~~~sh
 mkdir -p /mnt/etc
-genfstab -U -p /mnt >> /mnt/etc/fstab
 genfstab -L -p /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 ~~~
+
 Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
 
-/dev/mapper/swap none swap defaults 0 0
+~~~sh
+sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
+~~~
 
 ~~~sh
 reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6

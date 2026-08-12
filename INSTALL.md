@@ -1,5 +1,6 @@
 [BTRFS + LUKS2 + GRUB](https://gist.github.com/WELL1NGTON/47ab9f38ace6368636bebd75c1e17f8c)
 [BTRFS + GRUB2: Simple but detailed](https://gist.github.com/mjkstra/96ce7a5689d753e7a6bdd92cdc169bae)
+[BTRFS + LUKS2 + Limine: All you need](https://gist.github.com/albisserAdrian/fb360fd4c4fb5d954809ea29db0c4450)
 [BTRFS + LUKS2 + Systemd-boot: Simple guide](https://wiki.archlinux.org/title/User:ZachHilman/Installation_-_Btrfs_%2B_LUKS2_%2B_Secure_Boot)
 [BTRFS + LUKS2 + UKI: Detailed guide](https://dev.to/thes1lv3r/installing-arch-linux-on-btrfs-with-luks-and-automatic-tpm2-unlocking-3oio)
 [GRUB Crypted 1](https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Encrypted_boot_partition_(GRUB))
@@ -70,7 +71,7 @@ blkdiscard -f *DRIVE*
 
 ~~~sh
 sgdisk --clear \
-       --new=1:0:+1GiB --typecode=1:ef00 --change-name=1:EFI \
+       --new=1:0:+2GiB --typecode=1:ef00 --change-name=1:EFI \
        --new=2:0:+16GiB --typecode=2:8200 --change-name=2:cryptswap \
        --new=3:0:0 --typecode=3:8300 --change-name=3:cryptsystem *DRIVE*
 ~~~
@@ -93,14 +94,7 @@ cryptsetup open /dev/disk/by-partlabel/cryptsystem system
 ~~~
 
 ~~~sh
-cryptsetup open
-           --type plain \
-           --cipher aes-xts-plain64 \
-           --key-size 512 \
-           --hash sha512 \
-           --key-file /dev/urandom \
-           --use-urandom \
-           /dev/disk/by-partlabel/cryptswap swap
+cryptsetup open --type plain --cipher aes-xts-plain64 --key-size 512 --key-file /dev/urandom /dev/disk/by-partlabel/cryptswap swap
 ~~~
 
 ~~~sh
@@ -112,7 +106,6 @@ swapon -L swap
 mkfs.btrfs --label system -n 32k /dev/mapper/system
 mount -t btrfs LABEL=system /mnt
 btrfs subvolume create /mnt/@
-btrfs subvolume create /mnt/@boot
 btrfs subvolume create /mnt/@snapshots
 btrfs subvolume create /mnt/@home
 btrfs subvolume create /mnt/@opt
@@ -130,35 +123,44 @@ umount -R /mnt
 ~~~
 
 ~~~sh
-mount -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@boot LABEL=system /mnt/boot
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@home LABEL=system /mnt/home
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@opt LABEL=system /mnt/opt
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@srv LABEL=system /mnt/srv
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool LABEL=system /mnt/var/spool
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
-mount --mkdir -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
-mount --mkdir -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
-mount --mkdir -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
+mount -t btrfs  -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@home LABEL=system /mnt/home
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@opt LABEL=system /mnt/opt
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@srv LABEL=system /mnt/srv
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool LABEL=system /mnt/var/spool
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
+mount --mkdir -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
+~~~
+
+In case you need to change some option, you should use this 
+
+~~~sh
+mount -o remount,x-mount.mkdir,
 ~~~
 
 ~~~sh
 mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
-mount --mkdir LABEL=EFI /mnt/efi
+mount --mkdir LABEL=EFI /mnt/boot
 ~~~
+
+~~~sh
+mkdir -p /mnt/etc
+genfstab -U -p /mnt >> /mnt/etc/fstab
+genfstab -L -p /mnt >> /mnt/etc/fstab
+cat /mnt/etc/fstab
+~~~
+Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
+
+/dev/mapper/swap none swap defaults 0 0
 
 ~~~sh
 reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6
 mkdir -p /mnt/etc/pacman.d
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
-~~~
-
-~~~sh
-genfstab -U -p /mnt >> /mnt/etc/fstab
-genfstab -L -p /mnt >> /mnt/etc/fstab
-cat /mnt/etc/fstab
 ~~~
 
 ~~~sh
@@ -169,6 +171,11 @@ pacstrap -iK /mnt base base-devel \
                   zsh zsh-autosuggestions zsh-completions zsh-doc zsh-syntax-highlighting \
                   linux linux-headers linux-firmware intel-ucode mkinitcpio \
                   networkmanager openssh git
+~~~
+
+~~~sh
+nvim /mnt/etc/crypttab
+swap /dev/disk/by-partlabel/cryptswap /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
 ~~~
 
 arch-chroot -S /mnt

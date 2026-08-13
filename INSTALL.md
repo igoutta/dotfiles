@@ -122,6 +122,8 @@ btrfs subvolume create /mnt/@libvirt
 umount -R /mnt
 ~~~
 
+## Montar los subvolúmenes y las particiones
+
 ~~~sh
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
@@ -153,10 +155,28 @@ genfstab -L -p /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 ~~~
 
+## Configurar el cifrado del espacio de intercambio
+
 Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
 
 ~~~sh
 sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
+~~~
+
+TODO: Check crypttab.
+
+~~sh
+Configure crypttab to encrypt the swap partition:
+
+# Get PARTUUID of the swap partition (remember that /dev/sda3 is the swap partition)
+blkid /dev/sda3
+
+# Open the crypttab file
+nvim /mnt/etc/crypttab
+
+# Add the swap partition to the crypttab file
+swap PARTUUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
+swap /dev/disk/by-partlabel/cryptswap /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
 ~~~
 
 ~~~sh
@@ -166,13 +186,45 @@ cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 ~~~
 
 ~~~sh
+# This will install some packages to "bootstrap" methaphorically our system. Feel free to add the ones you want
+# "base, linux, linux-firmware" are needed. If you want a more stable kernel, then swap linux with linux-lts
+# "base-devel" base development packages
+
+# "intel-ucode" microcode updates for the cpu. If you have an AMD one use "amd-ucode"
+
+# "efibootmgr" needed to install grub
+# "btrfs-progs" are user-space utilities for file system management ( needed to harness the potential of btrfs )
+# "inotify-tools" used by grub btrfsd deamon to automatically spot new snapshots and update grub entries
+# "grub" the bootloader
+# "grub-btrfs" adds btrfs support for the grub bootloader and enables the user to directly boot from snapshots
+
+# "timeshift" a GUI app to easily create,plan and restore snapshots using BTRFS capabilities
+
+# "networkmanager" to manage Internet connections both wired and wireless ( it also has an applet package network-manager-applet )
+# "openssh" to use ssh and manage keys
+# "pipewire pipewire-alsa pipewire-pulse pipewire-jack" for the new audio framework replacing pulse and jack. 
+# "wireplumber" the pipewire session manager.
+
+# "zsh" my favourite shell
+# "zsh-completions" for zsh additional completions
+# "zsh-autosuggestions" very useful, it helps writing commands [ Needs configuration in .zshrc ]
+
+# "neovim" my goto editor, if unfamiliar use nano
+
+# "man" for manual pages
+# "navi" is an interactive cheatsheet tool for the command-line
+# "git" to install the git vcs
 pacstrap -iK /mnt base base-devel \
-                  micro helix \
-                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs \
-                  grub grub-btrfs os-prober \
-                  zsh zsh-autosuggestions zsh-completions zsh-doc zsh-syntax-highlighting \
                   linux linux-headers linux-firmware intel-ucode mkinitcpio \
-                  networkmanager openssh git
+                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs lvm2 cryptsetup \
+                  grub grub-btrfs os-prober \
+                  dhcpcd networkmanager iwd openssh \
+                  avahi acpi acpi_call acpid \
+                  alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
+                  sof-firmware firewalld bluez bluez-utils cups util-linux \
+                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting \
+                  micro helix neovim \
+                  man navi git rsync bat fzf eza ripgrep 
 ~~~
 
 ~~~sh
@@ -180,53 +232,67 @@ nvim /mnt/etc/crypttab
 swap /dev/disk/by-partlabel/cryptswap /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
 ~~~
 
+~~~sh
 arch-chroot -S /mnt
+~~~
 
-
+~~~sh
 ln -sf /usr/share/zoneinfo/America/Guayaquil /etc/localtime
 hwclock -w
+~~~
 
+~~~sh
 sed -i -e "/^#"es_EC.UTF-8"/s/^#//" /etc/locale.gen
 locale-gen
-echo LANG=es_EC.UTF-8 > /etc/locale.conf
-echo LC_MESSAGES=en_US.UTF-8 >> /etc/locale.conf
+echo "LANG=es_EC.UTF-8\nLC_MESSAGES=en_US.UTF-8\n" > /etc/locale.conf
+~~~
 
+~~~sh
 export LANG=es_EC.UTF-8
 export EDITOR=micro
 echo KEYMAP=la-latin1 > /etc/vconsole.conf
 localectl set-x11-keymap latam
+~~~
 
+~~~sh
 echo tuf > /etc/hostname
 echo "127.0.1.1 tuf" >> /etc/hosts
+~~~
 
+~~~sh
 /etc/pacman.conf
 ILoveCandy
-
 pacman -Sy
- 
-pacman -S git xdg-utils xdg-user-dirs dialog
-pacman -S bat fzf eza ripgrep helix
+~~~
 
+pacman -S xdg-utils xdg-user-dirs dialog
+
+Modify /etc/mkinitcpio.conf to have btrfs in MODULES, /usr/bin/btrfs in BINARIES, and encrypt in HOOKS. Add encrypt hook after block and before filesystems.
+
+If hibernation is to be used, resume needs to be added (somewhere after udev). If it is from a swap file inside an encrypted container (as in this case), then resume should be placed after the encrypt and filesystem hooks.
+
+~~~sh
 /etc/mkinitcpio.conf
-
-HOOKS=(base udev autodetect microcode modconf kms keyboard keymap sd-vconsole block encrypt btrfs filesystems fsck)
-COMPRESSION="zstd"
-COMPRESSION_OPTIONS=(-9)
+# HOOKS=(base udev autodetect microcode modconf kms keyboard keymap sd-vconsole block encrypt btrfs filesystems fsck)
+# COMPRESSION="zstd"
+# COMPRESSION_OPTIONS=(-9)
 mkinitcpio -P
+~~~
 
-
+~~~sh
 refind-install --usedefault /dev/part_UEFI --alldrivers
- mkrlconf
- micro/boot/refind linux.conf (erase firsts two lines)
- blkid -s PARTUUID -o value /dev/part_UEFI >> /boot/EFI/BOOT/refind.conf
- blkid -s PARTUUID -o value /dev/part_ROOT
- micro /boot/EFI/BOOT/refind.conf
- options "rw root=PARTUUID=PARTUUID(/dev/part_ROOT) initrd=\intel-ucode.img"
+mkrlconf
+micro/boot/refind linux.conf # erase firsts two lines
+blkid -s PARTUUID -o value /dev/part_UEFI >> /boot/EFI/BOOT/refind.conf
+blkid -s PARTUUID -o value /dev/part_ROOT
+micro /boot/EFI/BOOT/refind.conf
+options "rw root=PARTUUID=PARTUUID(/dev/part_ROOT) initrd=\intel-ucode.img"
+~~~
 
-pacman -S grub efibootmgr os-prober fuse3 ntfs-3g 
+~~~sh
 grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --recheck
 grub-mkconfig -o /boot/grub/grub.cfg
-
+~~~
 
 
 useradd -m -U -G wheel,users,uucp,storage,power --shell /usr/bin/zsh ga

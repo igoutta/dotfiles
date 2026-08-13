@@ -34,7 +34,7 @@ Verifica el número de bits de la UEFI:
 cat /sys/firmware/efi/fw_platform_size
 ~~~
 
-## Conexión SSH
+### Conexión SSH
 
 1. Chequear estatus del servicio *sshd*
 ~~~sh
@@ -56,18 +56,26 @@ passwd
 ssh root@archiso
 ~~~
 
-# Instalación base
-
 ## Particionado del Disco
 ~~~sh
 lsblk -fpo NAME,SIZE,FSTYPE,FSVER,LABEL,UUID,MOUNTPOINTS
 ~~~
 
-optional deleting SSD
+### Limpieza del disco
+
+Si se desea, se puede eliminar de manera rápida el disco y las particiones del mismo utilizando el siguiente comando:
+
 ~~~sh
 blkdiscard -f *DRIVE*
 ~~~
 
+Si quieres realizar un borrado mucho mas seguro puedes utilizar el siguiente comando:
+
+~~~sh
+dd if=/dev/urandom bs=10M status=progress of=*DRIVE*
+~~~
+
+### Definir las particiones
 
 ~~~sh
 sgdisk --clear \
@@ -75,6 +83,8 @@ sgdisk --clear \
        --new=2:0:+16GiB --typecode=2:8200 --change-name=2:cryptswap \
        --new=3:0:0 --typecode=3:8300 --change-name=3:cryptsystem *DRIVE*
 ~~~
+
+### Configurar el cifrado de la partición principal
 
 ~~~sh
 cryptsetup luksFormat \
@@ -93,6 +103,8 @@ cryptsetup luksFormat \
 cryptsetup open /dev/disk/by-partlabel/cryptsystem system
 ~~~
 
+### Configurar el cifrado de la partición de intercambio
+
 ~~~sh
 cryptsetup open --type plain --cipher aes-xts-plain64 --key-size 512 --key-file /dev/urandom /dev/disk/by-partlabel/cryptswap swap
 ~~~
@@ -101,6 +113,8 @@ cryptsetup open --type plain --cipher aes-xts-plain64 --key-size 512 --key-file 
 mkswap -L swap /dev/mapper/swap
 swapon -L swap
 ~~~
+
+### Formatear y montar el sistema de archivos con subvolumenes usando BTRFS
 
 ~~~sh
 mkfs.btrfs --label system --nodesize 32k /dev/mapper/system
@@ -122,8 +136,6 @@ btrfs subvolume create /mnt/@libvirt
 umount -R /mnt
 ~~~
 
-## Montar los subvolúmenes y las particiones
-
 ~~~sh
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@ LABEL=system /mnt
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@snapshots LABEL=system /mnt/.snapshots
@@ -144,46 +156,32 @@ In case you need to change some option, you should use this
 mount -o remount,x-mount.mkdir,
 ~~~
 
+### Formatear y montar la partición de arranque
+
 ~~~sh
 mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
 mount --mkdir LABEL=EFI /mnt/boot
 ~~~
 
-~~~sh
-mkdir -p /mnt/etc
-genfstab -L -p /mnt >> /mnt/etc/fstab
-cat /mnt/etc/fstab
-~~~
+# Instalación del sistema 
 
-## Configurar el cifrado del espacio de intercambio
-
-Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
-
-~~~sh
-sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
-~~~
-
-TODO: Check crypttab.
-
-~~sh
-Configure crypttab to encrypt the swap partition:
-
-# Get PARTUUID of the swap partition (remember that /dev/sda3 is the swap partition)
-blkid /dev/sda3
-
-# Open the crypttab file
-nvim /mnt/etc/crypttab
-
-# Add the swap partition to the crypttab file
-swap PARTUUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
-swap /dev/disk/by-partlabel/cryptswap /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
-~~~
+## Actualización de los repositorios espejo óptimos para descarga
 
 ~~~sh
 reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6
 mkdir -p /mnt/etc/pacman.d
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
+cat !$
 ~~~
+
+## Últimos detalles
+
+~~~sh
+echo KEYMAP=la-latin1 > /etc/vconsole.conf
+cat !$
+~~~
+
+## Instalación de paquetes esenciales
 
 ~~~sh
 # This will install some packages to "bootstrap" methaphorically our system. Feel free to add the ones you want
@@ -209,27 +207,76 @@ cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 # "zsh-completions" for zsh additional completions
 # "zsh-autosuggestions" very useful, it helps writing commands [ Needs configuration in .zshrc ]
 
+# terminus-font for ter-132 family font for the hooks
+
 # "neovim" my goto editor, if unfamiliar use nano
 
 # "man" for manual pages
 # "navi" is an interactive cheatsheet tool for the command-line
 # "git" to install the git vcs
 pacstrap -iK /mnt base base-devel \
-                  linux linux-headers linux-firmware intel-ucode mkinitcpio \
-                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs lvm2 cryptsetup \
+                  linux linux-headers linux-firmware intel-ucode mkinitcpio \ #dracut sof-firmware
+                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs dosfstools cryptsetup \
                   grub grub-btrfs os-prober \
-                  dhcpcd networkmanager iwd openssh \
+                  util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \ #dnsmasq libnvme modemmanager openresolv pacrunner ppp
                   avahi acpi acpi_call acpid \
                   alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
-                  sof-firmware firewalld bluez bluez-utils cups util-linux \
-                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting \
+                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting \ #
+                  terminus-font ttf-dejavu atuin \
                   micro helix neovim \
-                  man navi git rsync bat fzf eza ripgrep 
+                  bat fzf fzf-tab eza rsync ripgrep jq \
+                  mandoc man-pages navi \
+                  openssh git pkgstats
+~~~
+
+## Generar y editar correctamente la tabla del sistema de archivos (fstab)
+
+~~~sh
+genfstab -L -p /mnt >> /mnt/etc/fstab
+cat !$
+~~~
+
+### Configurar el cifrado del espacio de intercambio (swap)
+
+Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
+
+~~~sh
+sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
+cat !$
+~~~
+
+Con ese cambio, el kernel esperará que un contenedor cifrado abierto llamado swap, así que agregue lo siguiente al archivo '/mnt/etc/crypttab' para que se abra en el arranque.
+
+~~~sh
+echo "\nswap\t\t   /dev/disk/by-partlabel/cryptswap\t\t\t /dev/urandom\t\t\t swap,offset=2048,cipher=aes-xts-plain64,size=512\n" >> /mnt/etc/crypttab
+cat !$
+~~~
+
+Tenga en cuenta que esto generará una clave aleatoria en cada arranque, por lo que el intercambio (swap) no será persistente. Esto tiene implicaciones en la hibernación, tengalo en cuenta.
+
+~~~sh
+echo tuf > /mnt/etc/hostname
+cat !$
 ~~~
 
 ~~~sh
-nvim /mnt/etc/crypttab
-swap /dev/disk/by-partlabel/cryptswap /dev/urandom swap,offset=2048,cipher=aes-xts-plain64,size=512
+echo "127.0.1.1\t tuf\n" >> /mnt/etc/hosts
+cat !$
+~~~
+
+~~~sh
+echo "LANG=es_EC.UTF-8\nLC_MESSAGES=en_US.UTF-8\n" > /mnt/etc/locale.conf
+cat !$
+~~~
+
+~~~sh
+sed -i -e "/^#"es_EC.UTF-8"/s/^#//" /mnt/etc/locale.gen
+cat !$
+~~~
+
+~~~sh
+ln -sf /usr/share/zoneinfo/America/Guayaquil /mnt/etc/localtime
+cat !$
 ~~~
 
 ~~~sh
@@ -237,31 +284,47 @@ arch-chroot -S /mnt
 ~~~
 
 ~~~sh
-ln -sf /usr/share/zoneinfo/America/Guayaquil /etc/localtime
 hwclock -w
 ~~~
 
 ~~~sh
-sed -i -e "/^#"es_EC.UTF-8"/s/^#//" /etc/locale.gen
 locale-gen
-echo "LANG=es_EC.UTF-8\nLC_MESSAGES=en_US.UTF-8\n" > /etc/locale.conf
-~~~
-
-~~~sh
-export LANG=es_EC.UTF-8
-export EDITOR=micro
-echo KEYMAP=la-latin1 > /etc/vconsole.conf
 localectl set-x11-keymap latam
 ~~~
 
 ~~~sh
-echo tuf > /etc/hostname
-echo "127.0.1.1 tuf" >> /etc/hosts
+export LANG=es_EC.UTF-8
+export EDITOR=helix
+~~~
+
+### Anadir repositorios extra a pacman
+
+~~~sh
+pacman-key --recv-keys 7931B6D628C8D3BA
+pacman-key --finger 7931B6D628C8D3BA
+pacman-key --lsign-key 7931B6D628C8D3BA
+helix /etc/pacman.conf
 ~~~
 
 ~~~sh
-/etc/pacman.conf
 ILoveCandy
+
+[arch4edu]
+Include = /etc/pacman.d/mirrorlist.arch4edu
+~~~
+
+~~~sh
+curl -s https://api.arch4edu.org/status/mirrors.json | jq -r --argjson cutoff "$(date -d '30 days ago' +%s 2>/dev/null)" '
+  .mirrors[] 
+  | select(.status != "error")
+  | select(.timestamp != null)
+  | select(.timestamp > $cutoff)
+  | "Server = " + .url + "$arch"
+' > /etc/pacman.d/mirrorlist.arch4edu
+cat !$
+~~~
+
+~~~sh
 pacman -Sy
 ~~~
 
@@ -272,12 +335,27 @@ Modify /etc/mkinitcpio.conf to have btrfs in MODULES, /usr/bin/btrfs in BINARIES
 If hibernation is to be used, resume needs to be added (somewhere after udev). If it is from a swap file inside an encrypted container (as in this case), then resume should be placed after the encrypt and filesystem hooks.
 
 ~~~sh
-/etc/mkinitcpio.conf
-# HOOKS=(base udev autodetect microcode modconf kms keyboard keymap sd-vconsole block encrypt btrfs filesystems fsck)
-# COMPRESSION="zstd"
-# COMPRESSION_OPTIONS=(-9)
+helix /etc/mkinitcpio.conf
+~~~
+
+BTRFS support, Intel Graphics
+
+TPM2, UKI,
+
+~~~sh
+MODULES=(btrfs tpm_crb i915)
+BINARIES=(/usr/bin/btrfs)
+HOOKS=(base udev resume btrfs autodetect microcode modconf kms keyboard keymap consolefont numlock block encrypt filesystems fsck)
+COMPRESSION="zstd"
+COMPRESSION_OPTIONS=(-v -5 --long)
+~~~
+
+~~~sh
 mkinitcpio -P
 ~~~
+
+Note: ==> WARNING: Possibly missing firmware for module: 'qat_6xxx'
+
 
 ~~~sh
 refind-install --usedefault /dev/part_UEFI --alldrivers
@@ -290,13 +368,45 @@ options "rw root=PARTUUID=PARTUUID(/dev/part_ROOT) initrd=\intel-ucode.img"
 ~~~
 
 ~~~sh
-grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=GRUB --recheck
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck
+~~~
+
+# Opening default grub config file with nvim
+nvim /etc/default/grub
+
+Uncomment the line GRUB_ENABLE_CRYPTODISK=y:
+
+# Uncomment to enable booting from LUKS encrypted disks
+GRUB_ENABLE_CRYPTODISK=y
+
+Search other operational systems
+
+If you want that grub search for other operational systems, you can also uncomment the line GRUB_DISABLE_OS_PROBER=false:
+
+GRUB_DISABLE_OS_PROBER=false
+
+Remember last selected entry
+
+If you want that grub remember the last selected entry, you can also uncomment the line GRUB_SAVEDEFAULT=true and change the line GRUB_DEFAULT=0 to GRUB_DEFAULT=saved:
+
+...
+GRUB_DEFAULT=saved
+...
+GRUB_SAVEDEFAULT=true
+...
+
+~~~sh
+blkid /dev/nvme1n1p3 -o export
+~~~
+
+~~~sh
 grub-mkconfig -o /boot/grub/grub.cfg
 ~~~
 
+mkinitcpio-numlock with yay
 
 useradd -m -U -G wheel,users,uucp,storage,power --shell /usr/bin/zsh ga
- 
+
 passwd ga
 
 EDITOR=micro visudo # %wheel

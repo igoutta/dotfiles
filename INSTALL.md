@@ -177,7 +177,7 @@ cat !$
 ## Últimos detalles
 
 ~~~sh
-echo KEYMAP=la-latin1 > /etc/vconsole.conf
+echo 'KEYMAP=la-latin1\nFONT=ter-132b\n' > /mnt/etc/vconsole.conf
 cat !$
 ~~~
 
@@ -206,7 +206,7 @@ cat !$
 # "zsh" my favourite shell
 # "zsh-completions" for zsh additional completions
 # "zsh-autosuggestions" very useful, it helps writing commands [ Needs configuration in .zshrc ]
-
+# "starship"
 # terminus-font for ter-132 family font for the hooks
 
 # "neovim" my goto editor, if unfamiliar use nano
@@ -214,6 +214,7 @@ cat !$
 # "man" for manual pages
 # "navi" is an interactive cheatsheet tool for the command-line
 # "git" to install the git vcs
+# "pkgstats" to help arch4edu learn the trends of the packages they maintain
 pacstrap -iK /mnt base base-devel \
                   linux linux-headers linux-firmware intel-ucode mkinitcpio \ #dracut sof-firmware
                   efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs dosfstools cryptsetup \
@@ -221,11 +222,11 @@ pacstrap -iK /mnt base base-devel \
                   util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \ #dnsmasq libnvme modemmanager openresolv pacrunner ppp
                   avahi acpi acpi_call acpid \
                   alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
-                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting \ #
-                  terminus-font ttf-dejavu atuin \
+                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting starship atuin \ #
+                  terminus-font ttf-dejavu ttf-firacode-nerd \
                   micro helix neovim \
-                  bat fzf fzf-tab eza rsync ripgrep jq \
-                  mandoc man-pages navi \
+                  bat zoxide fzf fzf-tab eza ripgrep direnv rsync jq btop yazi udisks2 \ # udisks2-btrfs libblockdev-btrfs
+                  mandoc man-pages navi lsb-release fastfetch \
                   openssh git pkgstats
 ~~~
 
@@ -238,7 +239,7 @@ cat !$
 
 ### Configurar el cifrado del espacio de intercambio (swap)
 
-Open the file '/mnt/etc/fstab' and replace 'LABEL=swap' with '/dev/mapper/swap'.
+Replace 'LABEL=swap' with '/dev/mapper/swap' in FSTAB file at '/mnt/etc/fstab'.
 
 ~~~sh
 sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
@@ -252,7 +253,7 @@ echo "\nswap\t\t   /dev/disk/by-partlabel/cryptswap\t\t\t /dev/urandom\t\t\t swa
 cat !$
 ~~~
 
-Tenga en cuenta que esto generará una clave aleatoria en cada arranque, por lo que el intercambio (swap) no será persistente. Esto tiene implicaciones en la hibernación, tengalo en cuenta.
+Tenga en cuenta que esto generará una clave aleatoria en cada arranque, por lo que el intercambio (swap) no será persistente. Esto tiene implicaciones en la hibernación, téngalo en cuenta.
 
 ~~~sh
 echo tuf > /mnt/etc/hostname
@@ -274,17 +275,20 @@ sed -i -e "/^#"es_EC.UTF-8"/s/^#//" /mnt/etc/locale.gen
 cat !$
 ~~~
 
+### Huso horario
+
 ~~~sh
 ln -sf /usr/share/zoneinfo/America/Guayaquil /mnt/etc/localtime
 cat !$
 ~~~
 
 ~~~sh
-arch-chroot -S /mnt
+arch-chroot /mnt
 ~~~
 
 ~~~sh
 hwclock -w
+timedate set-ntp 1
 ~~~
 
 ~~~sh
@@ -297,7 +301,7 @@ export LANG=es_EC.UTF-8
 export EDITOR=helix
 ~~~
 
-### Anadir repositorios extra a pacman
+### Añadir repositorios extra al gestor de paquetes (pacman)
 
 ~~~sh
 pacman-key --recv-keys 7931B6D628C8D3BA
@@ -310,7 +314,7 @@ helix /etc/pacman.conf
 ILoveCandy
 
 [arch4edu]
-Include = /etc/pacman.d/mirrorlist.arch4edu
+Include = /etc/pacman.d/arch4edu-mirrorlist
 ~~~
 
 ~~~sh
@@ -320,12 +324,15 @@ curl -s https://api.arch4edu.org/status/mirrors.json | jq -r --argjson cutoff "$
   | select(.timestamp != null)
   | select(.timestamp > $cutoff)
   | "Server = " + .url + "$arch"
-' > /etc/pacman.d/mirrorlist.arch4edu
+' > /etc/pacman.d/arch4edu-mirrorlist
 cat !$
 ~~~
 
 ~~~sh
-pacman -Sy
+curl -O https://blackarch.org/strap.sh && \
+       if echo "00688950aaf5e5804d2abebb8d3d3ea1d28525ed  strap.sh" | sha1sum -c >/dev/null 2>&1; \
+       then chmod +x strap.sh && ./strap.sh; \
+       else echo "[!] Checksum FAILED — strap.sh NOT executed." && rm -f strap.sh; fi
 ~~~
 
 pacman -S xdg-utils xdg-user-dirs dialog
@@ -345,7 +352,7 @@ TPM2, UKI,
 ~~~sh
 MODULES=(btrfs tpm_crb i915)
 BINARIES=(/usr/bin/btrfs)
-HOOKS=(base udev resume btrfs autodetect microcode modconf kms keyboard keymap consolefont numlock block encrypt filesystems fsck)
+HOOKS=(base udev resume btrfs autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
 COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-v -5 --long)
 ~~~
@@ -355,7 +362,6 @@ mkinitcpio -P
 ~~~
 
 Note: ==> WARNING: Possibly missing firmware for module: 'qat_6xxx'
-
 
 ~~~sh
 refind-install --usedefault /dev/part_UEFI --alldrivers
@@ -372,9 +378,9 @@ grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --re
 ~~~
 
 # Opening default grub config file with nvim
-nvim /etc/default/grub
+helix /etc/default/grub
 
-Uncomment the line GRUB_ENABLE_CRYPTODISK=y:
+Uncomment the line GRUB_ENABLE_CRYPTODISK=y
 
 # Uncomment to enable booting from LUKS encrypted disks
 GRUB_ENABLE_CRYPTODISK=y
@@ -396,7 +402,11 @@ GRUB_SAVEDEFAULT=true
 ...
 
 ~~~sh
-blkid /dev/nvme1n1p3 -o export
+blkid -s UUID -o value /dev/disk/by-partlabel/cryptsystem
+~~~
+
+~~~sh
+GRUB_CMDLINE_LINUX_DEFAULT="cryptdevice=UUID=***XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX***:system:allow-discards root=/dev/mapper/system"
 ~~~
 
 ~~~sh
@@ -405,7 +415,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 mkinitcpio-numlock with yay
 
-useradd -m -U -G wheel,users,uucp,storage,power --shell /usr/bin/zsh ga
+useradd -m -U -G wheel,users,uucp,storage,power --shell /bin/zsh ga
 
 passwd ga
 
@@ -414,31 +424,53 @@ EDITOR=micro visudo # %wheel
 su ga -c "xdg-user-dirs-update"
 LC_ALL=C.UTF-8 xdg-user-dirs-update --force
 
-pacman -S man-db man-pages tealdeer lsb-release fastfetch btop
- 
+~~~sh
+mkdir -p /home/ga/{.config/zsh,.cache,.local} /home/ga/.local/{share,state}
+~~~
+
+~~~sh
+echo 'XDG_CONFIG_HOME DEFAULT=@{HOME}/.config
+XDG_DATA_HOME   DEFAULT=@{HOME}/.local/share
+XDG_STATE_HOME  DEFAULT=@{HOME}/.local/state
+XDG_CACHE_HOME  DEFAULT=@{HOME}/.cache' | tee -a /etc/security/pam_env.conf
+~~~
+
+~~~sh
+echo 'if [[ -z "$XDG_CONFIG_HOME" ]]
+then
+    export XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+if [[ -d "$XDG_CONFIG_HOME/zsh" ]]
+then
+    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+fi' | tee -a /etc/zsh/zshenv
+~~~
+
 pacman -S gnu-free-fonts powerline-fonts nerd-fonts noto-fonts-emoji woff2-font-awesome
- ttf-hack ttf-inconsolata ttf-liberation ttf-ubuntu-font-family ttf-bitstream-vera ttf-dejavu adobe-source-sans-pro-fonts ttf-anonymous-pro noto-fonts noto-fonts-cjk 
+ttf-hack ttf-inconsolata ttf-liberation ttf-ubuntu-font-family ttf-bitstream-vera ttf-dejavu adobe-source-sans-pro-fonts ttf-anonymous-pro noto-fonts noto-fonts-cjk 
 
 systemctl enable NetworkManager
-
 systemctl enable sshd
- 
-exit
+systemctl enable acpid
 
+exit
  
 umount -R /mnt
- 
+
 reboot
 
 nmcli device wifi connect 'ssid' password 'password'
 
 sudo pacman -S ffmpeg pipewire pipewire-audio pipewire-pulse pipewire-jack wireplumber
 sudo pacman -S hunspell-en_US aspell-en gst-plugins-good icedtea-web gufw dnscrypt-proxy p7zip tar rsync libreoffice-still vlc keepassxc kdeconnect --needed
- 
-tldr --update
 
 sudo localectl set-x11-keymap latam,us
 
-sudo mkswap /dev/part_SWAP
-sudo swapon /dev/part_SWAP
-echo "UUID=device_UUID none swap defaults 0 0" > /etc/fstab
+~~~sh
+git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+~~~
+
+~~~sh
+yay -S pay-respects mmtui ghostmirror
+~~~

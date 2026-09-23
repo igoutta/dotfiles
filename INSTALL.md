@@ -12,7 +12,7 @@
 
 Primero configure el diseño de su teclado:
 ~~~sh
-loadkeys la-latin1 / es / us
+loadkeys la-latin1    # alternativas: es, us
 ~~~
 
 Comprueba la conexión a internet:
@@ -146,14 +146,24 @@ mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@spool
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@log LABEL=system /mnt/var/log
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@cache LABEL=system /mnt/var/cache
 mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,compress=zstd,subvol=@tmp LABEL=system /mnt/var/tmp
-mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@containers LABEL=system /mnt/var/lib/containers
-mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,nodatacow,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,subvol=@containers LABEL=system /mnt/var/lib/containers
+mount -m -t btrfs -o defaults,noatime,autodefrag,ssd,subvol=@libvirt LABEL=system /mnt/var/lib/libvirt
 ~~~
 
-In case you need to change some option, you should use this 
+`nodatacow` **no** funciona como opción de montaje por subvolumen: btrfs solo respeta las
+opciones del primer montaje del sistema de archivos y las demás se ignoran en silencio
+(el sistema actual lo confirma: `@containers` y `@libvirt` montan con `compress=zstd` y
+con CoW activo). Lo correcto es marcar los directorios mientras están vacíos:
 
 ~~~sh
-mount -o remount,x-mount.mkdir,
+chattr +C /mnt/var/lib/containers /mnt/var/lib/libvirt
+lsattr -d /mnt/var/lib/containers /mnt/var/lib/libvirt    # debe mostrar la C
+~~~
+
+Para cambiar una opción de un punto ya montado sin desmontar:
+
+~~~sh
+mount -o remount,<opciones> /mnt/<punto>
 ~~~
 
 ### Formatear y montar la partición de arranque
@@ -167,8 +177,20 @@ mount --mkdir LABEL=EFI /mnt/boot
 
 ## Actualización de los repositorios espejo óptimos para descarga
 
+`-c` filtra qué países entran. Los mirrors globales (`geo.mirror.pkgbuild.com`,
+`fastly.mirror.pkgbuild.com`, `mirror.rackspace.com`…) no tienen país asignado, así que ni
+`Worldwide` ni ningún código los selecciona; `*` los incluía, pero a costa de anular el
+filtro de países. La cadena vacía `''` selecciona **solo** los globales, y con dos
+llamadas quedan los países elegidos por puntuación y los globales al final como respaldo.
+Se mantiene `http` a propósito: hay mirrors de los países cercanos que solo sirven por
+http y con `-p https` desaparecerían del filtro; pacman verifica las firmas de los
+paquetes, así que el transporte no compromete la integridad. El `-p` es obligatorio por otra
+razón: sin él reflector incluye entradas `rsync://`, y pacman descarga con libcurl, que no
+habla rsync (esos mirrors son para que otros mirrors se sincronicen).
+
 ~~~sh
-reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl,*' -l 250 -f 50 -a 6
+reflector --verbose --sort score --save /etc/pacman.d/mirrorlist --ipv4 --threads 4 -p http,https -c 'ec,de,us,co,pe,cl' -l 250 -f 50 -a 6
+reflector --sort score -p https -c '' -a 6 | sed '/^#/d' >> /etc/pacman.d/mirrorlist
 mkdir -p /mnt/etc/pacman.d
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 cat !$
@@ -206,28 +228,35 @@ cat !$
 # "zsh" my favourite shell
 # "zsh-completions" for zsh additional completions
 # "zsh-autosuggestions" very useful, it helps writing commands [ Needs configuration in .zshrc ]
-# "starship"
+# "starship" prompt, "atuin" shell history. fzf-tab is NOT a repo package: zinit installs it from the dotfiles
 # terminus-font for ter-132 family font for the hooks
 
-# "neovim" my goto editor, if unfamiliar use nano
+# "helix" my editor ($EDITOR). "micro" for visudo. "neovim" installed but never configured (see TODO.md)
 
-# "man" for manual pages
-# "navi" is an interactive cheatsheet tool for the command-line
-# "git" to install the git vcs
+# "mandoc" provides man (instead of man-db), "man-pages" the pages themselves
+# "navi" is an interactive cheatsheet tool for the command-line (Ctrl-G in zsh)
+# "vivid" LS_COLORS themes, "tealdeer" tldr client (Alt-h in zsh), "less" pager: the dotfiles expect them
+# "git" to install the git vcs, "stow" to deploy the dotfiles
 # "pkgstats" to help arch4edu learn the trends of the packages they maintain
+
+# Optional, not installed by default: dracut sof-firmware (instead of mkinitcpio / Intel SOF audio),
+#   dnsmasq libnvme modemmanager openresolv pacrunner ppp (extra networking),
+#   udisks2-btrfs libblockdev-btrfs (btrfs support in udisks).
+# Keep every continuation line ending in a bare backslash: "\ # comment" is NOT a
+#   continuation (the backslash escapes the space) and the command silently ends there.
 pacstrap -iK /mnt base base-devel \
-                  linux linux-headers linux-firmware intel-ucode mkinitcpio \ #dracut sof-firmware
+                  linux linux-headers linux-firmware intel-ucode mkinitcpio \
                   efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs dosfstools cryptsetup \
                   grub grub-btrfs os-prober \
-                  util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \ #dnsmasq libnvme modemmanager openresolv pacrunner ppp
+                  util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \
                   avahi acpi acpi_call acpid \
                   alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
-                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting starship atuin \ #
+                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting starship atuin \
                   terminus-font ttf-dejavu ttf-firacode-nerd \
                   micro helix neovim \
-                  bat zoxide fzf fzf-tab eza ripgrep direnv rsync jq btop yazi udisks2 \ # udisks2-btrfs libblockdev-btrfs
+                  bat zoxide fzf eza ripgrep direnv rsync jq btop yazi udisks2 vivid tealdeer less \
                   mandoc man-pages navi lsb-release fastfetch \
-                  openssh git pkgstats
+                  openssh git stow pkgstats
 ~~~
 
 ## Generar y editar correctamente la tabla del sistema de archivos (fstab)
@@ -287,13 +316,14 @@ arch-chroot /mnt
 ~~~
 
 ~~~sh
-hwclock -w
-timedate set-ntp 1
+hwclock --systohc
 ~~~
+
+`timedatectl` y `localectl` no funcionan dentro del chroot (no hay systemd corriendo):
+NTP y el teclado de X11 se configuran tras el primer arranque, más abajo.
 
 ~~~sh
 locale-gen
-localectl set-x11-keymap latam
 ~~~
 
 ~~~sh
@@ -328,6 +358,9 @@ curl -s https://api.arch4edu.org/status/mirrors.json | jq -r --argjson cutoff "$
 cat !$
 ~~~
 
+El sha1 cambia cada vez que BlackArch actualiza `strap.sh`: comprobar el vigente en
+<https://blackarch.org/downloads.html> antes de ejecutar, o el `else` lo rechazará.
+
 ~~~sh
 curl -O https://blackarch.org/strap.sh && \
        if echo "00688950aaf5e5804d2abebb8d3d3ea1d28525ed  strap.sh" | sha1sum -c >/dev/null 2>&1; \
@@ -335,7 +368,9 @@ curl -O https://blackarch.org/strap.sh && \
        else echo "[!] Checksum FAILED — strap.sh NOT executed." && rm -f strap.sh; fi
 ~~~
 
+~~~sh
 pacman -S xdg-utils xdg-user-dirs dialog
+~~~
 
 Modify /etc/mkinitcpio.conf to have btrfs in MODULES, /usr/bin/btrfs in BINARIES, and encrypt in HOOKS. Add encrypt hook after block and before filesystems.
 
@@ -413,19 +448,25 @@ GRUB_CMDLINE_LINUX_DEFAULT="cryptdevice=UUID=***XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXX
 grub-mkconfig -o /boot/grub/grub.cfg
 ~~~
 
-mkinitcpio-numlock with yay
-
-useradd -m -U -G wheel,users,uucp,storage,power --shell /bin/zsh ga
-
-passwd ga
-
-EDITOR=micro visudo # %wheel
- 
-su ga -c "xdg-user-dirs-update"
-LC_ALL=C.UTF-8 xdg-user-dirs-update --force
+`mkinitcpio-numlock` (AUR) se instala con yay tras el primer arranque si se quiere el
+teclado numérico activo en el prompt de LUKS.
 
 ~~~sh
-mkdir -p /home/ga/{.config/zsh,.cache,.local} /home/ga/.local/{share,state}
+useradd -m -U -G wheel,users,uucp,storage,power --shell /bin/zsh ga
+passwd ga
+EDITOR=micro visudo        # descomentar %wheel ALL=(ALL:ALL) ALL
+~~~
+
+~~~sh
+su ga -c "xdg-user-dirs-update"
+~~~
+
+Los directorios XDG se crean **como ga**. Un `mkdir` aquí, que corre como root, los deja
+con dueño root y todo lo que se escriba después dentro (por ejemplo `.zshrc`) hereda el
+problema; así acabó este sistema con un `.zshrc` de root.
+
+~~~sh
+install -d -o ga -g ga /home/ga/{.config,.config/zsh,.cache,.local,.local/share,.local/state}
 ~~~
 
 ~~~sh
@@ -438,25 +479,40 @@ XDG_CACHE_HOME  DEFAULT=@{HOME}/.cache' | tee -a /etc/security/pam_env.conf
 El `ZDOTDIR` global (`/etc/zsh/zshenv`) se instala desde el repo en la sección
 [Dotfiles](#dotfiles) del final, una vez clonado.
 
-pacman -S gnu-free-fonts powerline-fonts nerd-fonts noto-fonts-emoji woff2-font-awesome
-ttf-hack ttf-inconsolata ttf-liberation ttf-ubuntu-font-family ttf-bitstream-vera ttf-dejavu adobe-source-sans-pro-fonts ttf-anonymous-pro noto-fonts noto-fonts-cjk 
+Fuentes. `nerd-fonts` es un **grupo** de 71 paquetes (varios GB); este sistema solo tiene
+`ttf-firacode-nerd`, que ya va en pacstrap. `adobe-source-sans-fonts` es el nombre actual
+de `adobe-source-sans-pro-fonts`.
 
+~~~sh
+pacman -S gnu-free-fonts powerline-fonts noto-fonts noto-fonts-cjk noto-fonts-emoji woff2-font-awesome \
+          ttf-hack ttf-inconsolata ttf-liberation ttf-ubuntu-font-family ttf-bitstream-vera \
+          adobe-source-sans-fonts ttf-anonymous-pro
+~~~
+
+~~~sh
 systemctl enable NetworkManager
 systemctl enable sshd
 systemctl enable acpid
+~~~
 
+~~~sh
 exit
- 
 umount -R /mnt
-
 reboot
+~~~
 
+# Tras el primer arranque
+
+~~~sh
 nmcli device wifi connect 'ssid' password 'password'
-
-sudo pacman -S ffmpeg pipewire pipewire-audio pipewire-pulse pipewire-jack wireplumber
-sudo pacman -S hunspell-en_US aspell-en gst-plugins-good icedtea-web gufw dnscrypt-proxy p7zip tar rsync libreoffice-still vlc keepassxc kdeconnect --needed
-
+sudo timedatectl set-ntp true
 sudo localectl set-x11-keymap latam,us
+~~~
+
+~~~sh
+sudo pacman -S --needed ffmpeg pipewire pipewire-audio pipewire-pulse pipewire-jack wireplumber
+sudo pacman -S --needed hunspell-en_us aspell-en gst-plugins-good icedtea-web gufw dnscrypt-proxy 7zip tar rsync libreoffice-still vlc keepassxc kdeconnect
+~~~
 
 ~~~sh
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si

@@ -435,17 +435,8 @@ XDG_STATE_HOME  DEFAULT=@{HOME}/.local/state
 XDG_CACHE_HOME  DEFAULT=@{HOME}/.cache' | tee -a /etc/security/pam_env.conf
 ~~~
 
-~~~sh
-echo 'if [[ -z "$XDG_CONFIG_HOME" ]]
-then
-    export XDG_CONFIG_HOME="$HOME/.config"
-fi
-
-if [[ -d "$XDG_CONFIG_HOME/zsh" ]]
-then
-    export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-fi' | tee -a /etc/zsh/zshenv
-~~~
+El `ZDOTDIR` global (`/etc/zsh/zshenv`) se instala desde el repo en la sección
+[Dotfiles](#dotfiles) del final, una vez clonado.
 
 pacman -S gnu-free-fonts powerline-fonts nerd-fonts noto-fonts-emoji woff2-font-awesome
 ttf-hack ttf-inconsolata ttf-liberation ttf-ubuntu-font-family ttf-bitstream-vera ttf-dejavu adobe-source-sans-pro-fonts ttf-anonymous-pro noto-fonts noto-fonts-cjk 
@@ -474,3 +465,41 @@ git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 ~~~sh
 yay -S pay-respects mmtui ghostmirror
 ~~~
+
+# Dotfiles
+
+Ya como usuario, tras el primer arranque. El repo es un árbol de paquetes
+[GNU Stow](https://www.gnu.org/software/stow/): cada carpeta de primer nivel
+(`zsh`, `atuin`, `fastfetch`…) refleja `$HOME`, y `stow` crea los enlaces.
+
+~~~sh
+sudo pacman -S --needed stow git
+git clone https://github.com/<usuario>/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+~~~
+
+Archivos del sistema (fuera de `$HOME`, ver `etc/README.md`):
+
+~~~sh
+sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
+~~~
+
+Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`
+lanzado desde el repo: se enlaza archivo por archivo y los directorios se crean reales.
+Así, lo que una aplicación escriba junto a su config (cachés, estado, archivos generados)
+se queda en `$HOME` y no aparece dentro del repo. El precio es que cada archivo nuevo en
+un paquete necesita un `stow -R`.
+
+Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
+`stow --adopt` para meterlo en el repo y revisarlo con `git diff`:
+
+~~~sh
+cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
+stow zsh atuin fastfetch        # todos los que quieras
+stow -n zsh                     # simulación: muestra qué haría sin tocar nada
+stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
+stow -D zsh                     # quitar los enlaces de un paquete
+~~~
+
+Abre una terminal nueva: zinit clona los plugins en el primer arranque. Teclas y alias:
+`keys`.

@@ -14,6 +14,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `etc/` | Archivos del sistema fuera de `$HOME` (hoy `/etc/zsh/zshenv`). **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |
+| `.stowrc` | Opciones fijas de stow: `--no-folding` (enlaces archivo a archivo, directorios reales) |
 | `.stow-local-ignore` | Lo que stow no debe enlazar: docs, licencia, `etc/` |
 
 ## Uso rápido
@@ -25,7 +26,8 @@ sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
 stow zsh atuin fastfetch
 ~~~
 
-Detalles, simulación (`stow -n -v`) y `--adopt` para archivos que ya existan:
+Ejecuta `stow` siempre desde `~/dotfiles` para que aplique `.stowrc`. Detalles,
+simulación (`stow -n`) y `--adopt` para archivos que ya existan:
 [INSTALL.md › Dotfiles](INSTALL.md#dotfiles). Al abrir la primera terminal, `zinit`
 descarga los plugins; `keys` muestra teclas y alias.
 
@@ -40,6 +42,9 @@ descarga los plugins; `keys` muestra teclas y alias.
 - **Herramientas del sistema, no del gestor de plugins.** starship, atuin, zoxide, fzf…
   vienen de pacman; la shell arranca limpia aunque falten (cada integración está
   protegida con `(( $+commands[x] ))`). zinit solo gestiona plugins de zsh.
+- **Stow sin plegado** (`--no-folding`, vía `.stowrc`): nunca un enlace a un directorio
+  del repo, para que lo que escriban las aplicaciones no acabe versionado. Tras añadir
+  un archivo a un paquete, `stow -R <paquete>`.
 - **Un cambio, un commit**, mensajes en español.
 
 ## Licencia

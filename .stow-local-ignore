@@ -5,3 +5,5 @@
 ^/INSTALL\.md$
 ^/LICENSE$
 ^/TODO\.md$
+^/etc$
+^/\.stowrc$

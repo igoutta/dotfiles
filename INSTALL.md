@@ -163,7 +163,7 @@ mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
 mount --mkdir LABEL=EFI /mnt/boot
 ~~~
 
-# Instalación del sistema 
+# Instalación del sistema
 
 ## Actualización de los repositorios espejo óptimos para descarga
 
@@ -177,7 +177,7 @@ cat !$
 ## Últimos detalles
 
 ~~~sh
-echo 'KEYMAP=la-latin1\nFONT=ter-132b\n' > /mnt/etc/vconsole.conf
+printf 'KEYMAP=la-latin1\nFONT=ter-132b\n' > /mnt/etc/vconsole.conf
 cat !$
 ~~~
 
@@ -249,7 +249,7 @@ cat !$
 Con ese cambio, el kernel esperará que un contenedor cifrado abierto llamado swap, así que agregue lo siguiente al archivo '/mnt/etc/crypttab' para que se abra en el arranque.
 
 ~~~sh
-echo "\nswap\t\t   /dev/disk/by-partlabel/cryptswap\t\t\t /dev/urandom\t\t\t swap,offset=2048,cipher=aes-xts-plain64,size=512\n" >> /mnt/etc/crypttab
+printf '\nswap\t/dev/disk/by-partlabel/cryptswap\t/dev/urandom\tswap,offset=2048,cipher=aes-xts-plain64,size=512\n' >> /mnt/etc/crypttab
 cat !$
 ~~~
 
@@ -261,17 +261,17 @@ cat !$
 ~~~
 
 ~~~sh
-echo "127.0.1.1\t tuf\n" >> /mnt/etc/hosts
+printf '127.0.1.1\ttuf\n' >> /mnt/etc/hosts
 cat !$
 ~~~
 
 ~~~sh
-echo "LANG=es_EC.UTF-8\nLC_MESSAGES=en_US.UTF-8\n" > /mnt/etc/locale.conf
+printf 'LANG=es_EC.UTF-8\nLC_MESSAGES=en_US.UTF-8\n' > /mnt/etc/locale.conf
 cat !$
 ~~~
 
 ~~~sh
-sed -i -e "/^#"es_EC.UTF-8"/s/^#//" /mnt/etc/locale.gen
+sed -i -E 's/^#(es_EC|en_US)\.UTF-8 UTF-8/\1.UTF-8 UTF-8/' /mnt/etc/locale.gen
 cat !$
 ~~~
 

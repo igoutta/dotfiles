@@ -2,5 +2,6 @@
 ^/\.gitignore$
 ^/\.stow-local-ignore$
 ^/README\.md$
-^/install\.md$
+^/INSTALL\.md$
 ^/LICENSE$
+^/TODO\.md$

@@ -19,6 +19,14 @@ setopt NOTIFY                 # report background job status immediately
 # GPG: pinentry needs to know the tty. Interactive-only, so it lives here and not in .zshenv.
 export GPG_TTY=$TTY
 
-# Colours for ls/eza/completion listings. `dircolors` is GNU coreutils, present on
-# Arch, Ubuntu and Fedora alike. Swap for `vivid generate <theme>` if you install vivid.
-(( $+commands[dircolors] )) && eval "$(dircolors -b)"
+# Colours for ls/eza/completion listings (LS_COLORS).
+# vivid (pacman -S vivid; Fedora: dnf; Ubuntu: cargo or GitHub release) generates a full
+# theme. "ansi" uses only the terminal's 16 ANSI colours, so it follows whatever palette
+# noctalia sets on the terminal instead of fighting it. Other themes: `vivid themes`.
+# Fallback: `dircolors` from GNU coreutils, present on every distro.
+VIVID_THEME=ansi
+if (( $+commands[vivid] )); then
+    export LS_COLORS="$(vivid generate $VIVID_THEME)"
+elif (( $+commands[dircolors] )); then
+    eval "$(dircolors -b)"
+fi

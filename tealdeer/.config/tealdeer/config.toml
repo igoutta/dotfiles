@@ -1,0 +1,12 @@
+# tealdeer (tldr client). Arch: pacman -S tealdeer. Fedora: dnf install tealdeer.
+# Ubuntu: cargo install tealdeer or the GitHub release; the apt "tldr" package is a
+# different client and ignores this file.
+# Bound to Alt-h in zsh (see zsh/.config/zsh/conf.d/65-keybinds.zsh).
+
+[updates]
+auto_update = true              # refresh the page cache in the background
+auto_update_interval_hours = 168
+
+[display]
+compact = false
+use_pager = false               # pages are short; keep them inline like man via Alt-m

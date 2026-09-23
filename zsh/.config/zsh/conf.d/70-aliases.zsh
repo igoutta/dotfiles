@@ -17,3 +17,10 @@ alias gadog='PAGER="less -F -X" git log --all --decorate --oneline --graph'
 # This repo (a plain git repo deployed with stow, see INSTALL.md)
 alias dotfiles='git -C $HOME/dotfiles'
 alias dots='cd $HOME/dotfiles'
+
+# Cheatsheet of keys and aliases (CHEATSHEET.md next to this config)
+alias keys='${commands[bat]:-cat} --language=markdown --style=plain $ZDOTDIR/CHEATSHEET.md'
+
+# Completion cache: compinit reuses the dump for 24 h (see 40-completion.zsh), so a
+# freshly installed package's completions show up after this, or tomorrow.
+alias compreset='rm -f $XDG_CACHE_HOME/zsh/zcompdump* && exec zsh'

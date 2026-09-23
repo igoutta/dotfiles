@@ -1,4 +1,4 @@
-# Shell integration for CLI tools. Every block is guarded with (( $+commands[x] )) so a
+# Shell integration for CLI tools. Key overlaps between them are settled in 65-keybinds.zsh. Every block is guarded with (( $+commands[x] )) so a
 # missing binary costs nothing and prints nothing; install the tool and it lights up.
 #
 # Arch: all of these are in [extra] or the AUR (pacman -S fzf zoxide direnv navi
@@ -60,4 +60,5 @@ fi
 
 # ---------- atuin (history database; takes over Ctrl-R and Up) ----------
 # Last on purpose: it must win the Ctrl-R binding over fzf.
-(( $+commands[atuin] )) && eval "$(atuin init zsh)"
+# --disable-ai: atuin ≥ 18.9 otherwise binds "?" on an empty line to its AI assistant.
+(( $+commands[atuin] )) && eval "$(atuin init zsh --disable-ai)"

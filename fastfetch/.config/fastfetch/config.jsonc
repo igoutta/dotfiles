@@ -1,0 +1,190 @@
+{
+"$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+"logo": {
+	"type": "kitty-direct",
+	"source": "$XDG_CONFIG_HOME/fastfetch/images/chainsaw-man.png",
+	"width": 50,
+  "padding":{
+    "left": 2,
+  }
+},
+"display": {
+  "constants": [
+    "├⎔ ",
+    "└⎔ ",
+    " ⟼  ",
+    "  🜋  ",
+    "\u001b[s\u001b[33C│\u001b[u",
+  ],
+  "separator": "",
+  "percent": {
+    "type": ["num-color", "bar"],
+    "color": {
+      "green": "green",
+      "yellow": "light_yellow",
+      "red": "light_red"
+    }
+  },
+  "bar": {
+    "border": {
+      "left": "[",
+      "leftElapsed": "[",
+      "right": "]",
+      "rightElapsed": "]"
+    },
+    "char": {
+      "elapsed": "─",
+      "total": "─"
+    },
+    "color": {
+      "elapsed": "default",
+      "total": "light_black"
+    },
+    "width": 16
+  },
+},
+"modules": [
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[33m「 {#1}OS{#1} 」",
+    },
+    {
+      "type": "os",
+      "key": "{icon}{$4}",
+      "keyColor": "yellow",
+      "format": "{name} {version}"
+    },
+    {
+        "type": "kernel",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "yellow"
+    },
+    {
+        "type": "packages",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "yellow"
+    },
+    {
+        "type": "command",
+        "key": "{$1}{$3}",
+        "keyColor": "yellow",
+        "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days"
+    },
+    {
+        "type": "shell",
+        "key": "{$2}{icon}{$3}",
+        "keyColor": "yellow"
+    },
+    "break",
+    {
+      "type": "custom",
+      "key": "\u001b[34m「 {#1}UI{#1} 」"
+    },
+    {
+      "type": "wm",
+      "key": "{icon}{$4}",
+      "keyColor": "blue"
+    },
+    {
+        "type": "wmtheme",
+        "key": "{$1}󰉼{$3}",
+        "keyColor": "blue"
+    },
+    {
+        "type": "icons",
+        "key": "{$1}󰀻{$3}",
+        "keyColor": "blue"
+    },
+    {
+        "type": "cursor",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "blue",
+    },
+    {
+        "type": "terminalfont",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "blue",
+    },
+    {
+        "type": "terminal",
+        "key": "{$2}{icon}{$3}",
+        "keyColor": "blue"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[32m「 {#1}SYSTEM{#1} 」",
+    },
+    {
+      "type": "host",
+      "key": "{icon}{$4}",
+      "keyColor": "green"
+    },
+    {
+        "type": "cpu",
+        "key": "{$1}󰻠{$3}",
+        "keyColor": "green",
+        "format": "{name} ({cores-physical}C/{cores-logical}T) @ {freq-max}"
+    },
+    {
+        "type": "gpu",
+        "key": "{$1}󰻑{$3}",
+        "keyColor": "green",
+        "format": "{2}"
+    },
+    {
+        "type": "display",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "green",
+        "compactType": "original-with-refresh-rate"
+    },
+    {
+        "type": "memory",
+        "key": "{$1}󰾆{$3}",
+        "keyColor": "green", 
+        "percent": {
+          "type": 3,
+          "green": 30,   // Values below 30% in green
+          "yellow": 70   // 30-70% in yellow, >70% in red
+        }
+    },
+    {
+        "type": "swap",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "green"
+    },
+    {
+        "type": "uptime",
+        "key": "{$2}󰅐{$3}",
+        "keyColor": "green"
+    },
+    "break",
+    {
+      "type": "custom",
+      "key": "\u001b[35m「 {#1}AUDIO{#1} 」"
+    },
+    {
+      "type": "sound",
+      "key": "{icon}{$4}",
+      "keyColor": "magenta",
+      "format": "{2}"
+    },
+    {
+        "type": "player",
+        "key": "{$1}{icon}{$3}",
+        "keyColor": "magenta"
+    },
+    {
+        "type": "media",
+        "key": "{$2}{icon}{$3}",
+        "keyColor": "magenta"
+    },
+    "break",
+    {
+      "type": "custom",
+      "format": "\u001b[90m  \u001b[31m  \u001b[32m  \u001b[33m  \u001b[34m  \u001b[35m  \u001b[36m  \u001b[37m  \u001b[38m  \u001b[39m  \u001b[39m    \u001b[38m  \u001b[37m  \u001b[36m  \u001b[35m  \u001b[34m  \u001b[33m  \u001b[32m  \u001b[31m  \u001b[90m "
+    },
+    "break",
+    ]
+}

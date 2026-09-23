@@ -14,6 +14,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `etc/` | Archivos del sistema fuera de `$HOME` (hoy `/etc/zsh/zshenv`). **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |
+| `docs/` | Guías secundarias: alternativas no usadas hoy (`refind.md`) |
 | `.stowrc` | Opciones fijas de stow: `--no-folding` (enlaces archivo a archivo, directorios reales) |
 | `.stow-local-ignore` | Lo que stow no debe enlazar: docs, licencia, `etc/` |
 

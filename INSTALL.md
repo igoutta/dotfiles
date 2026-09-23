@@ -225,10 +225,10 @@ cat !$
 # "pipewire pipewire-alsa pipewire-pulse pipewire-jack" for the new audio framework replacing pulse and jack. 
 # "wireplumber" the pipewire session manager.
 
-# "zsh" my favourite shell
-# "zsh-completions" for zsh additional completions
-# "zsh-autosuggestions" very useful, it helps writing commands [ Needs configuration in .zshrc ]
-# "starship" prompt, "atuin" shell history. fzf-tab is NOT a repo package: zinit installs it from the dotfiles
+# "zsh" my favourite shell, "zsh-doc" its manual. Plugins (autosuggestions, syntax-highlighting,
+#   completions, fzf-tab) are NOT installed from pacman: zinit manages all of them from the dotfiles,
+#   so one tool updates them (`zinit update`) and the same config works on Ubuntu/Fedora
+# "starship" prompt, "atuin" shell history
 # terminus-font for ter-132 family font for the hooks
 
 # "helix" my editor ($EDITOR). "micro" for visudo. "neovim" installed but never configured (see TODO.md)
@@ -251,7 +251,7 @@ pacstrap -iK /mnt base base-devel \
                   util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \
                   avahi acpi acpi_call acpid \
                   alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber \
-                  zsh zsh-doc zsh-autosuggestions zsh-completions zsh-syntax-highlighting starship atuin \
+                  zsh zsh-doc starship atuin \
                   terminus-font ttf-dejavu ttf-firacode-nerd \
                   micro helix neovim \
                   bat zoxide fzf eza ripgrep direnv rsync jq btop yazi udisks2 vivid tealdeer less \
@@ -398,15 +398,7 @@ mkinitcpio -P
 
 Note: ==> WARNING: Possibly missing firmware for module: 'qat_6xxx'
 
-~~~sh
-refind-install --usedefault /dev/part_UEFI --alldrivers
-mkrlconf
-micro/boot/refind linux.conf # erase firsts two lines
-blkid -s PARTUUID -o value /dev/part_UEFI >> /boot/EFI/BOOT/refind.conf
-blkid -s PARTUUID -o value /dev/part_ROOT
-micro /boot/EFI/BOOT/refind.conf
-options "rw root=PARTUUID=PARTUUID(/dev/part_ROOT) initrd=\intel-ucode.img"
-~~~
+Esta guía usa GRUB. La alternativa con rEFInd está en [docs/refind.md](docs/refind.md).
 
 ~~~sh
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck

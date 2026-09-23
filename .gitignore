@@ -1,4 +1,5 @@
 # --- zsh ---
+zsh/.config/zsh/local.zsh
 .zcompdump*
 .zsh_history
 .zcompcache/

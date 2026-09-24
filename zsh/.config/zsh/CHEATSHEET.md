@@ -55,7 +55,7 @@ Las palabras se cortan en `/ . - _`, así que `Ctrl-W` borra un componente de ru
 ## Herramientas
 
 | Tecla / comando | Acción |
-|---|---|
+| --- | --- |
 | `Ctrl-T` | Buscar archivo con fzf e insertarlo |
 | `Alt-c` | `cd` a un directorio elegido con fzf |
 | `Ctrl-G` | navi: hojas de trucos interactivas |

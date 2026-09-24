@@ -7,13 +7,16 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 ## Estructura
 
 | Ruta | Qué es |
-|---|---|
+| --- | --- |
 | `zsh/` | Shell: `.zshenv`, `.zshrc` modular (`conf.d/NN-*.zsh`), config por máquina en `hosts/`, prompt `starship.toml`, `CHEATSHEET.md` |
 | `atuin/` | Historial de shell sincronizable |
 | `fastfetch/` | Banner de sistema; logos de texto en `text/` (`.txt`/`.ansi`) e imágenes; README propio |
 | `ghostty/` | Terminal: fuente, ventana para niri, shell integration y teclas; el tema lo pone noctalia |
 | `tealdeer/` | Cliente tldr (`Alt-h` en zsh) con caché automática |
-| `etc/` | Archivos del sistema fuera de `$HOME` (hoy `/etc/zsh/zshenv`). **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
+| `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia |
+| `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
+| `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
+| `etc/` | Archivos del sistema fuera de `$HOME`: zshenv, pam_env, greetd y su PAM. **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |
 | `docs/` | Guías secundarias: alternativas no usadas hoy (`refind.md`) |
@@ -26,7 +29,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 sudo pacman -S --needed stow git
 git clone <url-del-repo> ~/dotfiles && cd ~/dotfiles
 sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
-stow zsh atuin fastfetch
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk
 ~~~
 
 Ejecuta `stow` siempre desde `~/dotfiles` para que aplique `.stowrc`. Detalles,
@@ -51,6 +54,12 @@ descarga los plugins; `keys` muestra teclas y alias.
 - **Stow sin plegado** (`--no-folding`, vía `.stowrc`): nunca un enlace a un directorio
   del repo, para que lo que escriban las aplicaciones no acabe versionado. Tras añadir
   un archivo a un paquete, `stow -R <paquete>`.
+- **Modularizar.** Todo archivo de configuración largo se parte en módulos por tema
+  (`zsh/conf.d/`, `niri/*.kdl` con `include`, `noctalia/*.toml`), cada uno con su porqué.
+- **Lo que genera una app no se versiona.** Los temas que noctalia escribe (`noctalia.kdl`,
+  `noctalia.css`, `themes/noctalia`) y su `settings.toml` viven junto a cada config, fuera del
+  repo; las líneas de enganche que noctalia espera se escriben a mano en el paquete de cada
+  app, para que sus scripts no toquen archivos del repo.
 - **Un cambio, un commit**, mensajes en español.
 
 ## Licencia

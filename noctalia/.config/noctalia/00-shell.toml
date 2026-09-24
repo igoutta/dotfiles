@@ -18,6 +18,11 @@ external_ip_enabled = true
 screen_time_enabled = true
 telemetry_enabled = true
 
+# Cada cambio de fondo, paleta, modo o fuente se pasa al greeter sin preguntar: la regla
+# de polkit de `noctalia-greeter passwordless-sync enable ga` (INSTALL.md) lo autoriza.
+[shell.greeter_sync]
+auto_sync = true
+
 [shell.launcher]
 app_grid = true
 

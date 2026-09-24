@@ -523,12 +523,13 @@ Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
 # "greetd" gestor de entrada mínimo; el greeter lo pone noctalia-greeter (AUR, abajo)
 # "gnome-keyring" llavero de secretos y SSH; "seahorse" su interfaz. PAM lo abre al entrar (etc/pam.d/greetd)
 # "xdg-desktop-portal-gnome" y "-gtk" portales: capturas, diálogos de archivo y tema para Flatpak y navegadores
-# "polkit" autorización de acciones privilegiadas (noctalia hace de agente)
+# "polkit" autorización de acciones privilegiadas; "polkit-gnome" el agente que pide la contraseña
+#   (noctalia no lo trae; sin él el sync del greeter y cualquier acción privilegiada fallan en silencio)
 # "adw-gtk-theme" GTK3 con el aspecto de libadwaita; es el que colorea la plantilla gtk3 de noctalia
 # "adwaita-cursors" cursor Adwaita, el mismo que declaran niri (startup.kdl) y gtk (settings.ini)
 sudo pacman -S --needed niri xwayland-satellite \
                         greetd gnome-keyring seahorse \
-                        xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit \
+                        xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit polkit-gnome \
                         adw-gtk-theme adwaita-cursors
 ~~~
 
@@ -546,7 +547,7 @@ y su greeter desde sus releases de GitHub; greetd está en los repos de ambas.
 ~~~sh
 sudo systemctl enable greetd                       # entra por greetd en el VT 1 (etc/greetd/config.toml)
 systemctl --user enable gnome-keyring-daemon.socket
-sudo localectl set-x11-keymap latam                # teclado para el greeter y X11; niri lleva el suyo en input.kdl
+sudo localectl set-x11-keymap latam                # teclado para X11; niri lleva el suyo en input.kdl y el greeter en greeter.toml
 ~~~
 
 Los portales GNOME y las apps libadwaita leen dconf, no `settings.ini`:
@@ -559,9 +560,20 @@ gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
 ~~~
 
-La configuración de niri, noctalia, gtk y ghostty, y los archivos de sistema de greetd y
-PAM, se despliegan en la sección siguiente. Tras el primer inicio de sesión gráfico, `noctalia
-msg greeter-sync` pasa paleta y fondo al greeter (pide contraseña).
+La configuración de niri, noctalia, gtk y ghostty, y los archivos de sistema de greetd, PAM
+y el greeter (`etc/noctalia-greeter/greeter.toml`: teclado latam y esquema `Synced`), se
+despliegan en la sección siguiente.
+
+Greeter: el sync copia paleta, fondos y salidas de noctalia a `/var/lib/noctalia-greeter/sync.toml`
+con `pkexec`. Necesita la regla de polkit de abajo y un agente en la sesión (polkit-gnome, que
+arranca niri desde `startup.kdl`); sin agente el sync falla en silencio. Una sola vez, tras el
+primer inicio de sesión gráfico; después `auto_sync` (`00-shell.toml`) lo repite en cada cambio:
+
+~~~sh
+sudo noctalia-greeter passwordless-sync enable ga  # regla de polkit solo para la acción de sync; sin ella pide contraseña
+noctalia msg greeter-sync                          # primer sync; el greeter solo pinta imágenes: de un vídeo manda un fotograma
+journalctl -b | rg apply-appearance                # comprobación: pkexec ejecutando "--sync"; si no aparece, no se aplicó
+~~~
 
 # Dotfiles
 
@@ -582,6 +594,7 @@ sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
 sudo install -Dm644 etc/security/pam_env.conf /etc/security/pam_env.conf
 sudo install -Dm644 etc/greetd/config.toml /etc/greetd/config.toml
 sudo install -Dm644 etc/pam.d/greetd /etc/pam.d/greetd
+sudo install -Dm640 -o greeter -g greeter etc/noctalia-greeter/greeter.toml /var/lib/noctalia-greeter/greeter.toml
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`

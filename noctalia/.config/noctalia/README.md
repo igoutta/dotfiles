@@ -97,6 +97,10 @@ Estado del plugin en `~/.local/state/noctalia/mpvpaper/assignments.json`.
 
 ## Greeter
 
-`noctalia-greeter` (greetd) toma paleta y fondo con `noctalia msg greeter-sync`, que pide
-autenticación (polkit) y escribe en `/var/lib/noctalia-greeter/`. Fuera del repo. Repetirlo
-tras cambiar de paleta o de fondo si se quiere el greeter a juego.
+`noctalia-greeter` (greetd) toma paleta, fondos y disposición de las salidas con `noctalia
+msg greeter-sync`, que escribe `sync.toml` en `/var/lib/noctalia-greeter/` vía polkit. Con
+`[shell.greeter_sync] auto_sync = true` (00-shell.toml) se repite solo en cada cambio; la
+regla `noctalia-greeter passwordless-sync enable ga` (INSTALL.md) evita la contraseña, y hace
+falta un agente de polkit en la sesión (polkit-gnome, desde niri/startup.kdl). Lo que el
+sync no sabe (teclado latam, esquema fijo en `Synced`) va en `etc/noctalia-greeter/greeter.toml`.
+El greeter solo pinta imágenes: de un fondo de vídeo manda un fotograma.

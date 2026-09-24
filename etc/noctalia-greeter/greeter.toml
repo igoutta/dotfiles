@@ -1,0 +1,20 @@
+# /var/lib/noctalia-greeter/greeter.toml — capa declarativa del greeter.
+# Manda, clave por clave, sobre sync.toml (lo que escribe `noctalia msg greeter-sync`: paleta,
+# fondos, disposición y escala de las salidas). Ni el sync ni la interfaz reescriben este
+# archivo. Propietario greeter:greeter, modo 640. Mismo archivo en Ubuntu/Fedora; el greeter
+# va por releases de GitHub en ambas.
+
+# Teclado: el greeter corre su propio compositor y no hereda el de niri (input.kdl).
+[keyboard]
+layout = "latam"
+
+# Aspecto. "Synced": paleta y fondos los manda noctalia (sync.toml); el selector de esquema
+# va oculto. El formulario de entrada va siempre centrado en 1.5.0 (TODO.md); solo se colocan
+# los botones de apagado y el selector: top-left, top-right, bottom-left, bottom-right o hidden.
+# Sin bloque [appearance.palette]: en 1.5.0 una paleta aquí deja el greeter SIN fondo (comprobado
+# el 2026-09-24 por Gustavo, dos veces). La paleta y los fondos vienen juntos del sync.
+[appearance]
+scheme = "Synced"
+theme_mode = "dark"
+# power_buttons_position = "bottom-left"
+scheme_selector_position = "hidden"

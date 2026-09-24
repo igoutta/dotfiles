@@ -4,7 +4,12 @@
 // falta lanzarlo: niri 26 lo arranca solo.
 spawn-at-startup "noctalia"
 
-// El resumen de teclas (Mod+Shift+/) no se muestra al iniciar sesión.
+// Agente de polkit: la ventana que pide la contraseña cuando una app gráfica necesita
+// privilegios (sync del greeter, discos, actualizador). Noctalia no lo trae. Fedora:
+// /usr/libexec/polkit-gnome-authentication-agent-1; Ubuntu: /usr/lib/policykit-1-gnome/….
+spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+
+// El resumen de teclas (Mod+F1) no se muestra al iniciar sesión.
 hotkey-overlay {
     skip-at-startup
 }

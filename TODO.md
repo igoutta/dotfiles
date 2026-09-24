@@ -4,43 +4,106 @@ Cada tarea vive en una sola sección. Dentro de cada sección, el orden es la pr
 terminado baja a «Hecho» con fecha. Lo de «Sistema» se hace en la máquina y, a la vez, se
 escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
-**En curso**, en este orden: (1) cerrar el escritorio: i2c, energía, node; (2) pasada visual
-de niri + noctalia y usarla unos días; (3) sistema
-pesado: NVIDIA, hibernación; (4) sistema menor: servicios, cups, firewalld, bluetooth, Windows,
-user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segunda vuelta.
+**En curso**, en este orden: (1) pasada visual de niri + noctalia y usarla unos días; (2) sistema
+pesado: NVIDIA, hibernación; (3) sistema menor: servicios, cups, firewalld, bluetooth, Windows,
+user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segunda vuelta.
 
 ## Sistema
 
+- [~] **Qué instalar y qué no** (inventario del 2026-09-24 contra lo que necesita un portátil ASUS
+      con niri, Btrfs y LUKS; la base de audio, red, bluetooth, portales, llavero y polkit está
+      completa). Decidido ese día; cada cosa entra en su fase de INSTALL.md al hacerse:
+      - Instalando: `snapper snap-pac fwupd ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp
+        wl-clipboard` y `photoqt` (AUR) como visor de imágenes; hoy png y jpg abren con f3d, un
+        visor 3D. Loupe descartado. snap-pac avisa en cada pacman hasta que exista la config de
+        snapper (tarea «Snapper»). fwupd: `fwupdmgr get-devices`, luego `update`.
+      - Con yazi como gestor principal, no Nautilus: `udiskie` sí. Nautilus solo monta un USB al
+        pulsarlo en su barra lateral, que con yazi no existe; udiskie lo monta al conectarlo y
+        avisa, y hay plugin de noctalia `aristides/udiskie` para la barra. El móvil por USB va
+        con gvfs-mtp y `gio mount`. Carpetas y terminal: tarea «xdg» en Dotfiles.
+      - No instalar: `orca` (lector de pantalla para invidentes; el texto a voz de verdad es la
+        tarea «Texto a voz»), `asusctl`/`supergfxctl` (abajo), `swayidle`,
+        `sound-theme-freedesktop`, `ttf-nerd-fonts-symbols`, `noto-fonts-cjk`: noctalia lleva
+        idle, bloqueo y sonidos; FiraCode Nerd ya trae los símbolos; CJK solo si se lee chino,
+        japonés o coreano.
+      - Falta decidir, cada uno con tarea propia abajo: PDF, utilidad de discos, documentos de
+        oficina, keepassxc.
+      - Curiosidad, asusctl y supergfxctl: asusctl es un demonio (asusd) sobre el driver
+        asus-wmi del kernel que añade curvas de ventilador, RGB del teclado, perfiles y límite
+        de carga con interfaz (rog-control-center); aquí el kernel ya da perfiles, límite y luz
+        de teclado. supergfxctl cambia el modo de la GPU (integrated, hybrid, vfio) descargando
+        y cargando el driver NVIDIA, con cierre de sesión; en este portátil integrated deja sin
+        señal el USB-C del tercer monitor.
+- [ ] **Snapper**: analizado el 2026-09-24 en `docs/snapper.md` contrastando SysGuides (Fedora):
+      configs `root` (pacman 20+5 importantes, una diaria 7 días) y `home` (12 h, 7 d, 4 sem),
+      sin cuotas Btrfs, `~/.cache` y contenedores fuera como subvolúmenes, hook que copia
+      `/boot` (vfat, fuera de Btrfs) tras cada kernel, drop-in de mkinitcpio que solo añade
+      `grub-btrfs-overlayfs` (`resume` y `btrfs` se deciden con la hibernación), vuelta atrás
+      renombrando `@`. Pendiente de discutir junto a la hibernación (hook `resume`). Todo en
+      `etc/` y los pasos en «Mantenimiento» de INSTALL.md; falta ejecutarlos (sudo) y probar
+      arrancar una instantánea desde GRUB. Después, valorar `snapper-rollback` (AUR).
+- [ ] **Límite de carga 80 %**: `etc/tmpfiles.d/charge-limit.conf` preparado; instalar con la
+      línea de la sección Dotfiles. Hoy marca 80 pero nada lo fija al arrancar.
+- [ ] **Texto a voz**, necesario: `speech-dispatcher` (extra) como servicio de voz del sistema,
+      que es lo que Zen/Firefox y las apps usan para «leer en voz alta», y `piper-tts` (AUR,
+      `piper-tts-bin`) como motor neuronal local, con voces en español de rhasspy/piper-voices
+      (es_MX y es_ES). Enganche: módulo de piper para speech-dispatcher en
+      `~/.config/speech-dispatcher/`; probar con `spd-say "hola"`. Nada de orca.
+- [ ] **Podman**, decidido: `podman podman-compose passt` (extra). Rootless: subuid/subgid para
+      `ga` (`usermod --add-subuids 100000-165535 --add-subgids 100000-165535 ga`), red con passt,
+      almacén en `~/.local/share/containers` (el subvolumen `@containers` de la guía es el de
+      root; valorar otro para el usuario). Fedora/Ubuntu: podman en sus repos.
+- [ ] **KDE Connect**, decidido: `kdeconnect` (extra); `kdeconnectd` al entrar (spawn-at-startup
+      en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). Necesita
+      firewalld con el servicio `kdeconnect` (puertos 1714-1764 tcp/udp): va con esa tarea.
+- [ ] **PDF**: hoy los abre Vivaldi. Candidatos: papers (GNOME, coherente con adw-gtk3),
+      zathura (teclas vi, ligero), sioyek (para papers técnicos). Decidir y `xdg-mime`.
+- [ ] **Utilidad de discos**: gnome-disk-utility (LUKS, SMART, imágenes ISO) o solo
+      `udisksctl`/`cryptsetup` en terminal. Decidir.
+- [ ] **Documentos de oficina**: libreoffice-fresh (libre) u onlyoffice-bin (fiel a MS Office);
+      o solo web. Decidir.
+- [ ] **keepassxc**: sin decidir. Contraseñas hoy en el llavero de GNOME (seahorse); keepassxc
+      añade base de datos portátil y navegador. Decidir.
 - [ ] **Greeter, formulario abajo a la izquierda**: no se puede en 1.5.0, la última versión
       (2026-09-10). El formulario va siempre centrado; solo se colocan los botones de
       apagado (`power_buttons_position`) y el selector de esquema (`scheme_selector_position`),
       con valores `top-left`, `top-right`, `bottom-left`, `bottom-right` o `hidden`, en
       `[appearance]` de `etc/noctalia-greeter/greeter.toml`. Nadie lo ha pedido en GitHub:
       abrir sugerencia o revisar en cada versión nueva. Desenfoque del fondo tampoco existe.
-      Translúcido sí: `surface_variant = "#161A22BF"` en `[appearance.palette]` del mismo
-      archivo (preparado el 2026-09-24, pendiente de instalar y ver; ajustar el `BF`).
-- [ ] **ddcutil**: noctalia lo usa para el brillo del monitor externo pero `ga` no está en el
-      grupo `i2c`. O `sudo usermod -aG i2c ga`, o `enable_ddcutil = false` en `00-shell.toml`.
-- [ ] **Energía**: sin gestor (ni power-profiles-daemon, ni tlp, ni thermald).
-      power-profiles-daemon es lo que noctalia muestra; decidir y activar.
-- [ ] **Node para Claude (mise + pnpm)**: Claude Code va con el instalador nativo
-      (`~/.local/share/claude`) y no necesita node; sí lo necesitan los servidores MCP y
-      plugins que se lanzan con `npx`. Hoy hay un `nodejs` 26 huérfano (dependencia del
-      2026-09-23) y ningún npm. Lo más seguro ahora, por los gusanos de npm de 2025:
-      - `pacman -S mise` (extra) como único gestor de versiones: descargas con checksum,
-        versión fijada por proyecto con `mise.toml`, misma config en Ubuntu/Fedora (allí
-        mise va por su script o por copr, no por apt/dnf).
-      - `mise use -g node@lts pnpm@latest`, sin npm global: pnpm 10+ no ejecuta scripts de
-        instalación de dependencias salvo lista blanca, y `minimumReleaseAge = 10080`
-        (7 días) en `~/.config/pnpm/rc` evita instalar versiones recién publicadas, que es
-        como entraron los paquetes comprometidos.
-      - `pacman -Rns nodejs` para no tener dos node; `mise` en `60-tools.zsh`
-        (`eval "$(mise activate zsh)"`) y paquete stow `mise` con `config.toml` y el rc
-        de pnpm. Fase «Desarrollo» en INSTALL.md.
-      Alternativa simple sin versiones por proyecto: `pacman -S nodejs-lts-krypton pnpm`.
+      Translúcido: un bloque `[appearance.palette]` completo con `surface_variant` en
+      `#RRGGBBAA` lo consigue, PERO en 1.5.0 una paleta en greeter.toml deja el greeter sin
+      fondo: el código de esa versión toma paleta y fondos del mismo sitio y, si la paleta
+      viene de greeter.toml, ya no mira los fondos de sync.toml (verificado por Gustavo dos
+      veces el 2026-09-24; yo lo negué leyendo la rama main, que ya lo tiene separado). Para
+      tener las dos cosas habría que declarar también los fondos en greeter.toml apuntando a
+      los archivos que escribe el sync (`/var/lib/noctalia-greeter/wallpaper*.jpg`); sin probar.
+- [ ] **SDDM con login animado**, posible: sí. SDDM 0.21 (extra) corre su greeter en Wayland
+      con weston como compositor de quiosco y temas QML; `sddm-astronaut-theme` (AUR, o el
+      script de su repo) pone vídeo o GIF de fondo con qt6-multimedia, ya instalado por PhotoQt,
+      y trae variantes animadas (Pixel Sakura, Jake the Dog, Hyprland Kath) y teclado virtual.
+      Precio:
+      - `sddm` arrastra `xorg-server` aunque el greeter vaya en Wayland (+50 MB), más `weston`
+        y `qt6-virtualkeyboard`.
+      - Se pierde el greeter de noctalia: sync de paleta y fondos, `passwordless-sync` y
+        `greeter.toml`; `auto_sync` a false. El tema lleva sus colores y fondo en
+        `astronaut.conf`, versionable en `etc/`.
+      - Nuevo en `etc/`: `sddm.conf.d/` (`DisplayServer=wayland`, `GreeterEnvironment` con
+        `QT_WAYLAND_SHELL_INTEGRATION=layer-shell`, `InputMethod=qtvirtualkeyboard`,
+        `Current=` el tema), `pam.d/sddm` con las líneas de gnome-keyring de `pam.d/greetd`, y
+        `weston.ini` para girar el HDMI en la pantalla de entrada. Weston no verá el DP-2 de la
+        NVIDIA; en el login da igual. Teclado latam: `XKB_DEFAULT_LAYOUT` en
+        `GreeterEnvironment`, comprobar.
+      - Cambio: `systemctl disable greetd && systemctl enable sddm`; volver atrás es lo inverso.
+      Veredicto: hacerlo después de la pasada visual, si el login animado importa más que el
+      greeter a juego con noctalia sin tocar nada. Sin Xorg no hay opción hoy: noctalia-greeter
+      1.5.0 no admite vídeo.
 - [ ] **NVIDIA + Intel**: RTX 3050 Ti Mobile junto a Intel TigerLake UHD; solo mesa e
-      intel-media-driver. Camino probable: nvidia-open-dkms, `nvidia-drm.modeset=1` para
-      niri, PRIME render offload; envycontrol o supergfxctl para apagarla del todo.
+      intel-media-driver. Restricción nueva (2026-09-24): el USB-C con DisplayPort está
+      cableado a la NVIDIA, así que apagarla del todo (envycontrol integrated) deja sin señal
+      el tercer monitor; hoy lo sirve nouveau con GSP. El driver propietario solo hace falta
+      para CUDA y juegos (wine, ares); para la salida de vídeo nouveau ya basta.
+      Camino si se instala: nvidia-open-dkms, `nvidia-drm.modeset=1`, PRIME render offload;
+      envycontrol o supergfxctl solo en modo híbrido, nunca integrated.
 - [ ] **Hibernación**: imposible hoy. Swap de 16 G con clave aleatoria y sin `resume=`.
       Opciones: swap LUKS con clave fija en la raíz, o swapfile en `@swap` con
       `resume_offset`. Arrastra el hook `resume`, hoy en `mkinitcpio.conf` antes de
@@ -68,9 +131,13 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
       scripts) o cliphist + wl-clipboard (simple; texto e imágenes; selector desde el
       lanzador de noctalia). wl-clip-persist sobra: lo cubre `keep_from_closed_apps`.
       La decisión va a la fase «Escritorio» de INSTALL.md y a `00-shell.toml`.
-- [ ] **Tercer monitor (DP-2)**: aparece en el estado de noctalia y hay displaylink + evdi
-      instalados; el soporte de DisplayLink en niri no está verificado. Al conectarlo, bloque
-      `output` en `niri/outputs.kdl`.
+- [ ] **Tercer monitor (DP-2)**: verificado el 2026-09-24. No es DisplayLink: el ASUS MB169CK
+      va por DisplayPort sobre USB-C, y ese puerto cuelga de la NVIDIA (nouveau con GSP), no
+      de evdi. niri no renderiza en nouveau («software EGL renderers are skipped») y pinta en
+      la Intel copiando cada fotograma; conectado, con modo, EDID y DPMS On, sin errores.
+      Declarado en `niri/outputs.kdl` a la derecha del HDMI. Falta: decidir su sitio real
+      (`position`), y confirmar que `displaylink` y `evdi-dkms` no sirven para nada más
+      antes de desinstalarlos (auditoría).
 - [ ] **Auditoría de paquetes**: 71 instalados explícitamente que la guía no menciona. El
       que se quede entra en su fase con su comentario; el resto se desinstala.
       Además, `pacman -Qtdq` lista 38 huérfanos: 11 `-debug` de compilar AUR con la opción
@@ -91,9 +158,11 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
         ventana raíz que lanza `~/.local/bin/mission-planner`; gtk2: lo cargan
         System.Windows.Forms de mono y SkiaSharp.Views.Gtk de Mission Planner)
       - Desarrollo: uv python-pip python-virtualenv ccache visual-studio-code-bin itstool
+        (mise ya en «Desarrollo»)
       - Utilidades CLI: fd trash-cli unrar patool toilet tealdeer vivid pacman-contrib
         rust-motd-bin exhibit qalculate-qt
-      - Hardware: displaylink linux-firmware-intel lvm2 ddcutil
+      - Hardware: linux-firmware-intel lvm2 (ddcutil ya en «Escritorio»). Sobran salvo otro aparato DisplayLink:
+        displaylink evdi-dkms (el MB169CK no los usa; ver «Tercer monitor»)
       - Fuentes: gsfonts opendesktop-fonts woff2-cascadia-code wqy-bitmapfont wqy-microhei
         wqy-zenhei
       - Remoto y repos: rustdesk blackarch-mirrorlist
@@ -102,6 +171,10 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
 
 - [~] **niri + noctalia + gtk**: paquetes hechos el 2026-09-24 (ver Hecho); el login por
       greetd con la config declarativa y `adw-gtk-theme` ya se probaron ese día. Falta:
+      - Fondos de vídeo: no estaba roto. Con vídeo asignado noctalia retira su capa de fondo y
+        las imágenes no se ven hasta parar el vídeo (Stop / `clear-all`); documentado en el
+        README de noctalia el 2026-09-24. Falta `sudo pacman -S socat` si se usan presentaciones
+        (ya en INSTALL.md) y decidir `extract_last_frame`.
       - Usarlo unos días: paleta Ayu Red vs Vesper, `Mod+Alt+Esc` para bloquear, `Mod+N`
         notificaciones, `Mod+F1` chuleta en pantalla.
       - Pasada visual, con los valores medidos el 2026-09-24. Radios: niri 20 px, barra 12,
@@ -121,11 +194,15 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
       menús de WinForms no se dibujan. Comentarios al español; revisar
       `LIBGL_ALWAYS_SOFTWARE=1` cuando esté NVIDIA.
 - [ ] **zsh, segunda vuelta**: usarlo unos días y anotar aquí la fricción real; luego
+      pasar los comentarios de `conf.d/*.zsh` y `.zshenv` al español (hoy en inglés); luego
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
 - [ ] **rust-motd**: paquete stow y que funcione al entrar por SSH, donde hoy no hay banner
       (fastfetch se salta en SSH desde `80-fastfetch.zsh`).
 - [ ] **yazi**: paquete stow y arreglar la configuración.
-- [ ] **kitty**: paquete stow cuando llegue (mismo `^H` para Ctrl-Backspace que ghostty).
+- [ ] **kitty**: desinstalar, `sudo pacman -Rns kitty`. No se usa y ghostty ya está integrado
+      (tema por noctalia, shell integration, GTK4). En velocidad real están a la par: los dos
+      renderizan en GPU; kitty gana en pruebas sintéticas de caudal, no en uso. Con él se va
+      `kitty-open.desktop`, que abría las carpetas.
 - [ ] **starship**: rehacer la configuración desde cero.
 - [ ] **atuin**: mejorar, solo si algo molesta al usarlo.
 - [ ] **nvim**: nunca configurado; decidir si se usa junto a Helix.
@@ -136,6 +213,10 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
 - [ ] `INSTALL.md` supera las 500 líneas: partirlo en capítulos bajo `docs/` (regla de
       modularizar), dejando en la raíz el índice.
 - [ ] Cada punto de «Sistema», al cerrarse, como pasos en su fase de `INSTALL.md`.
+- [ ] **Optimizar INSTALL.md**, futuro lejano, cuando la auditoría de paquetes esté cerrada:
+      releerlo de principio a fin, quitar repeticiones, dejar cada fase con un solo bloque por
+      tipo (paquetes, servicios, archivos de `etc/`), y decidir si los bloques de comandos se
+      convierten en un script reproducible o siguen siendo guía comentada.
 
 ## Decisiones
 
@@ -150,12 +231,23 @@ user-dirs, portapapeles; (5) auditoría de paquetes; después ghostty y zsh segu
   desechable y solo debe guardar estado de ejecución. Plugin `niri-displays` fuera: las
   salidas se declaran en `niri/outputs.kdl`.
 - Modularizar: todo archivo de configuración largo se parte por temas.
+- Gestor de archivos principal: yazi en ghostty, Nautilus solo de apoyo (arrastrar, diálogos).
+  Visor de imágenes: PhotoQt. Instantáneas: snapper + snap-pac, no timeshift.
 - Idioma: interfaces en inglés (`LC_MESSAGES=en_US` con `LANG=es_EC`; `lang = "en"` en
   noctalia, cuya traducción va al 79 %; niri no tiene idioma). En español solo lo del repo:
   chuletas, comentarios, README, títulos de `Mod+F1` y commits.
 
 ## Hecho
 
+- 2026-09-24 **xdg**: paquete stow con `mimeapps.list` (imágenes en PhotoQt, carpetas en yazi
+  dentro de ghostty, web en Zen), `yazi-ghostty.desktop` y `xdg-terminals.list` para
+  xdg-terminal-exec (paquete pendiente de instalar: en «Escritorio» de INSTALL.md).
+- 2026-09-24 **i2c y energía**: `ga` en el grupo `i2c` (brillo externo por ddcutil);
+  power-profiles-daemon activo (equilibrado); ambos en la fase «Escritorio» de INSTALL.md.
+- 2026-09-24 **Node para Claude**: `nodejs` de pacman fuera (era dependencia de una compilación
+  de AUR del 23, nada lo usaba); `mise` de pacman con paquete stow `mise/` (node LTS, pnpm con
+  `minimumReleaseAge`, shims en `environment.d`), activado en `60-tools.zsh`; fase
+  «Desarrollo» en INSTALL.md.
 - 2026-09-24 **Limpieza del escritorio**: a la papelera (`trash-put`, recuperable con `trash-restore`)
   las configs GTK y xsettingsd de KDE apartadas, la config de niri anterior, el `settings.toml`
   de noctalia previo a la declarativa y la copia entera de su estado. Quedan los paquetes.

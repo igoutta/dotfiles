@@ -1,0 +1,90 @@
+# ~/.config/ghostty/config.ghostty
+# Ghostty 1.3 lee este nombre (man 5 ghostty). Recarga en caliente: ctrl+shift+,
+# Ver la config efectiva: ghostty +show-config ; validar: ghostty +validate-config
+#
+# Arch: pacman -S ghostty. Fedora: COPR pgdev/ghostty. Ubuntu: no está en apt, .deb de
+#   github.com/mkasberg/ghostty-ubuntu. La ruta de config es la misma en las tres.
+
+# ---------- Tema ----------
+# Lo genera noctalia en themes/noctalia (directorio real, fuera del repo) y lo recarga
+# solo al cambiar de paleta. Su apply.sh busca esta línea EXACTA y, si no la encuentra,
+# la añade al final del archivo: no cambiarla ni ponerle comentario detrás.
+theme = noctalia
+
+# ---------- Fuente ----------
+# FiraCode Nerd Font Mono: iconos para starship, eza y fastfetch (pacman -S ttf-firacode-nerd).
+# Ubuntu/Fedora: no está empaquetada; descargar de nerdfonts.com a ~/.local/share/fonts.
+font-family = FiraCode Nerd Font Mono
+font-size = 12
+# Ligaduras de FiraCode (=> -> !=) activas por defecto y queridas; quitarlas sería font-feature = -calt
+
+# ---------- Ventana ----------
+# Sin decoración del cliente: los bordes los pondrá niri cuando tenga prefer-no-csd
+# activo (hoy está comentado en su config; pendiente en TODO.md, niri + noctalia).
+window-decoration = none
+window-padding-x = 8
+window-padding-y = 6
+window-padding-balance = true
+window-inherit-working-directory = true
+# Transparencia sobre el negro de noctalia. niri no desenfoca, así que no muy baja:
+# 1 = opaco, 0.85 = se intuye el fondo sin perder legibilidad.
+background-opacity = 0.8
+
+# ---------- Cursor ----------
+# Bloque fijo: el más fácil de encontrar de un vistazo. La shell integration lo cambia a
+# barra mientras se escribe en el prompt, y starship marca el modo vi con ❯/❮.
+cursor-style = block
+cursor-style-blink = false
+
+# ---------- Shell ----------
+# zsh se detecta solo. ssh-env y ssh-terminfo: al entrar por SSH a una máquina sin el
+# terminfo xterm-ghostty, lo copia (necesita infocmp/tic allí) y evita el "unknown
+# terminal" que rompe colores y teclas. sudo conserva TERMINFO al hacer sudo.
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo,path
+
+# ---------- Portapapeles y ratón ----------
+# Seleccionar con el ratón copia al portapapeles del sistema (ctrl+shift+v) además del
+# primario (botón central). Con "true" iría solo al primario.
+copy-on-select = clipboard
+clipboard-paste-protection = true
+mouse-hide-while-typing = true
+# Cerrar sin preguntar (ctrl+shift+w pestaña, ctrl+shift+q salir, alt+f4 ventana, o `exit`).
+confirm-close-surface = false
+
+# ---------- Teclas ----------
+# Regla: dedos cerca. Los atajos por defecto de ghostty son ctrl+shift+letra (copiar,
+# pegar, pestañas, buscar) y no chocan con los de zsh (65-keybinds.zsh), que usa
+# Alt+letra y Esc. ghostty se queda Alt+1..9 (ir a pestaña) y alt+f4. La terminal la
+# abre niri con super+t.
+#
+# Splits y pestañas con PREFIJO, como tmux: ctrl+espacio y luego UNA letra mnemónica.
+# ctrl+espacio no hace nada útil en zsh (set-mark-command) y no requiere shift en el
+# teclado la-latin1. La chuleta: `keys ghostty` en zsh (CHEATSHEET.md junto a este archivo), o `ghostty +list-keybinds`.
+# v: vertical (lado a lado)
+keybind = ctrl+space>v=new_split:right
+# s: split horizontal (arriba/abajo)
+keybind = ctrl+space>s=new_split:down
+# h j k l: moverse como en vim/helix
+keybind = ctrl+space>h=goto_split:left
+keybind = ctrl+space>j=goto_split:down
+keybind = ctrl+space>k=goto_split:up
+keybind = ctrl+space>l=goto_split:right
+# z: zoom al split actual y volver
+keybind = ctrl+space>z=toggle_split_zoom
+# e: equalizar tamaños
+keybind = ctrl+space>e=equalize_splits
+# x: cerrar split (pide confirmación)
+keybind = ctrl+space>x=close_surface
+# t: pestaña nueva
+keybind = ctrl+space>t=new_tab
+# n / p: pestaña siguiente / anterior
+keybind = ctrl+space>n=next_tab
+keybind = ctrl+space>p=previous_tab
+# r: recargar esta config
+keybind = ctrl+space>r=reload_config
+# Redimensionar sin tres modificadores (por defecto era super+ctrl+shift+flechas):
+keybind = alt+shift+arrow_up=resize_split:up,10
+keybind = alt+shift+arrow_down=resize_split:down,10
+keybind = alt+shift+arrow_left=resize_split:left,10
+keybind = alt+shift+arrow_right=resize_split:right,10

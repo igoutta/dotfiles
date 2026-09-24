@@ -10,7 +10,9 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 |---|---|
 | `zsh/` | Shell: `.zshenv`, `.zshrc` modular (`conf.d/NN-*.zsh`), config por máquina en `hosts/`, prompt `starship.toml`, `CHEATSHEET.md` |
 | `atuin/` | Historial de shell sincronizable |
-| `fastfetch/` | Banner de sistema, con ASCII e imágenes propias |
+| `fastfetch/` | Banner de sistema; logos de texto en `text/` (`.txt`/`.ansi`) e imágenes; README propio |
+| `ghostty/` | Terminal: fuente, ventana para niri, shell integration y teclas; el tema lo pone noctalia |
+| `tealdeer/` | Cliente tldr (`Alt-h` en zsh) con caché automática |
 | `etc/` | Archivos del sistema fuera de `$HOME` (hoy `/etc/zsh/zshenv`). **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |

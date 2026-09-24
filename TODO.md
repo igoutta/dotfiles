@@ -4,7 +4,7 @@ Cada tarea vive en una sola sección. Dentro de cada sección, el orden es la pr
 terminado baja a «Hecho» con fecha. Lo de «Sistema» se hace en la máquina y, a la vez, se
 escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
-**En curso:** fastfetch (ASCII) → zsh segunda vuelta → ghostty.
+**En curso:** ghostty (probar unos días) → zsh segunda vuelta.
 
 ## Sistema
 
@@ -51,17 +51,20 @@ escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
 ## Dotfiles
 
-- [ ] **fastfetch**: pasar a ASCII (`ascii/longinus.txt` recién añadido) con colores;
-      setup final.
 - [ ] **zsh, segunda vuelta**: usarlo unos días y anotar aquí la fricción real; luego
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
-- [ ] **ghostty**: paquete stow y arreglar el setup (fuente con iconos, colores de
-      noctalia, teclas coherentes con `65-keybinds.zsh`).
+- [~] **ghostty**: paquete stow hecho el 2026-09-23 (fuente Nerd, padding, sin CSD para
+      niri, shell integration con ssh-terminfo, copy-on-select al portapapeles, resize de
+      splits sin tres modificadores). Falta usarlo unos días.
 - [ ] **rust-motd**: paquete stow y que funcione al entrar por SSH, donde hoy no hay banner
       (fastfetch se salta en SSH desde `80-fastfetch.zsh`).
 - [ ] **kitty**: paquete stow cuando llegue (mismo `^H` para Ctrl-Backspace que ghostty).
 - [ ] **yazi**: paquete stow y arreglar la configuración.
-- [ ] **niri + noctalia**: paquetes stow y ajustar.
+- [ ] **niri + noctalia**: paquetes stow y ajustar. Hoy están configurados pobremente:
+      niri con la plantilla por defecto (`prefer-no-csd` comentado, aunque ghostty ya
+      asume `window-decoration = none`), y `~/.config/noctalia` vacío, con todo en
+      `~/.local/state`. Decidir aquí también el tema de ghostty, que hoy lo impone noctalia
+      y no convence.
 - [ ] **starship**: rehacer la configuración desde cero.
 - [ ] **atuin**: mejorar, solo si algo molesta al usarlo.
 - [ ] **nvim**: nunca configurado; decidir si se usa junto a Helix.
@@ -88,3 +91,5 @@ escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
   root, paquetes renombrados, reflector); rEFInd a `docs/refind.md`; sección «Dotfiles»
   con stow y `etc/zsh/zshenv`.
 - 2026-09-23 **tealdeer**: paquete stow con caché automática; `Alt-h` en zsh.
+- 2026-09-23 **fastfetch**: logo de texto (The Legend of Zelda) centrado, colección en
+  `text/` con `.txt`/`.ansi`, README del paquete.

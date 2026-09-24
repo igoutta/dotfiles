@@ -1,0 +1,177 @@
+// Teclas. Mod = Super (niri corre en TTY, no anidado). Regla: dedos cerca, nada de tres
+// modificadores. Patrón: Mod = foco · Mod+Ctrl = mover dentro del monitor ·
+// Mod+Shift = otro monitor (foco) o workspace (mover) · Mod+Alt = mover a otro monitor.
+// Lista viva: Mod+F1  ·  Chuleta: `keys niri`.
+//
+// Teclado latam: niri compara con la tecla SIN modificadores, así que un atajo solo puede
+// usar símbolos que en latam tengan tecla propia. / es Shift+7, = es Shift+0 y [ ] son
+// AltGr+8/9: los binds de la plantilla con Slash, Equal y Bracket* no se pueden pulsar
+// aquí. Se usan Plus (tecla propia a la derecha de la ´), Comma, Period, Minus y F1.
+// Portátil TUF F15: Home, End, Page_Up y Page_Down son Fn+flechas, sin tecla propia, así
+// que tampoco se usan: primera/última columna en A/E (como Ctrl+A/E en la shell) y
+// workspaces en U/I.
+//
+// Mod+F1 muestra una lista fija de acciones con títulos en inglés; hotkey-overlay-title
+// los pone en español (o null los oculta). Basta ponerlo en un bind por acción.
+binds {
+    // ---------- noctalia ----------
+    Mod+F1 hotkey-overlay-title="Esta lista de teclas" { show-hotkey-overlay; }
+    Mod+Shift+7 hotkey-overlay-title=null { show-hotkey-overlay; }
+    Mod+Space hotkey-overlay-title="Lanzador" { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Mod+S hotkey-overlay-title="Centro de control" { spawn-sh "noctalia msg panel-toggle control-center"; }
+    Mod+N hotkey-overlay-title="Notificaciones" { spawn-sh "noctalia msg panel-toggle notification-history"; }
+    Mod+Shift+S hotkey-overlay-title="Ajustes de noctalia" { spawn-sh "noctalia msg settings-toggle"; }
+    Alt+Tab hotkey-overlay-title="Selector de ventanas" { spawn-sh "noctalia msg window-switcher"; }
+
+    // ---------- programas ----------
+    Mod+T hotkey-overlay-title="Terminal: ghostty" { spawn "ghostty"; }
+    // Bloqueo por noctalia (antes swaylock, que no está instalado).
+    Mod+Alt+Escape hotkey-overlay-title="Bloquear pantalla" { spawn-sh "noctalia msg session lock"; }
+
+    // ---------- teclas multimedia (funcionan con la pantalla bloqueada) ----------
+    XF86AudioRaiseVolume  hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg volume-up"; }
+    XF86AudioLowerVolume  hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg volume-down"; }
+    XF86AudioMute         hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg volume-mute"; }
+    XF86AudioMicMute      hotkey-overlay-title=null allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+    XF86MonBrightnessUp   hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg brightness-up"; }
+    XF86MonBrightnessDown hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg brightness-down"; }
+    // Reproducción por noctalia (antes playerctl, que no está instalado).
+    XF86AudioPlay hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg media toggle"; }
+    XF86AudioStop hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg media stop"; }
+    XF86AudioPrev hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg media previous"; }
+    XF86AudioNext hotkey-overlay-title=null allow-when-locked=true { spawn-sh "noctalia msg media next"; }
+
+    // ---------- ventanas ----------
+    Mod+O hotkey-overlay-title="Vista general" repeat=false { toggle-overview; }
+    Mod+Q hotkey-overlay-title="Cerrar ventana" repeat=false { close-window; }
+
+    // Foco: flechas o HJKL.
+    Mod+Left  hotkey-overlay-title="Enfocar la columna de la izquierda" { focus-column-left; }
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
+    Mod+Right hotkey-overlay-title="Enfocar la columna de la derecha" { focus-column-right; }
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-down; }
+    Mod+K     { focus-window-up; }
+    Mod+L     { focus-column-right; }
+
+    // Mover dentro del monitor.
+    Mod+Ctrl+Left  hotkey-overlay-title="Mover la columna a la izquierda" { move-column-left; }
+    Mod+Ctrl+Down  { move-window-down; }
+    Mod+Ctrl+Up    { move-window-up; }
+    Mod+Ctrl+Right hotkey-overlay-title="Mover la columna a la derecha" { move-column-right; }
+    Mod+Ctrl+H     { move-column-left; }
+    Mod+Ctrl+J     { move-window-down; }
+    Mod+Ctrl+K     { move-window-up; }
+    Mod+Ctrl+L     { move-column-right; }
+
+    // Primera / última columna (Home y End van con Fn en este portátil).
+    Mod+A { focus-column-first; }
+    Mod+E { focus-column-last; }
+    Mod+Ctrl+A { move-column-to-first; }
+    Mod+Ctrl+E { move-column-to-last; }
+
+    // ---------- monitores ----------
+    Mod+Shift+Left  { focus-monitor-left; }
+    Mod+Shift+Down  { focus-monitor-down; }
+    Mod+Shift+Up    { focus-monitor-up; }
+    Mod+Shift+Right { focus-monitor-right; }
+    Mod+Shift+H     { focus-monitor-left; }
+    Mod+Shift+J     { focus-monitor-down; }
+    Mod+Shift+K     { focus-monitor-up; }
+    Mod+Shift+L     { focus-monitor-right; }
+
+    // Mover la columna a otro monitor: Mod+Alt (antes Mod+Shift+Ctrl, tres modificadores).
+    Mod+Alt+Left  { move-column-to-monitor-left; }
+    Mod+Alt+Down  { move-column-to-monitor-down; }
+    Mod+Alt+Up    { move-column-to-monitor-up; }
+    Mod+Alt+Right { move-column-to-monitor-right; }
+    Mod+Alt+H     { move-column-to-monitor-left; }
+    Mod+Alt+J     { move-column-to-monitor-down; }
+    Mod+Alt+K     { move-column-to-monitor-up; }
+    Mod+Alt+L     { move-column-to-monitor-right; }
+
+    // ---------- workspaces ----------
+    // Page_Up y Page_Down van con Fn en este portátil: solo U / I.
+    Mod+U hotkey-overlay-title="Workspace de abajo" { focus-workspace-down; }
+    Mod+I hotkey-overlay-title="Workspace de arriba" { focus-workspace-up; }
+    Mod+Ctrl+U hotkey-overlay-title="Mover la columna al workspace de abajo" { move-column-to-workspace-down; }
+    Mod+Ctrl+I hotkey-overlay-title="Mover la columna al workspace de arriba" { move-column-to-workspace-up; }
+    Mod+Shift+U { move-workspace-down; }
+    Mod+Shift+I { move-workspace-up; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+    // ---------- rueda del ratón ----------
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Ctrl+WheelScrollRight { move-column-right; }
+    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
+    Mod+Shift+WheelScrollDown { focus-column-right; }
+    Mod+Shift+WheelScrollUp   { focus-column-left; }
+    // Mover columna con la rueda: Mod+Alt (antes Mod+Ctrl+Shift).
+    Mod+Alt+WheelScrollDown { move-column-right; }
+    Mod+Alt+WheelScrollUp   { move-column-left; }
+
+    // ---------- columnas y tamaños ----------
+    // Columnas en las teclas , y . : sin Shift absorber/expulsar, con Shift meter o sacar
+    // de la columna vecina (en la plantilla eran [ y ], sin tecla propia en latam).
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+    Mod+Shift+Comma  hotkey-overlay-title="Meter o sacar la ventana por la izquierda" { consume-or-expel-window-left; }
+    Mod+Shift+Period hotkey-overlay-title="Meter o sacar la ventana por la derecha" { consume-or-expel-window-right; }
+
+    Mod+R hotkey-overlay-title="Cambiar el ancho preset de la columna" { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-column-width-back; }
+    // Alto preset: Mod+Alt+R (antes Mod+Ctrl+Shift+R).
+    Mod+Alt+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+    Mod+F hotkey-overlay-title="Maximizar la columna" { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Mod+M { maximize-window-to-edges; }
+    Mod+Ctrl+F { expand-column-to-available-width; }
+    Mod+C { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+    // - y + tienen tecla propia en latam (= no).
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Plus  { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Plus  { set-window-height "+10%"; }
+
+    Mod+V       hotkey-overlay-title="Flotar la ventana o volverla al mosaico" { toggle-window-floating; }
+    Mod+Shift+V hotkey-overlay-title="Foco entre flotantes y mosaico" { switch-focus-between-floating-and-tiling; }
+    Mod+W { toggle-column-tabbed-display; }
+
+    // ---------- capturas (internas de niri, sin programas externos) ----------
+    Print hotkey-overlay-title="Captura de una región" { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
+
+    // ---------- sesión ----------
+    // Deja pasar todos los atajos a la app (máquinas virtuales, escritorio remoto).
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+E hotkey-overlay-title="Salir de niri" { quit; }
+    Ctrl+Alt+Delete { quit; }
+    Mod+Shift+P { power-off-monitors; }
+}

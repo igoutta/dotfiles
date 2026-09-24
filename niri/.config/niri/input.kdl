@@ -1,0 +1,22 @@
+// Entrada. Teclado la-latin1 en consola (/etc/vconsole.conf) y latam aquí: mismo teclado,
+// dos nombres. numlock activo al arrancar.
+input {
+    keyboard {
+        xkb {
+            layout "latam"
+        }
+        numlock
+    }
+
+    // Portátil: toque para clic y desplazamiento natural (el contenido sigue al dedo).
+    touchpad {
+        tap
+        natural-scroll
+    }
+
+    // Ratón externo con el mismo sentido de desplazamiento que el touchpad, para no
+    // cambiar de hábito al enchufarlo.
+    mouse {
+        natural-scroll
+    }
+}

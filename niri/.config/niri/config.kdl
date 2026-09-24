@@ -1,0 +1,24 @@
+// ~/.config/niri/config.kdl
+// Punto de entrada: solo carga módulos en orden. Cada módulo lleva sus comentarios.
+// Validar: niri validate            Recargar: niri guarda y recarga solo; si falla, conserva la última válida.
+// Teclas en vivo: Mod+Shift+/       Chuleta: `keys niri` en zsh (CHEATSHEET.md junto a este archivo).
+// Plantilla de referencia con todas las opciones: /usr/share/doc/niri/default-config.kdl
+//
+// Arch: pacman -S niri xwayland-satellite. Fedora: COPR yalter/niri. Ubuntu: sin paquete
+//   oficial, compilar o PPA de terceros. La ruta de config es la misma en las tres.
+
+include "input.kdl"
+include "outputs.kdl"
+include "layout.kdl"
+include "rules.kdl"
+include "binds.kdl"
+include "startup.kdl"
+
+// Sin decoraciones del cliente: niri pinta el focus-ring y las esquinas (rules.kdl) y las
+// apps no dibujan barra de título. ghostty ya asume esto con window-decoration = none.
+prefer-no-csd
+
+// Colores de focus-ring, border, tab-indicator e insert-hint. Los genera noctalia con la
+// paleta activa y NO está en el repo. La línea debe ir tal cual: el apply.sh de la
+// plantilla niri de noctalia la busca exacta y, si no la encuentra, la añade al final.
+include "noctalia.kdl"

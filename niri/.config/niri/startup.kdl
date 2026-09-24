@@ -1,0 +1,31 @@
+// Arranque, cursor, capturas y depuración.
+
+// La shell (barra, lanzador, notificaciones, fondo, bloqueo). xwayland-satellite no hace
+// falta lanzarlo: niri 26 lo arranca solo.
+spawn-at-startup "noctalia"
+
+// El resumen de teclas (Mod+Shift+/) no se muestra al iniciar sesión.
+hotkey-overlay {
+    skip-at-startup
+}
+
+// Capturas de niri (Print, Ctrl+Print, Alt+Print).
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+// Cursor Adwaita a 24 px: el mismo que declara el paquete gtk. environment lo exporta a
+// las apps para que Xwayland y las que no leen gsettings usen el mismo.
+cursor {
+    xcursor-theme "Adwaita"
+    xcursor-size 24
+}
+
+environment {
+    XCURSOR_THEME "Adwaita"
+    XCURSOR_SIZE "24"
+}
+
+// Algunas apps (noctalia entre ellas) piden el foco con un serial de activación no válido;
+// sin esto niri lo ignora y la ventana no sube.
+debug {
+    honor-xdg-activation-with-invalid-serial
+}

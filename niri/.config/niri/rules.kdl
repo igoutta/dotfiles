@@ -1,0 +1,72 @@
+// Reglas de ventana y de capa, y el desenfoque de fondo.
+
+// Todas las ventanas con esquinas redondeadas de 20 px y recortadas a esa geometría.
+window-rule {
+    geometry-corner-radius 20
+    clip-to-geometry true
+}
+
+// Todas las ventanas con fondo desenfocado. Sin xray: se desenfoca lo que hay detrás,
+// no el fondo de pantalla directamente, que queda más realista.
+window-rule {
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Ventana de ajustes de noctalia: flotante y con tamaño fijo.
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+// Vídeo en ventana flotante (Picture-in-Picture) de Firefox y Zen: que flote.
+window-rule {
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    match app-id=r#"^zen"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// Gestores de contraseñas fuera de las capturas y del compartir pantalla. Desactivado
+// (/-) como venía; quitar el /- para activarlo.
+/-window-rule {
+    match app-id=r#"^org\.keepassxc\.KeePassXC$"#
+    match app-id=r#"^org\.gnome\.World\.Secrets$"#
+    block-out-from "screen-capture"
+}
+
+// Capas de noctalia. El fondo de la vista general (overview) se coloca dentro del backdrop.
+layer-rule {
+    match namespace="^noctalia-backdrop"
+    place-within-backdrop true
+}
+
+// Barra, notificaciones, dock, paneles y OSD de noctalia: sin xray. Noctalia publica sus
+// regiones de desenfoque sola cuando el compositor ofrece ext-background-effects.
+layer-rule {
+    match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+    background-effect {
+        xray false
+    }
+}
+
+// Selector de ventanas (Alt+Tab) de noctalia: desenfocado, sin xray.
+layer-rule {
+    match namespace="noctalia-window-switcher"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Desenfoque global. Menos pasadas que el default (3) para gastar menos GPU; algo de
+// grano para que no se vea plano; saturación neutra para no alterar la paleta.
+blur {
+    passes 2
+    offset 3.0
+    noise 0.03
+    saturation 1.0
+}

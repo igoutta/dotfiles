@@ -1,0 +1,31 @@
+// Disposición de columnas.
+layout {
+    // Separación entre ventanas y con el borde de la pantalla, en píxeles lógicos.
+    gaps 16
+
+    // La columna enfocada no se recentra sola: se desplaza solo cuando sale de la vista.
+    center-focused-column "never"
+
+    // Anchos que recorre Mod+R (y Mod+Shift+R al revés).
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    // Ancho con el que abre una ventana nueva.
+    default-column-width { proportion 0.5; }
+
+    // Anillo de foco de 4 px. Sin colores aquí: los pone noctalia.kdl con la paleta activa
+    // y sustituye lo que se escriba en este bloque.
+    focus-ring {
+        width 4
+    }
+
+    // Borde apagado: con el focus-ring basta y no roba espacio. Se deja el ancho por si
+    // se enciende.
+    border {
+        off
+        width 4
+    }
+}

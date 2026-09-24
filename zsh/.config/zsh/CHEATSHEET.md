@@ -2,12 +2,12 @@
 
 Regla: los dedos no viajan. Una tecla, un acorde Ctrl/Alt con una letra cercana, o la
 misma tecla repetida (Esc Esc). Nunca "acorde + escribir una palabra". Ver `conf.d/65-keybinds.zsh`.
-Mostrar este archivo: `keys`.
+Mostrar este archivo: `keys zsh`. Todas las chuletas (una por paquete stow): `keys`.
 
 ## Modos
 
 | Tecla | Acción |
-|---|---|
+| --- | --- |
 | `Esc` | Entra en modo comando vi (el prompt cambia a `❮`) |
 | `i` `a` `I` `A` | Vuelve a modo inserción (teclado emacs) |
 | `v` (en modo vi) | Modo visual de zsh (no abre el editor; para eso `Alt-e`) |
@@ -15,7 +15,7 @@ Mostrar este archivo: `keys`.
 ## Edición
 
 | Tecla | Acción |
-|---|---|
+| --- | --- |
 | `Alt-e` | Edita la línea en Helix (`$EDITOR`); al guardar y salir vuelve al prompt |
 | `Alt-s` | Antepone `sudo` a la línea actual (o a la última ejecutada si está vacía). En modo vi también `Esc Esc`, o sea `Esc Esc Esc` desde inserción |
 | `Alt-h` | Página tldr del comando que estás escribiendo (man si no hay tldr); la línea vuelve después |
@@ -35,7 +35,7 @@ Las palabras se cortan en `/ . - _`, así que `Ctrl-W` borra un componente de ru
 ## Historial (atuin)
 
 | Tecla | Acción |
-|---|---|
+| --- | --- |
 | `Ctrl-R` | Búsqueda interactiva en atuin (también en modo vi) |
 | `↑` | Historial filtrado por lo ya escrito (atuin) |
 | `Ctrl-P` / `Ctrl-N` | Historial de zsh sin atuin, anterior / siguiente |
@@ -45,7 +45,7 @@ Las palabras se cortan en `/ . - _`, así que `Ctrl-W` borra un componente de ru
 ## Completado (fzf-tab) y sugerencias
 
 | Tecla | Acción |
-|---|---|
+| --- | --- |
 | `Tab` | Menú fzf-tab; `Tab` de nuevo acepta |
 | `<` / `>` | Cambia de grupo dentro del menú |
 | `ruta/**Tab` | Buscador de archivos de fzf en lugar del menú |
@@ -66,7 +66,7 @@ Las palabras se cortan en `/ . - _`, así que `Ctrl-W` borra un componente de ru
 ## Alias (de dónde salen)
 
 | Origen | Ejemplos | Listarlos |
-|---|---|---|
+| --- | --- | --- |
 | `70-aliases.zsh` | `grep`→`rg`, `glog`, `gadog`, `dotfiles`, `dots`, `keys`, `compreset` | `bat $ZDOTDIR/conf.d/70-aliases.zsh` |
 | OMZ git | `g`, `ga`, `gc`, `gp`, `gst`, `gco`… | `alias \| rg '^g'` |
 | OMZ directories | `..`, `...`, `d`, `1`…`9` | `alias \| rg "^\.\."` |
@@ -77,7 +77,7 @@ Las palabras se cortan en `/ . - _`, así que `Ctrl-W` borra un componente de ru
 ## Mantenimiento
 
 | Comando | Cuándo |
-|---|---|
+| --- | --- |
 | `compreset` | Un paquete recién instalado no completa (la caché dura 24 h) |
 | `zinit update` | Actualizar plugins |
 | `zinit delete --clean` | Borrar clones de plugins que ya no están en la config |

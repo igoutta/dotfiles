@@ -18,8 +18,21 @@ alias gadog='PAGER="less -F -X" git log --all --decorate --oneline --graph'
 alias dotfiles='git -C $HOME/dotfiles'
 alias dots='cd $HOME/dotfiles'
 
-# Cheatsheet of keys and aliases (CHEATSHEET.md next to this config)
-alias keys='${commands[bat]:-cat} --language=markdown --style=plain $ZDOTDIR/CHEATSHEET.md'
+# keys [app]: cheatsheets. Every stow package keeps its own CHEATSHEET.md next to its
+# config, so they land in $XDG_CONFIG_HOME/<app>/CHEATSHEET.md. No argument shows all
+# of them, zsh first; `keys ghostty` shows one.
+keys() {
+    local -a files
+    files=("$ZDOTDIR/CHEATSHEET.md" "$XDG_CONFIG_HOME"/*/CHEATSHEET.md(N))
+    typeset -U files
+    (( $# )) && files=("$XDG_CONFIG_HOME/$1/CHEATSHEET.md")
+    [[ -f $files[1] ]] || { print -u2 "keys: no hay cheatsheet para '$1'"; return 1 }
+    if (( $+commands[bat] )); then
+        bat --language=markdown --style=header -- $files
+    else
+        cat -- $files
+    fi
+}
 
 # Completion cache: compinit reuses the dump for 24 h (see 40-completion.zsh), so a
 # freshly installed package's completions show up after this, or tomorrow.

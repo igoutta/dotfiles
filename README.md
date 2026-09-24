@@ -36,8 +36,11 @@ descarga los plugins; `keys` muestra teclas y alias.
 
 - **Solo Arch**, sin ramas para otras distros. Cada línea específica de Arch lleva un
   comentario con cómo adaptarla a Ubuntu y Fedora (paquete, nombre del binario, ruta).
-- **Atajos de una sola pulsación.** Nada de secuencias tipo `Esc Esc`; los solapamientos
-  entre herramientas se resuelven en un solo sitio (`zsh/.config/zsh/conf.d/65-keybinds.zsh`).
+- **Dedos cerca.** Teclas sueltas, acordes con letras cercanas o la misma tecla repetida;
+  nunca acorde y luego escribir una palabra. Los solapamientos se resuelven en un solo
+  sitio (`zsh/.config/zsh/conf.d/65-keybinds.zsh`).
+- **Una chuleta por paquete.** Cada paquete con teclas lleva su `CHEATSHEET.md` junto a la
+  config; `keys` en zsh las muestra todas, `keys <app>` una.
 - **Por máquina, versionado:** `zsh/.config/zsh/hosts/<hostname>.zsh` (rutas de SDKs,
   alias raros). **Secretos:** `local.zsh` en el mismo directorio, ignorado por git.
 - **Herramientas del sistema, no del gestor de plugins.** starship, atuin, zoxide, fzf…

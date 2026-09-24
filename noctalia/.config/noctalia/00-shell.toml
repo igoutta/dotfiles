@@ -1,0 +1,77 @@
+# ~/.config/noctalia/00-shell.toml — barra, dock, sonido, brillo, calendario, bloqueo.
+# Noctalia 5 lee todos los *.toml de este directorio (capa declarativa, recarga en caliente)
+# y encima aplica ~/.local/state/noctalia/settings.toml, que escribe su GUI. Lo que se
+# quiera conservar va aquí; el settings.toml es desechable (ver README.md).
+# Arch: pacman -S noctalia. Fedora/Ubuntu: sin paquete oficial; releases de GitHub.
+
+[shell]
+# Fuente de la barra con iconos (misma familia que la terminal).
+font_family = "FiraCode Nerd Font Ret"
+lang = "en"
+# Iconos de app teñidos con la paleta; ventana de ajustes translúcida.
+app_icon_colorize = true
+settings_window_translucent = true
+# En la vista general de niri, escribir lanza el buscador de apps.
+niri_overview_type_to_launch_enabled = true
+password_style = "random"
+external_ip_enabled = true
+screen_time_enabled = true
+telemetry_enabled = true
+
+[shell.launcher]
+app_grid = true
+
+[shell.screenshot]
+confirm_region = true
+remember_last_region = true
+
+# Barra: izquierda lanzador, fondo de vídeo, fondo y workspaces; derecha estado y sesión.
+# Sin el widget "bar" del plugin niri-displays, que ya no se usa (outputs en niri).
+[bar.default]
+start = [ "launcher", "mpvpaper", "wallpaper", "workspaces" ]
+end = [
+    "media",
+    "tray",
+    "notifications",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "battery",
+    "control-center",
+    "session",
+]
+
+[dock]
+enabled = true
+reserve_space = false
+show_dots = true
+smart_auto_hide = true
+
+[audio]
+enable_overdrive = true
+enable_sounds = true
+
+# Brillo del monitor externo por DDC/CI (ddcutil). Requiere estar en el grupo i2c: TODO.md.
+[brightness]
+enable_ddcutil = true
+
+[battery]
+warning_threshold = 20
+
+[calendar]
+
+[control_center.calendar]
+show_week_numbers = true
+
+[location]
+auto_locate = true
+
+[nightlight]
+enabled = true
+
+# Pantalla de bloqueo: fondo desenfocado. La posición de los widgets se edita con el ratón
+# y vive en settings.toml ([lockscreen_widgets]); no se declara aquí.
+[lockscreen]
+blurred_desktop = true

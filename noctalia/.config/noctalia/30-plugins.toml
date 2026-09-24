@@ -1,0 +1,26 @@
+# ~/.config/noctalia/30-plugins.toml — plugins y sus ajustes.
+# Los plugins se descargan a ~/.local/state/noctalia/plugins (estado, fuera del repo);
+# aquí solo se declara cuáles están activos y su configuración.
+# Fuera: raycursive/niri-displays. Solo hacía cambios temporales de pantalla; las salidas
+# están declaradas en niri (outputs.kdl).
+
+[plugins]
+enabled = [
+    "yocraft/battery-widget",
+    "noctalia/screen_recorder",
+    "noctalia/mpvpaper",
+    "yuuto/arch-updater",
+]
+
+# Fondos de vídeo, uno por salida. Mientras haya vídeo, noctalia retira su capa de fondo en
+# esa salida: para volver a imágenes hay que parar el vídeo (Stop o clear-all; ver README).
+# extract_last_frame (por defecto true) deja un fotograma como fondo al parar.
+[plugin_settings."noctalia/mpvpaper"]
+video_directory = "/home/ga/Videos/Wallpapers"
+
+[plugin_settings."noctalia/screen_recorder"]
+hide_inactive = true
+video_codec = "hevc"
+
+[widget.mpvpaper]
+type = "noctalia/mpvpaper:mpvpaper"

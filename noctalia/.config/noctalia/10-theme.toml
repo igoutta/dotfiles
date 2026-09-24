@@ -1,0 +1,24 @@
+# ~/.config/noctalia/10-theme.toml — paleta y plantillas.
+
+[theme]
+# Paleta fija de la comunidad: rojo #D95757 y ámbar #E6B450 sobre negro. Antes salía del
+# fotograma del vídeo de fondo (source = "wallpaper", vibrant) y daba verde chillón.
+# Alternativa del mismo estilo: community_palette = "Vesper" (naranja melocotón).
+source = "community"
+community_palette = "Ayu Red"
+mode = "dark"
+# Fondo negro puro en vez del gris oscuro de la paleta (OLED / contraste).
+pure_black_dark = true
+# Reserva si se vuelve a source = "builtin".
+builtin = "Tokyo-Night"
+# Si se vuelve a source = "wallpaper", m3-tonal-spot satura menos que vibrant.
+wallpaper_scheme = "vibrant"
+
+# Plantillas: noctalia escribe un archivo de tema junto a la config de cada app y espera
+# una línea de enganche en su config principal (escrita a mano en el repo, ver README.md).
+# gtk3 y gtk4 → gtk-{3,4}.0/noctalia.css; ghostty → themes/noctalia; niri → noctalia.kdl;
+# btop y helix → themes/. Comunidad: bat. fastfetch NO: su apply.sh usa jq y rompe con
+# los comentarios de config.jsonc.
+[theme.templates]
+builtin_ids = [ "btop", "gtk3", "gtk4", "ghostty", "helix", "niri" ]
+community_ids = [ "bat" ]

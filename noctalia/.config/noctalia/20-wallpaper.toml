@@ -1,0 +1,13 @@
+# ~/.config/noctalia/20-wallpaper.toml — fondos.
+# Los fondos de vídeo los pone el plugin mpvpaper (30-plugins.toml); el fondo estático es el
+# respaldo y la fuente de la paleta si se vuelve a source = "wallpaper".
+# Lo que NO va aquí: [wallpaper.last] y [wallpaper.monitors.*], rutas a capturas en
+# ~/.cache que noctalia reescribe solas.
+
+[wallpaper]
+directory = "/home/ga/Pictures/Wallpapers"
+# Un subdirectorio por salida dentro de directory.
+per_monitor_directories = true
+
+[wallpaper.default]
+path = "/home/ga/Pictures/Wallpapers/wallpapersden.com_firewatch-4k-uhd_3840x2160.jpg"

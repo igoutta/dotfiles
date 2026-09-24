@@ -28,7 +28,7 @@ window-padding-balance = true
 window-inherit-working-directory = true
 # Transparencia sobre el negro de noctalia. niri no desenfoca, así que no muy baja:
 # 1 = opaco, 0.85 = se intuye el fondo sin perder legibilidad.
-background-opacity = 0.8
+background-opacity = 0.5
 
 # ---------- Cursor ----------
 # Bloque fijo: el más fácil de encontrar de un vistazo. La shell integration lo cambia a
@@ -57,6 +57,11 @@ confirm-close-surface = false
 # pegar, pestañas, buscar) y no chocan con los de zsh (65-keybinds.zsh), que usa
 # Alt+letra y Esc. ghostty se queda Alt+1..9 (ir a pestaña) y alt+f4. La terminal la
 # abre niri con super+t.
+#
+# Teclado latam: ghostty compara modificadores + carácter SIN modificadores, así que un
+# atajo solo puede usar símbolos con tecla propia (, . - + ' ¿ y letras/dígitos). De los
+# defaults, ctrl+= (fuente más grande) y super+ctrl+[ ] (saltar de split) nunca se disparan
+# aquí; sus sustitutos son ctrl++ y el prefijo de abajo. ctrl+shift+, (recargar) sí funciona.
 #
 # Splits y pestañas con PREFIJO, como tmux: ctrl+espacio y luego UNA letra mnemónica.
 # ctrl+espacio no hace nada útil en zsh (set-mark-command) y no requiere shift en el

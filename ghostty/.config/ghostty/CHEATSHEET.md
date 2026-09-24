@@ -16,3 +16,5 @@ de verdad: `ghostty +list-keybinds`. Mostrar esto: `keys ghostty`.
 | `Ctrl-Shift-C` / `Ctrl-Shift-V` | Copiar / pegar (seleccionar ya copia al portapapeles) |
 | `Ctrl-Shift-F` | Buscar en la pantalla |
 | `Ctrl-Shift-PgUp` / `PgDn` | Saltar al prompt anterior / siguiente |
+| `Ctrl-+` / `Ctrl--` / `Ctrl-0` | Fuente más grande / más pequeña / tamaño inicial (`Ctrl-=` no existe en latam) |
+| `Ctrl-Shift-,` | Recargar la config (también `Ctrl-Espacio` `r`) |

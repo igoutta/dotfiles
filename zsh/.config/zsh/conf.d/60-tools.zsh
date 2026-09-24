@@ -58,6 +58,12 @@ if (( $+commands[yazi] )); then
     }
 fi
 
+# ---------- mise (node, pnpm y versiones por proyecto) ----------
+# `activate` ajusta PATH al entrar en un directorio con mise.toml. Las apps gráficas usan los
+# shims de ~/.config/environment.d/50-mise.conf (paquete stow mise/).
+#   Fedora/Ubuntu: mise no está en dnf/apt; instalador oficial (https://mise.run) o COPR jdxcode/mise.
+(( $+commands[mise] )) && eval "$(mise activate zsh)"
+
 # ---------- atuin (history database; takes over Ctrl-R and Up) ----------
 # Last on purpose: it must win the Ctrl-R binding over fzf.
 # --disable-ai: atuin ≥ 18.9 otherwise binds "?" on an empty line to its AI assistant.

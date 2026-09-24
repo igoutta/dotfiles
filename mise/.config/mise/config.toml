@@ -1,0 +1,18 @@
+# ~/.config/mise/config.toml — herramientas globales gestionadas por mise.
+# Arch: pacman -S mise. Fedora/Ubuntu: no está en dnf/apt; instalador oficial (https://mise.run)
+# o COPR jdxcode/mise. La primera vez, `mise install` descarga lo declarado aquí.
+# Por proyecto, un mise.toml en su raíz fija otra versión y `mise activate` (zsh) la aplica al
+# entrar en el directorio. Las apps gráficas ven las herramientas por los shims que exporta
+# ~/.config/environment.d/50-mise.conf.
+
+[tools]
+# Node solo para lo que lo exige: servidores MCP y plugins de Claude Code por npx. Claude Code
+# en sí va con instalador nativo. LTS, descargado de nodejs.org con verificación de checksum.
+node = "lts"
+# pnpm en vez de npm: no ejecuta scripts de instalación de dependencias salvo lista blanca y
+# respeta minimumReleaseAge (~/.config/pnpm/config.yaml). Binario precompilado (backend aqua), sin npm.
+pnpm = "latest"
+
+[settings]
+# Respetar .nvmrc / .node-version de proyectos ajenos, no solo mise.toml.
+idiomatic_version_file_enable_tools = ["node"]

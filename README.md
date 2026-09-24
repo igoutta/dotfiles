@@ -16,6 +16,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia |
 | `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
+| `mise/` | Versiones de herramientas: node LTS y pnpm declarados en `config.toml`, `config.yaml` de pnpm con `minimumReleaseAge`, y `environment.d` para que las apps gráficas los vean |
 | `etc/` | Archivos del sistema fuera de `$HOME`: zshenv, pam_env, greetd y su PAM. **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |
@@ -29,7 +30,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 sudo pacman -S --needed stow git
 git clone <url-del-repo> ~/dotfiles && cd ~/dotfiles
 sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise
 ~~~
 
 Ejecuta `stow` siempre desde `~/dotfiles` para que aplique `.stowrc`. Detalles,

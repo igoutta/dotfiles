@@ -575,6 +575,24 @@ noctalia msg greeter-sync                          # primer sync; el greeter sol
 journalctl -b | rg apply-appearance                # comprobación: pkexec ejecutando "--sync"; si no aparece, no se aplicó
 ~~~
 
+# Desarrollo: node con mise
+
+Como usuario con sudo. Claude Code va con instalador nativo y no necesita node; sí lo
+necesitan los servidores MCP y plugins que arrancan con `npx`. Sin `nodejs` ni `npm` de
+pacman: un solo gestor de versiones, fijadas por proyecto.
+
+~~~sh
+# "mise" gestor de versiones (node, pnpm…): descargas con checksum, versión por proyecto en mise.toml, misma
+#   config en cualquier distro. Las herramientas se declaran en el paquete stow mise/ y se instalan con
+#   `mise install` tras el stow (sección Dotfiles). pnpm en vez de npm: no ejecuta scripts de instalación
+#   de dependencias salvo lista blanca, y minimumReleaseAge (config.yaml de pnpm) evita versiones recién
+#   publicadas, la vía de los gusanos de npm de 2025.
+sudo pacman -S --needed mise
+~~~
+
+Ubuntu/Fedora: mise no está en apt ni dnf; instalador oficial (`curl https://mise.run | sh`)
+o el COPR `jdxcode/mise` en Fedora. El resto es idéntico.
+
 # Dotfiles
 
 Ya como usuario, tras el primer arranque. El repo es un árbol de paquetes
@@ -608,7 +626,7 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete
@@ -620,3 +638,7 @@ alias: `keys` (todas) o `keys niri`, `keys ghostty`, `keys noctalia`.
 Noctalia: la primera vez, `noctalia msg plugins update` descarga los plugins declarados en
 `30-plugins.toml`; su ventana de ajustes escribe en `~/.local/state/noctalia/settings.toml`,
 que pisa a la config del repo (ver `noctalia/.config/noctalia/README.md`).
+
+mise: la primera vez, `mise install` descarga node LTS y pnpm, declarados en
+`mise/.config/mise/config.toml`. Las apps gráficas los ven al volver a entrar, por los shims
+que exporta `environment.d`.

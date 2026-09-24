@@ -1,0 +1,8 @@
+# ~/.config/pnpm/config.yaml — ajustes globales de pnpm (pnpm ≥ 10 los lee de aquí, en
+# camelCase; el archivo rc queda solo para registro y credenciales). Mismo sitio en
+# Ubuntu/Fedora ($XDG_CONFIG_HOME/pnpm/config.yaml).
+#
+# No instalar versiones publicadas hace menos de 7 días (10080 min). Los paquetes
+# comprometidos de npm en 2025 se detectaron y retiraron en horas; esperar una semana los
+# deja fuera. Por proyecto se puede bajar en su pnpm-workspace.yaml.
+minimumReleaseAge: 10080

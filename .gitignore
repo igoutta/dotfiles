@@ -3,3 +3,7 @@ zsh/.config/zsh/local.zsh
 .zcompdump*
 .zsh_history
 .zcompcache/
+
+# --- Claude Code ---
+# ajustes de proyecto que crea Claude Code al abrir el repo; hoy vacíos
+.claude/

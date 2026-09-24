@@ -461,12 +461,9 @@ problema; así acabó este sistema con un `.zshrc` de root.
 install -d -o ga -g ga /home/ga/{.config,.config/zsh,.cache,.local,.local/share,.local/state}
 ~~~
 
-~~~sh
-echo 'XDG_CONFIG_HOME DEFAULT=@{HOME}/.config
-XDG_DATA_HOME   DEFAULT=@{HOME}/.local/share
-XDG_STATE_HOME  DEFAULT=@{HOME}/.local/state
-XDG_CACHE_HOME  DEFAULT=@{HOME}/.cache' | tee -a /etc/security/pam_env.conf
-~~~
+Las variables `XDG_*` de sesión (`/etc/security/pam_env.conf`) se instalan desde el repo en la
+sección [Dotfiles](#dotfiles), junto con `/etc/zsh/zshenv`, greetd y PAM. Hasta entonces
+rigen las rutas por defecto, que son las mismas.
 
 El `ZDOTDIR` global (`/etc/zsh/zshenv`) se instala desde el repo en la sección
 [Dotfiles](#dotfiles) del final, una vez clonado.
@@ -514,6 +511,58 @@ git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 yay -S pay-respects mmtui ghostmirror
 ~~~
 
+# Escritorio: niri + noctalia
+
+Como usuario con sudo, tras el primer arranque. Sesión gráfica: niri (compositor Wayland
+de mosaico desplazable) con noctalia como shell (barra, lanzador, notificaciones, fondos,
+bloqueo, capturas, portapapeles) y noctalia-greeter como pantalla de entrada sobre greetd.
+Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
+
+~~~sh
+# "niri" el compositor. "xwayland-satellite" X11 para apps sin Wayland; niri 26 lo arranca solo
+# "greetd" gestor de entrada mínimo; el greeter lo pone noctalia-greeter (AUR, abajo)
+# "gnome-keyring" llavero de secretos y SSH; "seahorse" su interfaz. PAM lo abre al entrar (etc/pam.d/greetd)
+# "xdg-desktop-portal-gnome" y "-gtk" portales: capturas, diálogos de archivo y tema para Flatpak y navegadores
+# "polkit" autorización de acciones privilegiadas (noctalia hace de agente)
+# "adw-gtk-theme" GTK3 con el aspecto de libadwaita; es el que colorea la plantilla gtk3 de noctalia
+# "adwaita-cursors" cursor Adwaita, el mismo que declaran niri (startup.kdl) y gtk (settings.ini)
+sudo pacman -S --needed niri xwayland-satellite \
+                        greetd gnome-keyring seahorse \
+                        xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit \
+                        adw-gtk-theme adwaita-cursors
+~~~
+
+~~~sh
+# "noctalia" la shell. Su config declarativa está en el paquete stow noctalia/ (ver su README.md)
+# "noctalia-greeter" pantalla de entrada con la misma paleta y fondo (noctalia msg greeter-sync)
+# "mpvpaper" fondos de vídeo, uno por salida, gestionados por el plugin mpvpaper de noctalia
+sudo pacman -S --needed noctalia
+yay -S noctalia-greeter mpvpaper
+~~~
+
+Ubuntu/Fedora: niri en Fedora por COPR `yalter/niri`, en Ubuntu sin paquete oficial; noctalia
+y su greeter desde sus releases de GitHub; greetd está en los repos de ambas.
+
+~~~sh
+sudo systemctl enable greetd                       # entra por greetd en el VT 1 (etc/greetd/config.toml)
+systemctl --user enable gnome-keyring-daemon.socket
+sudo localectl set-x11-keymap latam                # teclado para el greeter y X11; niri lleva el suyo en input.kdl
+~~~
+
+Los portales GNOME y las apps libadwaita leen dconf, no `settings.ini`:
+
+~~~sh
+gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
+gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
+gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
+~~~
+
+La configuración de niri, noctalia, gtk y ghostty, y los archivos de sistema de greetd y
+PAM, se despliegan en la sección siguiente. Tras el primer inicio de sesión gráfico, `noctalia
+msg greeter-sync` pasa paleta y fondo al greeter (pide contraseña).
+
 # Dotfiles
 
 Ya como usuario, tras el primer arranque. El repo es un árbol de paquetes
@@ -530,6 +579,9 @@ Archivos del sistema (fuera de `$HOME`, ver `etc/README.md`):
 
 ~~~sh
 sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
+sudo install -Dm644 etc/security/pam_env.conf /etc/security/pam_env.conf
+sudo install -Dm644 etc/greetd/config.toml /etc/greetd/config.toml
+sudo install -Dm644 etc/pam.d/greetd /etc/pam.d/greetd
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`
@@ -543,11 +595,15 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch        # todos los que quieras
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete
 ~~~
 
-Abre una terminal nueva: zinit clona los plugins en el primer arranque. Teclas y alias:
-`keys`.
+Abre una terminal nueva: zinit clona los plugins en el primer arranque. Chuletas de teclas y
+alias: `keys` (todas) o `keys niri`, `keys ghostty`, `keys noctalia`.
+
+Noctalia: la primera vez, `noctalia msg plugins update` descarga los plugins declarados en
+`30-plugins.toml`; su ventana de ajustes escribe en `~/.local/state/noctalia/settings.toml`,
+que pisa a la config del repo (ver `noctalia/.config/noctalia/README.md`).

@@ -638,7 +638,7 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise xdg
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete

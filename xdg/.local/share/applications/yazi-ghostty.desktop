@@ -1,0 +1,12 @@
+# yazi dentro de ghostty para abrir carpetas desde cualquier app (xdg-open, navegadores).
+# La entrada yazi.desktop del paquete lleva Terminal=true y GLib no sabe abrir ghostty sin
+# xdg-terminal-exec; esta la lanza directa. Ubuntu/Fedora: igual.
+[Desktop Entry]
+Type=Application
+Name=yazi (ghostty)
+Comment=Gestor de archivos en la terminal
+Exec=ghostty -e yazi %f
+Icon=yazi
+Terminal=false
+Categories=Utility;FileManager;
+MimeType=inode/directory;

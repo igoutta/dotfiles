@@ -1,0 +1,4 @@
+# ~/.config/xdg-terminals.list — terminal para xdg-terminal-exec: toda app con Terminal=true
+# (GLib ≥ 2.80 lo usa) abre en ghostty. Arch: pacman -S xdg-terminal-exec. Ubuntu/Fedora: mismo
+# archivo; el paquete se llama igual.
+com.mitchellh.ghostty.desktop

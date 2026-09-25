@@ -520,7 +520,7 @@ sudo localectl set-x11-keymap latam,us
 
 ~~~sh
 sudo pacman -S --needed ffmpeg pipewire pipewire-audio pipewire-pulse pipewire-jack wireplumber
-sudo pacman -S --needed hunspell-en_us aspell-en gst-plugins-good icedtea-web gufw dnscrypt-proxy 7zip tar rsync libreoffice-still vlc keepassxc kdeconnect
+sudo pacman -S --needed hunspell-en_us aspell-en gst-plugins-good icedtea-web gufw dnscrypt-proxy 7zip tar rsync vlc keepassxc kdeconnect
 ~~~
 
 ~~~sh

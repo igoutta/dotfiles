@@ -104,10 +104,37 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       para CUDA y juegos (wine, ares); para la salida de vídeo nouveau ya basta.
       Camino si se instala: nvidia-open-dkms, `nvidia-drm.modeset=1`, PRIME render offload;
       envycontrol o supergfxctl solo en modo híbrido, nunca integrated.
-- [ ] **Hibernación**: imposible hoy. Swap de 16 G con clave aleatoria y sin `resume=`.
-      Opciones: swap LUKS con clave fija en la raíz, o swapfile en `@swap` con
-      `resume_offset`. Arrastra el hook `resume`, hoy en `mkinitcpio.conf` antes de
-      `encrypt` y sin poder funcionar; el hook `btrfs` tampoco hace falta.
+- [ ] **Reinstalación de Arch**, al terminar los dotfiles. La guía ya está corregida (2026-09-24):
+      dos particiones (ESP de 1 G en `/efi` y un LUKS2), LVM dentro del LUKS con swap de 34 G
+      redimensionable y raíz Btrfs, `/boot` como directorio de `@` (cifrado y dentro de las
+      instantáneas), ranura PBKDF2 para GRUB y clave de archivo Argon2id en el initramfs para no
+      teclear dos veces, `cryptodisk` antes de `grub-install`, contraseña solo con `[a-z0-9]`
+      porque GRUB teclea en US sin eco. Con eso la hibernación y snapper quedan resueltos de
+      raíz. Antes: copiar `/home` y `~/.ssh` fuera, exportar claves del llavero, lista de
+      paquetes explícitos (`pacman -Qqe`) y probar la guía de cabo a rabo en una VM. Como el
+      `cryptdevice=` va por `PARTLABEL`, `/etc/default/grub` ya no tiene nada de esta máquina:
+      versionarlo en `etc/` al reinstalar.
+      **Al reinstalar, quitar o ajustar lo que solo era de la instalación de 2026-08:**
+      - `etc/pacman.d/hooks/95-bootbackup.hook`, su fila en `etc/README.md`, su línea en la
+        sección Dotfiles y el párrafo «/boot fuera de Btrfs» de `docs/snapper.md`.
+      - La tabla «Punto de partida» de `docs/snapper.md` y la nota del README sobre la máquina
+        actual; el comentario de `91-grub-reinstall.hook` sobre la ESP en `/boot`.
+      - Los ítems de esta lista que sean de esta máquina (greeter, tercer monitor, hibernación).
+      - Comprobar que el `HOOKS` del drop-in y el de la guía siguen siendo el mismo.
+- [ ] **Hibernación**: imposible en esta instalación y no se toca; la reinstalación la trae de
+      serie (swap como volumen lógico dentro del LUKS, `resume=/dev/system/swap`). Descartes
+      para esta máquina, por si vuelve la tentación: `openswap` (AUR, una clave más, 16 G de
+      swap para 32 G de RAM), `sd-encrypt` (rompe el hook overlayfs de snapper, que es de
+      busybox), swapfile (por preferencia), swap nueva encogiendo la raíz (una hora con riesgo
+      para algo que la reinstalación da gratis). Al reinstalar: `suspend-then-hibernate` en
+      logind y en el idle de noctalia.
+- [ ] **Drop-in de mkinitcpio unificado**: el `HOOKS` del repo ya es el definitivo (con `lvm2`,
+      sin `btrfs`), válido también aquí. Reinstalarlo y regenerar: `sudo install -Dm644
+      etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf && sudo mkinitcpio -P`.
+- [ ] **GRUB tras actualizarlo**: hoy grub pasó a 2.16 y la ESP sigue con 2.14 de agosto
+      (`grub-mkconfig` corrió antes de la actualización). Ejecutar una vez `grub-install … --recheck`
+      y `grub-mkconfig`, e instalar `etc/pacman.d/hooks/91-grub-reinstall.hook` para que pase
+      solo en adelante.
 - [ ] **Servicios en la guía**: `bluetooth` y `avahi-daemon` están activos y la guía no los
       activa; añadirlos a los `systemctl enable` del chroot (greetd ya está en «Escritorio»).
 - [ ] **cups**: instalado y apagado. Activar `cups.socket`; avahi-daemon ya está activo.
@@ -175,6 +202,10 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
         las imágenes no se ven hasta parar el vídeo (Stop / `clear-all`); documentado en el
         README de noctalia el 2026-09-24. Falta `sudo pacman -S socat` si se usan presentaciones
         (ya en INSTALL.md) y decidir `extract_last_frame`.
+      - Teclas Fn del TUF, para el futuro: comprobar con `wev` qué keysyms llegan (luz del teclado
+        `XF86KbdBrightnessUp/Down`, touchpad `XF86TouchpadToggle`, cambio de pantalla
+        `XF86Display`, perfil, avión) y atarlas en `binds.kdl`: luz del teclado a `noctalia msg
+        keyboard-backlight-up/down`, las demás a lo que corresponda. Brillo y volumen ya están.
       - Usarlo unos días: paleta Ayu Red vs Vesper, `Mod+Alt+Esc` para bloquear, `Mod+N`
         notificaciones, `Mod+F1` chuleta en pantalla.
       - Pasada visual, con los valores medidos el 2026-09-24. Radios: niri 20 px, barra 12,

@@ -13,7 +13,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `fastfetch/` | Banner de sistema; logos de texto en `text/` (`.txt`/`.ansi`) e imágenes; README propio |
 | `ghostty/` | Terminal: fuente, ventana para niri, shell integration y teclas; el tema lo pone noctalia |
 | `tealdeer/` | Cliente tldr (`Alt-h` en zsh) con caché automática |
-| `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia |
+| `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia. En `.local/bin`, los scripts de proyectar, touchpad y modo avión |
 | `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
 | `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web), `yazi-ghostty.desktop` y `xdg-terminals.list` |

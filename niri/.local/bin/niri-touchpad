@@ -1,0 +1,26 @@
+#!/bin/sh
+# niri-touchpad — apaga o enciende el touchpad (Fn+F10, XF86TouchpadToggle en binds.kdl).
+# niri no tiene una acción para esto: el script crea o borra ~/.config/niri/touchpad-off.kdl,
+# que config.kdl carga con `include optional=true`. niri vigila ese archivo y recarga solo.
+# El bloque touchpad de un include reemplaza entero al de input.kdl, así que con el archivo
+# puesto solo queda `off`; al borrarlo vuelven tap y natural-scroll.
+# El archivo no está en el repo: es estado. Ubuntu/Fedora: igual (niri 26.04 o posterior).
+f="${XDG_CONFIG_HOME:-$HOME/.config}/niri/touchpad-off.kdl"
+
+# Una tecla, un cambio: si llegan dos disparos en menos de medio segundo (una tecla que manda
+# dos eventos, un rebote), el segundo se ignora. flock ordena los dos procesos para que el
+# segundo lea la marca de tiempo que dejó el primero.
+marca="${XDG_RUNTIME_DIR:-/tmp}/niri-touchpad.last"
+exec 9>"$marca.lock"
+flock 9
+ahora=$(date +%s%3N)
+antes=$(cat "$marca" 2>/dev/null || echo 0)
+[ $((ahora - antes)) -lt 500 ] && exit 0
+echo "$ahora" > "$marca"
+if [ -e "$f" ]; then
+    rm -f -- "$f"
+    notify-send -a niri -i input-touchpad "Touchpad encendido"
+else
+    printf '// Creado por niri-touchpad; borrarlo enciende el touchpad.\ninput {\n    touchpad {\n        off\n    }\n}\n' > "$f"
+    notify-send -a niri -i input-touchpad "Touchpad apagado"
+fi

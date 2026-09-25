@@ -19,9 +19,20 @@ primera/última columna en `Mod+A`/`Mod+E` y workspaces en `Mod+U`/`Mod+I`.
 | `Mod+Shift+S` | Ajustes de noctalia |
 | `Mod+Shift+Escape` | Monitor del sistema: CPU, RAM, disco y red (plugin systempulse) |
 | `Mod+Shift+C` | Claude Code: uso, sesiones y CLAUDE.md (plugin claude-cockpit) |
+
+## Pantallas, touchpad y radios
+
+| Tecla | Acción |
+| --- | --- |
+| `Fn+F9` | Proyectar: extender, solo portátil, solo externos, duplicar el portátil |
+| `Fn+F10` | Apagar o encender el touchpad |
+| `Fn+F12` | Modo avión: wifi y bluetooth (lo cambia el kernel; niri avisa) |
+| `Fn+F6` | Apagar las pantallas; se encienden con cualquier tecla o el ratón |
 | `Alt+Tab` | Selector de ventanas |
 | `Mod+Alt+Esc` | Bloquear pantalla |
 | `Mod+T` | Terminal (ghostty) |
+| `Mod+B` | Navegador (Zen); si ya está abierto, lo enfoca |
+| `Mod+D` | Editor (VS Code); si ya está abierto, enfoca la última ventana usada |
 | `Mod+F1` | Lista de teclas en pantalla |
 
 ## Ventanas y foco
@@ -71,5 +82,4 @@ primera/última columna en `Mod+A`/`Mod+E` y workspaces en `Mod+U`/`Mod+I`.
 | Teclas de reproducción | `noctalia msg media …` |
 | `Print` / `Ctrl+Print` / `Alt+Print` | Captura de región / pantalla / ventana → `~/Pictures/Screenshots` |
 | `Mod+Esc` | Dejar pasar todos los atajos a la app (VM, escritorio remoto) |
-| `Mod+Shift+P` | Apagar monitores |
 | `Mod+Shift+E` o `Ctrl+Alt+Supr` | Salir de niri |

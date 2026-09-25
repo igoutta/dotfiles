@@ -271,10 +271,17 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
         las imágenes no se ven hasta parar el vídeo (Stop / `clear-all`); documentado en el
         README de noctalia el 2026-09-24. Falta `sudo pacman -S socat` si se usan presentaciones
         (ya en INSTALL.md) y decidir `extract_last_frame`.
-      - Teclas Fn del TUF, para el futuro: comprobar con `wev` qué keysyms llegan (luz del teclado
-        `XF86KbdBrightnessUp/Down`, touchpad `XF86TouchpadToggle`, cambio de pantalla
-        `XF86Display`, perfil, avión) y atarlas en `binds.kdl`: luz del teclado a `noctalia msg
-        keyboard-backlight-up/down`, las demás a lo que corresponda. Brillo y volumen ya están.
+      - Teclas Fn del TUF, hechas el 2026-09-25: Fn+F9 proyectar, Fn+F10 touchpad y Fn+F12 aviso
+        del modo avión, sin atajos Mod repetidos (una tecla por acción); scripts en `niri/.local/bin`.
+        Cadena verificada sin pulsar: keymap de asus-nb-wmi (0x61, 0x6B, 0x88), udev sin remapeos
+        para este modelo y `xkbcli compile-keymap --layout latam` (XF86Display, XF86TouchpadToggle,
+        XF86RFKill). Fn+F12 la invierte el kernel (`CONFIG_RFKILL_INPUT=y`). Falta pulsarlas una
+        vez (hecho: Fn+F9 y Fn+F12 responden; Fn+F10 también, solo). Luz del
+        teclado y Fn+F5 los hace asus-wmi. Duplicar pantalla necesita `wl-mirror` (instalado
+        el 2026-09-25). Fn+F6, pantalla con X, apaga las pantallas: XF86ScreenSaver o
+        XF86DisplayToggle según el firmware; una pulsación registrada dijo XF86ScreenSaver y
+        queda solo esa. Fuera `Mod+Shift+P`, que venía de la plantilla de niri y duplicaba la
+        misma acción. Mod+B abre o enfoca Zen y Mod+D, VS Code (`niri-focus-or-spawn`).
       - Usarlo unos días: paleta Ayu Red vs Vesper, `Mod+Alt+Esc` para bloquear, `Mod+N`
         notificaciones, `Mod+F1` chuleta en pantalla.
       - Pasada visual, con los valores medidos el 2026-09-24. Radios: niri 20 px, barra 12,

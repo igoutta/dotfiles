@@ -1,0 +1,15 @@
+#!/bin/sh
+# niri-focus-or-spawn APP_ID COMANDO… — enfoca la ventana de esa app que se usó por última vez
+# o, si no hay ninguna abierta, lanza el comando. Así Mod+B (Zen) y Mod+D (VS Code) no apilan
+# ventanas nuevas en cada pulsación (binds.kdl). APP_ID es el de `niri msg windows`.
+# Necesita jq. Ubuntu/Fedora: igual.
+app="$1"; shift
+id=$(niri msg --json windows | jq -r --arg a "$app" '
+    [.[] | select(.app_id == $a)]
+    | max_by((.focus_timestamp.secs // 0) * 1000000000 + (.focus_timestamp.nanos // 0))
+    | .id // empty')
+if [ -n "$id" ]; then
+    exec niri msg action focus-window --id "$id"
+else
+    exec "$@"
+fi

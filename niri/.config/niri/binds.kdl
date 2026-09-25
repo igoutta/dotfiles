@@ -26,8 +26,30 @@ binds {
     Mod+Shift+C hotkey-overlay-title="Claude Code: uso y sesiones" { spawn-sh "noctalia msg panel-toggle nightwatch75/claude-cockpit:panel"; }
     Alt+Tab hotkey-overlay-title="Selector de ventanas" { spawn-sh "noctalia msg window-switcher"; }
 
+    // ---------- pantallas, touchpad y radios ----------
+    // Una tecla por acción: las Fn del TUF F15, sin atajos Mod repetidos (un duplicado hizo
+    // que Fn+F10 apagara y encendiera el touchpad a la vez). Scripts en niri/.local/bin. De la
+    // tecla al keysym, verificado el 2026-09-25 con el keymap de asus-nb-wmi y
+    // `xkbcli compile-keymap --layout latam`:
+    //   Fn+F9  código WMI 0x61…  KEY_SWITCHVIDEOMODE   XF86Display
+    //   Fn+F10 código WMI 0x6B   KEY_TOUCHPAD_TOGGLE   XF86TouchpadToggle
+    //          (manda además Ctrl+Super+F24, la vía de Windows 11; no se ata)
+    //   Fn+F12 código WMI 0x88   KEY_RFKILL            XF86RFKill (el kernel ya invierte las radios)
+    //   Fn+F6  (pantalla con X)  código WMI 0x33/0x35  KEY_SCREENLOCK  XF86ScreenSaver
+    //          (comprobado con una pulsación el 2026-09-25; el otro candidato, 0x2d
+    //          XF86DisplayToggle, no llega en este firmware)
+    // repeat=false: mantener pulsado no debe repetir la acción.
+    XF86Display hotkey-overlay-title="Proyectar (Fn+F9)" repeat=false { spawn "niri-project"; }
+    XF86TouchpadToggle hotkey-overlay-title="Apagar o encender el touchpad (Fn+F10)" repeat=false { spawn "niri-touchpad"; }
+    XF86RFKill hotkey-overlay-title="Modo avión (Fn+F12)" repeat=false { spawn "niri-airplane"; }
+    XF86ScreenSaver hotkey-overlay-title="Apagar las pantallas (Fn+F6)" repeat=false { power-off-monitors; }
+
     // ---------- programas ----------
     Mod+T hotkey-overlay-title="Terminal: ghostty" { spawn "ghostty"; }
+    // Navegador y editor: si ya hay una ventana, la enfocan (la última usada) en vez de abrir
+    // otra; niri-focus-or-spawn en niri/.local/bin. B de browser, D de desarrollo.
+    Mod+B hotkey-overlay-title="Navegador: Zen" repeat=false { spawn "niri-focus-or-spawn" "zen" "zen-browser"; }
+    Mod+D hotkey-overlay-title="Editor: VS Code" repeat=false { spawn "niri-focus-or-spawn" "com.microsoft.VSCode" "code"; }
     // Bloqueo por noctalia (antes swaylock, que no está instalado).
     Mod+Alt+Escape hotkey-overlay-title="Bloquear pantalla" { spawn-sh "noctalia msg session lock"; }
 
@@ -176,5 +198,4 @@ binds {
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
     Mod+Shift+E hotkey-overlay-title="Salir de niri" { quit; }
     Ctrl+Alt+Delete { quit; }
-    Mod+Shift+P { power-off-monitors; }
 }

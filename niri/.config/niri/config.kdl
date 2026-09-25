@@ -8,6 +8,9 @@
 //   oficial, compilar o PPA de terceros. La ruta de config es la misma en las tres.
 
 include "input.kdl"
+// Touchpad apagado: lo crea y lo borra niri-touchpad (niri/.local/bin). Opcional: si no existe,
+// el touchpad va como dice input.kdl. No está en el repo, es estado. Necesita niri 26.04.
+include optional=true "touchpad-off.kdl"
 include "outputs.kdl"
 include "layout.kdl"
 include "rules.kdl"

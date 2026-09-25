@@ -559,11 +559,14 @@ Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
 # "ffmpegthumbnailer" y "webp-pixbuf-loader" miniaturas de vídeo y webp en Nautilus y diálogos GTK
 # "wl-clipboard" wl-copy/wl-paste para Helix, yazi y scripts (el historial lo lleva noctalia)
 # "xdg-terminal-exec" GLib abre en ghostty toda app con Terminal=true (yazi como gestor de carpetas); paquete stow xdg
+# "wl-mirror" duplicar el portátil en un monitor externo desde Fn+F9 (niri-project); niri no duplica salidas
+# "jq" lo usan niri-project y el plugin claude-cockpit de noctalia para leer JSON
 sudo pacman -S --needed niri xwayland-satellite \
                         greetd gnome-keyring seahorse \
                         xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit polkit-gnome \
                         adw-gtk-theme adwaita-cursors power-profiles-daemon ddcutil \
-                        udiskie ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp wl-clipboard xdg-terminal-exec
+                        udiskie ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp wl-clipboard xdg-terminal-exec \
+                        wl-mirror jq
 ~~~
 
 ~~~sh

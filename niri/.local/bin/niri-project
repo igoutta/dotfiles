@@ -1,0 +1,45 @@
+#!/bin/sh
+# niri-project — menú de proyección, como Win+P (Fn+F9, XF86Display en binds.kdl). Elige en
+# el lanzador de noctalia (noctalia dmenu) entre extender, solo el portátil, solo los externos
+# o duplicar el portátil en un externo. Encender y apagar salidas es con `niri msg output`,
+# que dura hasta la siguiente recarga de la config de niri; outputs.kdl sigue mandando.
+# Duplicar necesita wl-mirror (fase «Escritorio» de INSTALL.md); sin él no sale esa opción.
+# Necesita jq. Ubuntu/Fedora: wl-mirror y jq están en sus repos.
+# Un solo menú a la vez: Fn+F9 puede llegar dos veces (por el driver WMI de ASUS y por el
+# Video Bus de ACPI, los dos anuncian KEY_SWITCHVIDEOMODE).
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/niri-project.lock"
+flock -n 9 || exit 0
+
+panel=eDP-1
+externos=$(niri msg --json outputs | jq -r --arg p "$panel" 'keys[] | select(. != $p)')
+
+opciones="Extender a todas las pantallas
+Solo el portátil"
+[ -n "$externos" ] && opciones="$opciones
+Solo los monitores externos"
+if command -v wl-mirror >/dev/null 2>&1; then
+    for s in $externos; do opciones="$opciones
+Duplicar el portátil en $s"; done
+    pgrep -x wl-mirror >/dev/null && opciones="$opciones
+Dejar de duplicar"
+fi
+
+eleccion=$(printf '%s\n' "$opciones" | noctalia dmenu -p "Proyectar") || exit 0
+todas="$panel $externos"
+case "$eleccion" in
+    "Extender a todas las pantallas")
+        for s in $todas; do niri msg output "$s" on; done ;;
+    "Solo el portátil")
+        niri msg output "$panel" on
+        for s in $externos; do niri msg output "$s" off; done ;;
+    "Solo los monitores externos")
+        for s in $externos; do niri msg output "$s" on; done
+        niri msg output "$panel" off ;;
+    "Duplicar el portátil en "*)
+        destino=${eleccion#Duplicar el portátil en }
+        pkill -x wl-mirror
+        niri msg output "$destino" on
+        wl-mirror --fullscreen-output "$destino" "$panel" & ;;
+    "Dejar de duplicar")
+        pkill -x wl-mirror ;;
+esac

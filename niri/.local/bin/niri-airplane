@@ -1,0 +1,12 @@
+#!/bin/sh
+# niri-airplane — aviso del modo avión para Fn+F12 (XF86RFKill en binds.kdl). No cambia nada:
+# Fn+F12 llega como KEY_RFKILL y el kernel (CONFIG_RFKILL_INPUT=y) ya bloquea o desbloquea
+# todas las radios por su cuenta; invertirlas aquí también las dejaría como estaban. Espera
+# medio segundo a que el kernel termine y avisa del estado real. rfkill sin sudo: logind da
+# acceso a /dev/rfkill al usuario de la sesión activa.
+# Ubuntu/Fedora: mismo comando rfkill (paquete util-linux) y mismo comportamiento del kernel.
+sleep 0.5
+case "$(rfkill --noheadings --output SOFT)" in
+    *unblocked*) notify-send -a niri -i airplane-mode-disabled-symbolic "Modo avión desactivado" ;;
+    *)           notify-send -a niri -i airplane-mode-symbolic "Modo avión activado" ;;
+esac

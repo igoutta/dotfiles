@@ -108,6 +108,19 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       NVIDIA, así que un monitor por HDMI no la despierta. El monitor del USB-C por la NVIDIA,
       verificado ese día: estable y sin parpadeos. Falta: sacar `LIBGL_ALWAYS_SOFTWARE=1` del
       script de Mission Planner y gpu-screen-recorder con NVENC.
+- [ ] **Mensajes al entrar y salir** (2026-09-25), medidos en el journal; ninguno frena nada:
+      - «Calling import-environment without a list of variable names is deprecated»: lo imprime
+        `/usr/bin/niri-session` en la consola al pasar del greeter a niri. Es un aviso de systemd,
+        y upstream sigue igual en main. Desde la contraseña: niri a los 0,5 s, la barra a los
+        1,2 s y los vídeos a los 2 s. No tocar el script del paquete.
+      - `pam_open_session: SERVICE_ERR` de greetd: solo al reiniciar o apagar desde la sesión.
+        greetd relanza el greeter y logind se niega porque el apagado ya está en marcha. Tres
+        veces este mes, nunca en un cierre de sesión normal. Inofensivo.
+      - Hallazgo: el compositor del greeter (wlroots) renderiza en la NVIDIA («EGL vendor:
+        NVIDIA» en `journalctl -b -t noctalia-greeter-compositor`), así que la despierta en cada
+        arranque. Probar `WLR_DRM_DEVICES` con la Intel primero en `etc/greetd/config.toml`;
+        ojo, los números de `cardN` no son fijos y las rutas by-path llevan `:`, que es el
+        separador de esa variable.
 - [ ] **Reinstalación de Arch**, al terminar los dotfiles. La guía ya está corregida (2026-09-24):
       dos particiones (ESP de 1 G en `/efi` y un LUKS2), LVM dentro del LUKS con swap de 34 G
       redimensionable y raíz Btrfs, `/boot` como directorio de `@` (cifrado y dentro de las

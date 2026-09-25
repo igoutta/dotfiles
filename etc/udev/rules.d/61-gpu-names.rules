@@ -1,0 +1,13 @@
+# /etc/udev/rules.d/61-gpu-names.rules — nombres fijos para las dos GPU: /dev/dri/igpu (Intel)
+# y /dev/dri/dgpu (NVIDIA). Los números de cardN dependen del orden en que cargan los drivers
+# y las rutas de /dev/dri/by-path llevan «:», que WLR_DRM_DEVICES usa como separador; estos
+# nombres sirven para esa variable (etc/greetd/greeter-intel-first). Solo los nodos card
+# (DEVTYPE drm_minor), no los conectores.
+# Por driver y no por fabricante: ATTRS{vendor} vale para cualquier dispositivo por encima de
+# la tarjeta, y la NVIDIA cuelga de un puerto PCIe de Intel (0000:00:01.0, vendor 0x8086), así
+# que con vendor las dos reglas le tocaban a ella e igpu y dgpu acababan en card0 (2026-09-25:
+# el greeter vio una sola GPU y solo encendió el monitor del USB-C). El puerto lleva el driver
+# pcieport, así que DRIVERS no se confunde. Comprobar: udevadm info -a /sys/class/drm/card0.
+# Ubuntu/Fedora: misma regla; otros drivers: xe (Intel nuevas), amdgpu, nouveau.
+SUBSYSTEM=="drm", KERNEL=="card*", ENV{DEVTYPE}=="drm_minor", DRIVERS=="i915", SYMLINK+="dri/igpu"
+SUBSYSTEM=="drm", KERNEL=="card*", ENV{DEVTYPE}=="drm_minor", DRIVERS=="nvidia", SYMLINK+="dri/dgpu"

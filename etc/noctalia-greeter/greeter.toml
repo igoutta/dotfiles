@@ -4,12 +4,19 @@
 # archivo. Propietario greeter:greeter, modo 640. Mismo archivo en Ubuntu/Fedora; el greeter
 # va por releases de GitHub en ambas.
 
+# Pantalla: el cuadro de ingreso solo en la del portátil. En 1.6.0 no hay un modo de «formulario
+# en una y fondo en las demás»: con name, el greeter apaga las otras salidas mientras dura.
+# Si eDP-1 no está conectada, vuelve a mostrarse en todas. Ojo con la tapa cerrada: el panel
+# sigue conectado y el formulario iría a una pantalla que no se ve; en ese caso, quitar esto.
+[output]
+name = "eDP-1"
+
 # Teclado: el greeter corre su propio compositor y no hereda el de niri (input.kdl).
 [keyboard]
 layout = "latam"
 
 # Aspecto. "Synced": paleta y fondos los manda noctalia (sync.toml); el selector de esquema
-# va oculto. El formulario de entrada va siempre centrado en 1.5.0 (TODO.md); solo se colocan
+# va oculto. El formulario de entrada va siempre centrado (1.5.0 y 1.6.0; TODO.md); solo se colocan
 # los botones de apagado y el selector: top-left, top-right, bottom-left, bottom-right o hidden.
 # Sin bloque [appearance.palette]: en 1.5.0 una paleta aquí deja el greeter SIN fondo (comprobado
 # el 2026-09-24 por Gustavo, dos veces). La paleta y los fondos vienen juntos del sync.

@@ -769,6 +769,8 @@ sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 sudo install -Dm644 etc/modprobe.d/nvidia.conf /etc/modprobe.d/nvidia.conf
 sudo install -Dm644 etc/udev/rules.d/80-nvidia-pm.rules /etc/udev/rules.d/80-nvidia-pm.rules
+sudo install -Dm644 etc/udev/rules.d/61-gpu-names.rules /etc/udev/rules.d/61-gpu-names.rules   # /dev/dri/igpu y dgpu
+sudo install -Dm755 etc/greetd/greeter-intel-first /usr/local/bin/greeter-intel-first           # greeter en la Intel
 sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
 sudo install -Dm644 etc/security/faillock.conf /etc/security/faillock.conf
 sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror.service etc/systemd/system/ghostmirror.timer etc/systemd/system/ghostmirror-deep.service etc/systemd/system/ghostmirror-deep.timer

@@ -1,0 +1,20 @@
+#!/bin/sh
+# /usr/local/bin/greeter-intel-first — arranca noctalia-greeter con la Intel como GPU de render.
+# El compositor del greeter (wlroots) elegía la NVIDIA («EGL vendor: NVIDIA» en el journal) y la
+# despertaba en cada arranque. WLR_DRM_DEVICES lista las GPU y la primera es la que renderiza;
+# la NVIDIA va segunda para que el monitor del USB-C (cableado a ella) también muestre la
+# entrada. Los nombres los crea etc/udev/rules.d/61-gpu-names.rules. Si no existen, no se
+# define nada y el greeter arranca como sin este script: una lista con una ruta que falta
+# dejaría a wlroots sin GPU y sin pantalla de entrada.
+# Ubuntu/Fedora: igual, cambiando la ruta de noctalia-greeter-session si hace falta.
+# Comprobaciones antes de tocar nada: igpu tiene que ser de verdad una Intel (fabricante de su
+# propio dispositivo PCI, 0x8086) y dgpu otra tarjeta distinta. El 2026-09-25 una regla de udev
+# equivocada dejó las dos en la NVIDIA y el greeter solo encendió el monitor del USB-C.
+igpu=$(readlink -f /dev/dri/igpu 2>/dev/null)
+dgpu=$(readlink -f /dev/dri/dgpu 2>/dev/null)
+if [ -c "$igpu" ] && [ "$(cat "/sys/class/drm/${igpu##*/}/device/vendor" 2>/dev/null)" = 0x8086 ]; then
+    gpus=$igpu
+    [ -c "$dgpu" ] && [ "$dgpu" != "$igpu" ] && gpus="$gpus:$dgpu"
+    export WLR_DRM_DEVICES="$gpus"
+fi
+exec /usr/bin/noctalia-greeter-session "$@"

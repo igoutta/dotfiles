@@ -625,6 +625,7 @@ sudo install -Dm644 etc/security/pam_env.conf /etc/security/pam_env.conf
 sudo install -Dm644 etc/greetd/config.toml /etc/greetd/config.toml
 sudo install -Dm644 etc/pam.d/greetd /etc/pam.d/greetd
 sudo install -Dm640 -o greeter -g greeter etc/noctalia-greeter/greeter.toml /var/lib/noctalia-greeter/greeter.toml
+sudo install -Dm644 etc/tmpfiles.d/charge-limit.conf /etc/tmpfiles.d/charge-limit.conf && sudo systemd-tmpfiles --create charge-limit.conf
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`

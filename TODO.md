@@ -151,6 +151,10 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       kernel, punto tipo `/mnt/windows`, `nofail`; desactivar el inicio rápido de Windows.
 - [ ] **user-dirs.dirs**: tiene `XDG_PROJECTS_DIR="$HOME/"` a mano, que apunta al home entero.
       No se versiona (lo reescribe xdg-user-dirs); revisar y documentar el comando.
+- [~] **USB en la barra**: plugin `aristides/udiskie` activado el 2026-09-25 (widget `usb`, oculto
+      sin dispositivos; monta y expulsa con `udisksctl`, avisa por notificación). `udiskie`
+      instalado ese día; falta probar con un USB. En la barra van también `temp`, `cpu` y
+      `power_profile`, widgets nativos de noctalia; el plugin system-monitor era redundante.
 - [ ] **Portapapeles, elegir a conciencia**: hoy lo lleva noctalia (`clipboard_enabled`):
       historial de 100 entradas con anclados y búsqueda, imágenes (`clipboard_image_action_command`
       para abrirlas, capturas como PNG), `clipboard_keep_from_closed_apps` para no perder lo

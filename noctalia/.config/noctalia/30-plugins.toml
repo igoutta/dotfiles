@@ -10,6 +10,7 @@ enabled = [
     "noctalia/screen_recorder",
     "noctalia/mpvpaper",
     "yuuto/arch-updater",
+    "aristides/udiskie",       # USB conectados: montar, expulsar y aviso; usa udisksctl, no el demonio udiskie
 ]
 
 # Fondos de vídeo, uno por salida. Mientras haya vídeo, noctalia retira su capa de fondo en
@@ -40,3 +41,14 @@ video_codec = "hevc"
 
 [widget.mpvpaper]
 type = "noctalia/mpvpaper:mpvpaper"
+
+# USB conectados: aviso al conectar; el widget solo aparece cuando hay alguno. Necesita el
+# paquete udiskie (udiskie-info, udiskie-mount) y udisks2. La temperatura y la CPU van con los
+# widgets nativos temp y cpu de noctalia (00-shell.toml), no con un plugin.
+[plugin_settings."aristides/udiskie"]
+enable_notifications = true
+
+[widget.usb]
+type = "aristides/udiskie:status"
+hide_when_empty = true
+show_count = true

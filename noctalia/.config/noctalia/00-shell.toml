@@ -34,8 +34,13 @@ remember_last_region = true
 # Sin el widget "bar" del plugin niri-displays, que ya no se usa (outputs en niri).
 [bar.default]
 start = [ "launcher", "mpvpaper", "wallpaper", "workspaces" ]
+# temp y cpu son los widgets nativos sysmon (cpu_temp, cpu_usage) que noctalia define por defecto.
 end = [
     "media",
+    "power_profile",
+    "usb",
+    "temp",
+    "cpu",
     "tray",
     "notifications",
     "clipboard",

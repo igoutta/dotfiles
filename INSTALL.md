@@ -660,6 +660,35 @@ NVIDIA con salida a 10 bits: `disable-10bit-output` en el bloque `debug` de niri
 supergfxctl y envycontrol no hacen falta: el modo híbrido es el de fábrica y el modo
 «integrated» dejaría sin señal el USB-C. Ubuntu/Fedora: `nvidia-driver` de sus repos o RPM Fusion.
 
+# Temperatura
+
+Como usuario con sudo. El TUF F15 no expone curvas de ventilador: el kernel se las pide al
+BIOS (316, de 2025) y este responde «sin datos» (`fan_curve_get_factory_default … failed: -61`
+en `journalctl -k`), así que no existe el hwmon que `asusctl fan-curve` necesita, y `asus_armoury`
+tampoco encuentra límites de potencia en este modelo. Lo único directo sobre el ventilador es
+`pwm1_enable` del hwmon `asus`: `0` a tope, `2` automático. El control real está en la potencia
+de la CPU, y lo lleva thermald aplicando las tablas térmicas del propio firmware (DPTF), que
+dependen del perfil de power-profiles-daemon:
+
+| Perfil (ppd) | `platform_profile` | PL1 sostenido | PL2 | Baja al mínimo a partir de |
+| --- | --- | --- | --- | --- |
+| power-saver | quiet | 28-35 W | 65 W | 82 °C del paquete |
+| balanced | balanced | 65-80 W; 35-45 W si la GPU pasa de 70 °C | 105 W | 92 °C del paquete; 77 °C de la GPU |
+| performance | performance | 70-80 W | 105 W | 94 °C del paquete |
+
+~~~sh
+# "thermald" demonio térmico de Intel. Con --adaptive (así va la unidad de Arch) lee las tablas del firmware
+#   y escribe los límites por RAPL MMIO; en ese modo ignora /etc/thermald/thermal-conf.xml, por eso no hay uno en etc/
+sudo pacman -S --needed thermald
+sudo systemctl enable --now thermald
+cat /sys/class/powercap/intel-rapl-mmio:0/constraint_0_power_limit_uw   # PL1 en µW: 28000000 en power-saver, 65000000 o más en balanced
+powerprofilesctl set power-saver   # o el widget power_profile de la barra; el paquete baja unos 10 °C en medio minuto
+~~~
+
+Temperatura y CPU en la barra: widgets nativos `temp` y `cpu` de noctalia (`00-shell.toml`);
+el RPM del ventilador está en `/sys/class/hwmon/*/fan1_input` (`sensors`). Ubuntu/Fedora: mismo
+paquete; comprobar con `systemctl cat thermald` que la unidad lleve `--adaptive`.
+
 # Mantenimiento: instantáneas, firmware y batería
 
 Como usuario con sudo. Sin esto no hay ni una instantánea aunque grub-btrfs esté instalado.

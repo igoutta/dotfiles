@@ -141,6 +141,56 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       daemon-reload && sudo systemctl restart ghostmirror.timer ghostmirror-deep.timer && sudo
       systemctl start ghostmirror-deep.service ghostmirror.service`; luego `head -20
       /etc/pacman.d/mirrorlist` debería mezclar Worldwide, EE. UU. y algo de Brasil o Chile.
+- [~] **Temperatura**: el paquete de la CPU a 83-96 °C con poca carga y el ventilador a
+      4000-4700 RPM (2026-09-25). thermald instalado y activo ese día. Veredictos, medidos:
+      - **asusctl: no, y la culpa es del firmware, no del programa.** El kernel pide las curvas
+        de ventilador al BIOS (316, 06/2025) y responde «sin datos» (`fan_curve_get_factory_default
+        … failed: -61` en `journalctl -k`), así que no existe el hwmon `asus_custom_fan_curve` que
+        `asusctl fan-curve` necesita; y `asus_armoury` avisa «No matching power limits», así que
+        tampoco hay límites de potencia por Armoury. Lo que asusctl daría aquí (perfiles, límite
+        de carga, RGB del teclado) ya lo hacen power-profiles-daemon, `charge-limit.conf` y sysfs.
+        Descartados también los plugins `kv7499/asus-fan` (exige asusctl, solo muestra RPM) y
+        `cleboost/asus-fans-controller-ec` (escribe el EC a ciegas, probado en el TUF A17, su
+        binario no está en repos): el ventilador no es la palanca.
+      - **La palanca es la potencia, y ya está montada**: thermald con `--adaptive` aplica las
+        tablas térmicas del firmware (DPTF) según el perfil, por RAPL MMIO. Probado: al pasar a
+        power-saver el PL1 baja de 65 a 28 W y el paquete de 83 a 75 °C en medio minuto. Tabla por
+        perfil en la fase «Temperatura» de INSTALL.md. El XML propio que preparé se ignora en ese
+        modo y se retiró del repo.
+      - **Lo que calienta en vacío, medido a las 02:30**: con un 8 % de CPU en total el paquete
+        estaba a 92-96 °C. (1) El fondo de vídeo: 4K a 30 fps con la gráfica Intel clavada a
+        1450 MHz; en pausa bajó a 0 MHz y el paquete de 92 a 85 °C en medio minuto. Primero se
+        recodificó la biblioteca a 1080p; descartado el mismo día: obliga a recodificar cada vídeo
+        nuevo, y medido por el socket IPC resultó que lo caro eran los filtros por defecto de mpv,
+        no el tamaño. Con `scale=bilinear dscale=bilinear dither=no correct-downscaling=no
+        linear-downscaling=no sigmoid-upscaling=no` en `mpv_options` un 4K cuesta menos que el
+        1080p con filtros por defecto, y lo mismo que el 1080p sin ellos (tabla en el README de
+        noctalia); `video_directory` vuelve a los originales y `~/Videos/Wallpapers-1080p` (737 M)
+        sobra. Se aplica al reiniciar noctalia y hay que volver a elegir el vídeo; mientras, las
+        opciones ya van puestas por IPC en las dos instancias. Quedan caros HEVC y AV1 a 60 fps
+        (tres vídeos): es el descodificador. (2) VS Code: el proceso de la ventana a 0,7
+        núcleos de media desde el arranque, en parte por esta sesión de Claude dentro de VS Code;
+        cpptools aparte. (3) La NVIDIA no: suspendida, ventilador parado, sensor a 0; estuvo
+        encendida un tercio del arranque por las pruebas de prime-run y nvidia-smi.
+      - **Perfil por defecto: power-saver**, fijado el 2026-09-25 (ppd lo recuerda entre
+        arranques): 28-35 W, frena a 82 °C, sobra para editor y navegador; balanced para compilar.
+        Fn+F5 cicla los tres perfiles desde el kernel (`platform_profile_cycle`) y el widget
+        `power_profile` de la barra hace lo mismo con un clic. Si balanced sigue pareciendo
+        caliente, la alternativa es un `thermal-conf.xml` propio con trip a 85 °C más un drop-in
+        que quite `--adaptive`: tope fijo a cambio de perder la tabla por perfil.
+      - **Pendiente, probar**: `auto_pause = "max"` en el plugin (pausa el vídeo con una ventana
+        maximizada; niri 26.04 publica ese estado por `zwlr_foreign_toplevel`, pero solo para
+        columnas en modo maximizado, no por ser anchas); medir vatios de verdad con `turbostat`
+        (`linux-tools`; RAPL es solo root); undervolt, casi seguro bloqueado en el BIOS:
+        `sudo pacman -S msr-tools && sudo modprobe msr && sudo rdmsr -f 20:20 0x194`, `1` es
+        bloqueado; el panel a 60 Hz en vez de 144 en `outputs.kdl` ahorra algo más con el vídeo.
+      - **Ventilador a tope a mano**: `echo 0 | sudo tee /sys/devices/platform/asus-nb-wmi/hwmon/hwmon*/pwm1_enable`
+        (`2` vuelve a automático); es lo único que el firmware permite sobre el ventilador.
+      - **Hardware**: 4700 RPM con 92 °C y un 8 % de CPU es propio de polvo o pasta seca (2021).
+        Limpiar y repastar, mejor con pad de cambio de fase (PTM7950), vale más que cualquier
+        software. Y la base: la entrada de aire está debajo; nada de camas ni telas.
+      - Puntual: `code` y `cpptools` consumían el 60 % de un núcleo indexando; revisar qué
+        indexa la extensión de C++.
 - [ ] **Servicios en la guía**: `bluetooth` y `avahi-daemon` están activos y la guía no los
       activa; añadirlos a los `systemctl enable` del chroot (greetd ya está en «Escritorio»).
 - [ ] **cups**: instalado y apagado. Activar `cups.socket`; avahi-daemon ya está activo.
@@ -155,6 +205,11 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       sin dispositivos; monta y expulsa con `udisksctl`, avisa por notificación). `udiskie`
       instalado ese día; falta probar con un USB. En la barra van también `temp`, `cpu` y
       `power_profile`, widgets nativos de noctalia; el plugin system-monitor era redundante.
+- [ ] **Teclado RGB sin asusctl**: el kernel expone
+      `/sys/devices/platform/asus-nb-wmi/leds/asus::kbd_backlight/kbd_rgb_mode` («cmd modo R G B
+      velocidad»: cmd 1 guarda en BIOS, modo 0 color fijo) y `kbd_rgb_state` («cmd arranque activo
+      suspensión teclado»). Naranja fijo de la paleta: `echo "1 0 255 96 0 0" | sudo tee …/kbd_rgb_mode`;
+      como se guarda en el BIOS basta una vez, o una línea `w` en tmpfiles.d como charge-limit.
 - [ ] **Portapapeles, elegir a conciencia**: hoy lo lleva noctalia (`clipboard_enabled`):
       historial de 100 entradas con anclados y búsqueda, imágenes (`clipboard_image_action_command`
       para abrirlas, capturas como PNG), `clipboard_keep_from_closed_apps` para no perder lo

@@ -680,6 +680,7 @@ sudo install -Dm640 etc/snapper/configs/home /etc/snapper/configs/home
 sudo install -Dm644 etc/conf.d/snapper /etc/conf.d/snapper
 sudo install -Dm644 etc/snap-pac.ini /etc/snap-pac.ini
 sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook   # solo si /boot está fuera de Btrfs (instalación de 2026-08)
+sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hooks/91-grub-reinstall.hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 ~~~
 

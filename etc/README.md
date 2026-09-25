@@ -13,6 +13,7 @@ stow**: se copian a mano con `install`, como indica la sección «Dotfiles» de 
 | `snapper/configs/home` | `/etc/snapper/configs/home` | Instantáneas de `/home`: 12 horas, 7 días, 4 semanas; `~/.cache` y contenedores fuera como subvolúmenes. |
 | `snap-pac.ini` | `/etc/snap-pac.ini` | Paquetes que marcan como importante el par pre/post de pacman (kernel, systemd, grub…). |
 | `pacman.d/hooks/95-bootbackup.hook` | `/etc/pacman.d/hooks/95-bootbackup.hook` | Copia `/boot` (vfat) a `/.bootbackup` tras cada kernel, para que la instantánea lleve el kernel que casa con sus módulos. |
+| `pacman.d/hooks/91-grub-reinstall.hook` | `/etc/pacman.d/hooks/91-grub-reinstall.hook` | Tras actualizar `grub`, `grub-install` en la ESP y `grub-mkconfig`; si no, `/usr` y `/boot/EFI` quedan en versiones distintas. Fedora/Ubuntu lo hacen solos. |
 | `mkinitcpio.conf.d/dotfiles.conf` | `/etc/mkinitcpio.conf.d/dotfiles.conf` | El `HOOKS` definitivo, igual que el de la guía: `encrypt lvm2 resume … grub-btrfs-overlayfs`. Vale para las dos disposiciones (`lvm2` y `resume` no hacen nada donde no hay LVM ni `resume=`). Luego `mkinitcpio -P`. Fedora/Ubuntu: dracut. |
 | `conf.d/snapper` | `/etc/conf.d/snapper` | Declara la config `root`. Fedora: `/etc/sysconfig/snapper`; Ubuntu: `/etc/default/snapper`. |
 | `tmpfiles.d/charge-limit.conf` | `/etc/tmpfiles.d/charge-limit.conf` | Límite de carga de la batería al 80 % en cada arranque, por el driver asus-wmi del kernel; sin asusctl. Ubuntu/Fedora: mismo archivo. |

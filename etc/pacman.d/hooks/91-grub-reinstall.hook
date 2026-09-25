@@ -1,0 +1,14 @@
+# /etc/pacman.d/hooks/91-grub-reinstall.hook — tras actualizar el paquete grub, reinstalar el
+# cargador en la ESP y regenerar grub.cfg. Sin esto, /usr tiene una versión y /boot/EFI y los
+# módulos de /boot/grub otra: el 2026-09-24 grub pasó a 2.16 y la ESP siguió con 2.14 de agosto.
+# La ESP está en /efi en la disposición de la guía (2026-09) y en /boot en la instalación de
+# 2026-08; el hook elige la que esté montada. Fedora/Ubuntu ya lo hacen solos.
+[Trigger]
+Operation = Upgrade
+Type = Package
+Target = grub
+
+[Action]
+Description = Reinstalando GRUB en la ESP y regenerando grub.cfg…
+When = PostTransaction
+Exec = /bin/sh -c 'd=/efi; mountpoint -q /efi || d=/boot; grub-install --target=x86_64-efi --efi-directory=$d --boot-directory=/boot --bootloader-id=GRUB --recheck && grub-mkconfig -o /boot/grub/grub.cfg'

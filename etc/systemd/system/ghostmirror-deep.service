@@ -1,0 +1,18 @@
+# /etc/systemd/system/ghostmirror-deep.service — mensual: descarga la lista oficial, prueba los
+# espejos https de los países útiles desde Ecuador y guarda los 40 mejores en
+# /etc/pacman.d/mirrorlist. Orden: sanos primero, luego actualizados, luego por latencia
+# (ping) y por último frescura. Antes «morerecent» iba antes que «ping» y la lista acababa con
+# 35 espejos alemanes. Ecuador solo tiene mirror.cedia.org.ec, registrado como http (redirige
+# a https), 12 h atrasado y sin ventaja de latencia frente a los CDN: queda fuera con -T https.
+# Colombia 1, Chile 2, Brasil 4, EE. UU. 66. Paso «lento» del esquema de github.com/vbextreme/ghostmirror/issues/22; el paquete no trae
+# units (0.18.5). Sin [Install] a propósito: lo lanza el timer, no el arranque.
+# Fedora/Ubuntu: no aplica (sus gestores eligen espejo solos).
+[Unit]
+Description=Deep mirror update
+After=network-online.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# -c países  -l salida  -L máximo  -S orden  -d descargas paralelas  -O timeout (s)  -T tipo
+ExecStart=/usr/bin/ghostmirror -clLSdOT Worldwide,'United States',Brazil,Chile,Colombia,Mexico,Germany /etc/pacman.d/mirrorlist 40 state,outofdate,ping,morerecent 8 10 https

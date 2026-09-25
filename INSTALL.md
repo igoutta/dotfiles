@@ -528,7 +528,7 @@ git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 ~~~
 
 ~~~sh
-yay -S pay-respects mmtui ghostmirror
+yay -S pay-respects mmtui ghostmirror     # ghostmirror: sus timers (etc/systemd/system/) se instalan en la sección Dotfiles
 ~~~
 
 # Escritorio: niri + noctalia
@@ -684,6 +684,9 @@ sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
 sudo install -Dm644 etc/security/faillock.conf /etc/security/faillock.conf
+sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror.service etc/systemd/system/ghostmirror.timer etc/systemd/system/ghostmirror-deep.service etc/systemd/system/ghostmirror-deep.timer
+sudo systemctl enable --now ghostmirror.timer ghostmirror-deep.timer   # espejos de pacman: mensual por latencia, semanal por velocidad; los .service no se habilitan
+sudo systemctl start ghostmirror-deep.service ghostmirror.service      # primera lista ya, sin esperar al día 1
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`

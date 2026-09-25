@@ -1,0 +1,12 @@
+# /etc/systemd/system/ghostmirror.timer — los domingos a la 01:00 con hasta 5 min de retardo
+# aleatorio; Persistent lo recupera si el equipo estaba apagado.
+[Unit]
+Description=Run ghostmirror weekly on Sunday at 1 AM.
+
+[Timer]
+OnCalendar=Sun *-*-* 01:00:00
+Persistent=true
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

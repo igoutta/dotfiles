@@ -1,0 +1,14 @@
+# /etc/systemd/system/ghostmirror.service — semanal: vuelve a medir los 40 espejos que ya están
+# en /etc/pacman.d/mirrorlist (solo los no comentados) con la prueba de velocidad «light»,
+# ~6 MiB por espejo, unos 240 MiB en total, y los reordena por sanidad, actualidad, velocidad
+# y latencia. Era diario y además corría en cada arranque: 720 MiB en un día. Paso «rápido»
+# del esquema de dos pasos. Sin [Install] a propósito: lo lanza el timer.
+[Unit]
+Description=Update mirrorlist with ghostmirror
+After=network-online.target nss-lookup.target ghostmirror-deep.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# -m lista local  -u solo no comentados  -l salida  -s velocidad  -S orden
+ExecStart=/usr/bin/ghostmirror -mulsS /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist light state,outofdate,speed,ping

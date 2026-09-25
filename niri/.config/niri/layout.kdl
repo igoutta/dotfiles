@@ -28,4 +28,16 @@ layout {
         off
         width 4
     }
+
+    // Sombra bajo las ventanas, como la que ya pinta noctalia bajo barra y paneles. niri
+    // conoce el radio real de las esquinas (geometry-corner-radius en rules.kdl y sin CSD),
+    // así que no hace falta draw-behind-window. Valores por defecto de niri salvo el color,
+    // negro más denso para que se vea sobre el fondo negro de la paleta.
+    shadow {
+        on
+        softness 30
+        spread 5
+        offset x=0 y=5
+        color "#000000a0"
+    }
 }

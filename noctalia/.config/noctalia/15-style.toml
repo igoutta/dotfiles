@@ -1,0 +1,37 @@
+# ~/.config/noctalia/15-style.toml — aspecto: radios, márgenes, transparencia y sombras.
+# Pasada visual del 2026-09-25. Un solo número para todo: 16, el mismo que los gaps de niri
+# (layout.kdl) y su radio de ventanas (rules.kdl). Así la barra flotante queda alineada con
+# el borde de las ventanas y todas las esquinas tienen la misma curva.
+# Noctalia fusiona las tablas entre archivos: [bar.default] sigue definido en 00-shell.toml
+# (widgets) y aquí solo se añaden sus medidas.
+
+# Barra flotante: 8 px del borde de arriba (16 la despegaba demasiado), 16 a los lados para
+# alinearse con las ventanas, radio 16 y la misma transparencia que ghostty (background-opacity
+# = 0.5 en ghostty/config.ghostty; si cambia allí, cambiarla aquí). Antes iba pegada arriba,
+# con 100 px a los lados, radio 12 y opaca.
+[bar.default]
+margin_edge = 8
+margin_ends = 16
+radius = 16
+background_opacity = 0.5
+
+# Dock a 0.85 (antes 0.88). Su radio ya era 16.
+[dock]
+background_opacity = 0.85
+
+# Paneles: "soft" deja los flotantes (lanzador, portapapeles) algo translúcidos y las
+# tarjetas apenas; "glass" es más marcado; "solid" era el de antes.
+[shell.panel]
+transparency_mode = "soft"
+
+# Fondo del overview de niri: noctalia pone detrás de los escritorios una copia difuminada y
+# teñida del fondo de cada pantalla. Con vídeo usa el fotograma que guarda mpvpaper, así que
+# al alejar la vista el fondo sigue en vez de quedar gris liso. La capa entra en el
+# «backdrop» de niri por la regla noctalia-backdrop de rules.kdl.
+[backdrop]
+enabled = true
+
+# Esquinas de pantalla redondeadas en negro, con el mismo radio que todo lo demás.
+[shell.screen_corners]
+enabled = true
+size = 16

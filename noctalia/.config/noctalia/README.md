@@ -45,6 +45,7 @@ Ninguna clave se repite entre los archivos de aquí, así que el orden no import
 | --- | --- |
 | `00-shell.toml` | shell, barra, dock, audio, brillo, batería, calendario, ubicación, luz nocturna, bloqueo |
 | `10-theme.toml` | paleta (Ayu Red, negro puro) y plantillas por app |
+| `15-style.toml` | aspecto: barra flotante, radios de 16, transparencia de barra, dock y paneles, esquinas de pantalla |
 | `20-wallpaper.toml` | directorio de fondos y fondo por defecto |
 | `30-plugins.toml` | plugins activos y sus ajustes |
 

@@ -1,9 +1,16 @@
 // Reglas de ventana y de capa, y el desenfoque de fondo.
 
-// Todas las ventanas con esquinas redondeadas de 20 px y recortadas a esa geometría.
+// Todas las ventanas con esquinas redondeadas de 16 px y recortadas a esa geometría. 16 es
+// el número de toda la pasada visual: gaps (layout.kdl), barra, dock y esquinas de pantalla
+// de noctalia (15-style.toml). Antes 20.
+// draw-border-with-background false: sin esto, con prefer-no-csd niri pinta el anillo de
+// foco como un rectángulo relleno DETRÁS de la ventana, y en una translúcida se ve ese
+// relleno en vez del fondo: ghostty al 50 % salía rojo liso (#d95757, el color del anillo)
+// enfocado y negro sin foco (visto el 2026-09-25). Así el anillo queda solo como borde.
 window-rule {
-    geometry-corner-radius 20
+    geometry-corner-radius 16
     clip-to-geometry true
+    draw-border-with-background false
 }
 
 // Todas las ventanas con fondo desenfocado. Sin xray: se desenfoca lo que hay detrás,

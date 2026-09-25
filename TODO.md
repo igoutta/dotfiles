@@ -284,14 +284,20 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
         misma acción. Mod+B abre o enfoca Zen y Mod+D, VS Code (`niri-focus-or-spawn`).
       - Usarlo unos días: paleta Ayu Red vs Vesper, `Mod+Alt+Esc` para bloquear, `Mod+N`
         notificaciones, `Mod+F1` chuleta en pantalla.
-      - Pasada visual, con los valores medidos el 2026-09-24. Radios: niri 20 px, barra 12,
-        esquinas de pantalla apagadas → unificar y encender `screen_corners` al mismo radio.
-        Márgenes: gaps de niri 16, barra pegada al borde → barra flotante con margen 16.
-        Transparencia: barra opaca, dock 0.88, ghostty 0.7 con blur → barra y paneles a
-        ~0.85 con el blur de `rules.kdl`. Sombras: noctalia sí, niri no → `shadow { on }` en
-        `layout.kdl`. Bordes: dejar el anillo de foco de niri (4 px) como único borde.
-        Probar `transparency_mode` en vivo desde los ajustes de noctalia antes de escribirlo
-        al TOML.
+      - Pasada visual aplicada el 2026-09-25, falta verla unos días: todo a 16 (gaps de niri,
+        radio de ventanas antes 20, barra antes 12, dock, esquinas de pantalla encendidas),
+        barra flotante a 16 px del borde y de los lados (antes pegada y con 100 a los lados),
+        barra a 0.5 (como ghostty) y dock a 0.85 de opacidad, paneles en `transparency_mode = "soft"` y sombras de
+        niri encendidas (`layout.kdl`). Aspecto de noctalia en su módulo nuevo `15-style.toml`.
+        Si algo no gusta: `glass` o `solid` en los paneles, y el radio se cambia en los dos
+        sitios (`rules.kdl` y `15-style.toml`). Ese mismo día: el overview ya no queda gris
+        (`[backdrop] enabled` en noctalia, con el fotograma del vídeo difuminado) y ghostty
+        translúcido deja ver el fondo (`draw-border-with-background false`: niri rellenaba
+        detrás de la ventana con el color del anillo de foco).
+        Después: la barra a 8 px del borde de arriba (16 la despegaba demasiado) y la derecha
+        aligerada: fuera bluetooth y brillo (están en el centro de control), red y volumen solo
+        con icono, multimedia oculto sin reproducción, bandeja en un botón, Claude solo con la
+        ventana de 5 horas.
 - [~] **ghostty**: paquete stow hecho el 2026-09-23 (fuente Nerd, padding, sin CSD para
       niri, shell integration con ssh-terminfo, copy-on-select al portapapeles, resize de
       splits sin tres modificadores). Falta usarlo unos días.

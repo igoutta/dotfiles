@@ -16,7 +16,23 @@ enabled = [
 # esa salida: para volver a imágenes hay que parar el vídeo (Stop o clear-all; ver README).
 # extract_last_frame (por defecto true) deja un fotograma como fondo al parar.
 [plugin_settings."noctalia/mpvpaper"]
+# Los originales tal cual (casi todos 4K, varios a 60 fps): no hace falta recodificar, el coste
+# estaba en los filtros de mpv y no en el tamaño (ver «Coste» en el README). Cambiar esta ruta
+# pide reiniciar noctalia y volver a elegir el vídeo.
 video_directory = "/home/ga/Videos/Wallpapers"
+# auto_pause: "full" (por defecto) pausa con una ventana a pantalla completa; "max" también con
+# una maximizada. niri publica ese estado, pero solo para columnas en modo maximizado. Sin probar.
+# Todo en la Intel, con la NVIDIA sin tocar. Sin esto mpvpaper cayó con segfault en
+# libnvidia-glcore (2026-09-25) y mantenía la RTX encendida solo para el fondo, por tres vías:
+# gpu-context=wayland: EGL sobre Mesa; sin fijarlo mpv elige Vulkan y su dispositivo es la NVIDIA.
+# hwdec=vaapi: descodificación Intel, en vez del hwdec=auto del plugin (van después y ganan).
+# gpu-hwdec-interop=vaapi: libmpv carga todos los interops al arrancar, y el de CUDA abre la
+# NVIDIA aunque no se use; limitado a vaapi no la toca.
+# Render barato, lo mismo que el perfil «fast» de mpv: escalado bilineal (a 2:1 exacto es
+# promediar cuatro píxeles, se ve igual), sin dither, sin escalar en luz lineal ni sigmoide. Con
+# esto un 4K cuesta menos que el mismo vídeo a 1080p con los filtros por defecto (medido el
+# 2026-09-25 por el socket IPC; tabla en el README). Es un fondo, no un visor.
+mpv_options = "gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi scale=bilinear dscale=bilinear dither=no correct-downscaling=no linear-downscaling=no sigmoid-upscaling=no"
 
 [plugin_settings."noctalia/screen_recorder"]
 hide_inactive = true

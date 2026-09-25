@@ -95,6 +95,40 @@ segundos; parece colgado y no lo está). `socat` solo hace falta para las presen
 (intervalo en el selector): sin él el vídeo rota igual, pero el selector no marca cuál va.
 Estado del plugin en `~/.local/state/noctalia/mpvpaper/assignments.json`.
 
+### Coste: los filtros de mpv, no el tamaño del vídeo
+
+El panel es 1080p y casi toda la biblioteca es 4K, varios a 60 fps. Lo caro no era escalar 4K a
+1080p sino la cadena de filtros por defecto de mpv (lanczos para el croma, hermite en luz lineal,
+sigmoide, dither). Con las opciones baratas de `mpv_options` (`30-plugins.toml`) un 4K cuesta
+menos que el mismo vídeo recodificado a 1080p con los filtros por defecto, y lo mismo que ese
+1080p sin ellos: no hay que recodificar nada, los vídeos nuevos van tal cual a
+`~/Videos/Wallpapers`. Medido el 2026-09-25 en el propio fondo, por el socket IPC de mpvpaper
+(`~/.local/state/noctalia/mpvpaper/ipc-eDP-1.sock`), con `gt_act_freq_mhz` y `rc6_residency_ms`
+de la Intel en `/sys/class/drm/card1`, 20 s por caso y el HDMI en pausa:
+
+| Caso en eDP-1 | Intel, frecuencia media | Tiempo dormida (RC6) |
+| --- | --- | --- |
+| Todo en pausa | 15 MHz | 99 % |
+| 1080p 30 fps, filtros por defecto | 283 MHz | 78 % |
+| 1080p 30 fps, opciones baratas | 120 MHz | 82 % |
+| 4K 30 fps, filtros por defecto | 631 MHz | 50 % |
+| 4K 30 fps, opciones baratas | 116 MHz | 81 % |
+| 1080p 60 fps, filtros por defecto | 422 MHz | 65 % |
+| 4K 60 fps H.264, filtros por defecto | 1086 MHz | 18 % |
+| 4K 60 fps H.264, opciones baratas | 207 MHz | 67 % |
+| 4K 60 fps HEVC, opciones baratas | 1002 MHz | 65 % |
+| 4K 60 fps AV1, opciones baratas | 602 MHz | 52 % |
+
+Escalar en el procesador de vídeo de la Intel (`vf=lavfi=[scale_vaapi=w=1920:h=1080]`) ayuda
+menos que quitar filtros y no suma sobre ellos. Lo que sigue caro es descodificar HEVC o AV1 a
+60 fps (la Intel sube de frecuencia para el descodificador, no para pintar): hoy son tres vídeos,
+`cyberpunk-2b-samurai`, `shorekeeper-and-butterflies` y `glowing-fantasy-warrior`; y un 60 fps
+cuesta el doble que un 30 fps. Si uno de esos molesta, pasarlo a H.264 por hardware (segundos,
+deja el original): `ffmpeg -hwaccel vaapi -hwaccel_output_format vaapi -vaapi_device
+/dev/dri/renderD128 -i in.mp4 -c:v h264_vaapi -qp 23 -an out.mp4`; los AV1 de 10 bits no
+entran por esa vía: sin `-hwaccel …` y con `-vf format=nv12,hwupload` (más lento, va por CPU).
+Ubuntu: mismo ffmpeg; Fedora: `h264_vaapi` necesita el ffmpeg de RPM Fusion.
+
 ## Greeter
 
 `noctalia-greeter` (greetd) toma paleta, fondos y disposición de las salidas con `noctalia

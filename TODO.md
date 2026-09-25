@@ -280,6 +280,12 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 
 ## Hecho
 
+- 2026-09-25 **Fondo de vídeo sin recodificar**: la biblioteca a 1080p del mismo día se descarta
+  (obligaba a recodificar cada vídeo nuevo). Medido por el socket IPC de mpvpaper que lo caro
+  eran los filtros por defecto de mpv, no el 4K: con `scale=bilinear dscale=bilinear dither=no
+  correct-downscaling=no linear-downscaling=no sigmoid-upscaling=no` en `mpv_options` la Intel
+  pasa de 631 a 116 MHz de media con un 4K a 30 fps, menos que el 1080p con filtros (283).
+  `video_directory` vuelve a `~/Videos/Wallpapers`; tabla en el README de noctalia.
 - 2026-09-25 **Node en apps gráficas**: SonarLint no encontraba node porque el PATH de VS Code
   es el de la shell de login que niri-session importa a systemd --user, y eso pisa el
   `environment.d` del paquete mise. Retirado ese archivo; los shims van en `.zshenv`. Aplica al

@@ -527,18 +527,28 @@ Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
 #   (noctalia no lo trae; sin él el sync del greeter y cualquier acción privilegiada fallan en silencio)
 # "adw-gtk-theme" GTK3 con el aspecto de libadwaita; es el que colorea la plantilla gtk3 de noctalia
 # "adwaita-cursors" cursor Adwaita, el mismo que declaran niri (startup.kdl) y gtk (settings.ini)
+# "power-profiles-daemon" perfiles de energía (ahorro, equilibrado, rendimiento); es lo que noctalia muestra y cambia
+# "ddcutil" brillo del monitor externo por DDC/CI desde noctalia; requiere el grupo i2c (abajo)
+# "udiskie" monta solo los USB al conectarlos y avisa; yazi es el gestor de archivos principal y no tiene barra
+#   lateral donde pulsar como Nautilus. "gvfs-mtp" el móvil por USB (gio mount)
+# "ffmpegthumbnailer" y "webp-pixbuf-loader" miniaturas de vídeo y webp en Nautilus y diálogos GTK
+# "wl-clipboard" wl-copy/wl-paste para Helix, yazi y scripts (el historial lo lleva noctalia)
+# "xdg-terminal-exec" GLib abre en ghostty toda app con Terminal=true (yazi como gestor de carpetas); paquete stow xdg
 sudo pacman -S --needed niri xwayland-satellite \
                         greetd gnome-keyring seahorse \
                         xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit polkit-gnome \
-                        adw-gtk-theme adwaita-cursors
+                        adw-gtk-theme adwaita-cursors power-profiles-daemon ddcutil \
+                        udiskie ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp wl-clipboard xdg-terminal-exec
 ~~~
 
 ~~~sh
 # "noctalia" la shell. Su config declarativa está en el paquete stow noctalia/ (ver su README.md)
 # "noctalia-greeter" pantalla de entrada con la misma paleta y fondo (noctalia msg greeter-sync)
 # "mpvpaper" fondos de vídeo, uno por salida, gestionados por el plugin mpvpaper de noctalia
-sudo pacman -S --needed noctalia
-yay -S noctalia-greeter mpvpaper
+# "socat" el plugin lo usa para seguir qué vídeo va en una presentación; sin él solo falla ese seguimiento
+# "photoqt" visor de imágenes (Qt, interfaz translúcida); loupe descartado
+sudo pacman -S --needed noctalia socat
+yay -S noctalia-greeter mpvpaper photoqt
 ~~~
 
 Ubuntu/Fedora: niri en Fedora por COPR `yalter/niri`, en Ubuntu sin paquete oficial; noctalia
@@ -547,6 +557,8 @@ y su greeter desde sus releases de GitHub; greetd está en los repos de ambas.
 ~~~sh
 sudo systemctl enable greetd                       # entra por greetd en el VT 1 (etc/greetd/config.toml)
 systemctl --user enable gnome-keyring-daemon.socket
+sudo systemctl enable --now power-profiles-daemon       # perfiles de energía para noctalia
+sudo usermod -aG i2c "$USER"                            # ddcutil: brillo del monitor externo; aplica al volver a entrar
 sudo localectl set-x11-keymap latam                # teclado para X11; niri lleva el suyo en input.kdl y el greeter en greeter.toml
 ~~~
 

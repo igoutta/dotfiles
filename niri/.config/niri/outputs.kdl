@@ -15,11 +15,12 @@ output "eDP-1" {
     variable-refresh-rate on-demand=true
 }
 
-// ViewSonic VA1903 en vertical, a la izquierda del portátil. "90" = 90° antihorario, que es
-// lo que reporta niri msg outputs. Girado mide 768 x 1366.
+// ViewSonic VA1903 en vertical, a la izquierda del portátil. "270" = 270° antihorario (90° en
+// sentido horario), que es lo que reporta niri msg outputs. Si el monitor se gira al otro lado
+// sobre su base, "90". Girado mide 768 x 1366 en los dos casos, así que la posición no cambia.
 output "HDMI-A-1" {
     mode "1366x768@59.790"
-    transform "90"
+    transform "270"
     position x=0 y=0
 }
 

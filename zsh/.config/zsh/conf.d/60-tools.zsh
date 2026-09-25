@@ -60,7 +60,7 @@ fi
 
 # ---------- mise (node, pnpm y versiones por proyecto) ----------
 # `activate` ajusta PATH al entrar en un directorio con mise.toml. Las apps gráficas usan los
-# shims de ~/.config/environment.d/50-mise.conf (paquete stow mise/).
+# shims que .zshenv pone en el PATH (ahí se explica por qué no vale environment.d).
 #   Fedora/Ubuntu: mise no está en dnf/apt; instalador oficial (https://mise.run) o COPR jdxcode/mise.
 (( $+commands[mise] )) && eval "$(mise activate zsh)"
 

@@ -272,6 +272,10 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 
 ## Hecho
 
+- 2026-09-25 **Node en apps gráficas**: SonarLint no encontraba node porque el PATH de VS Code
+  es el de la shell de login que niri-session importa a systemd --user, y eso pisa el
+  `environment.d` del paquete mise. Retirado ese archivo; los shims van en `.zshenv`. Aplica al
+  volver a entrar; hasta entonces, `code` desde ghostty lo ve.
 - 2026-09-25 **ghostmirror analizado**: los dos .service estaban habilitados en multi-user.target y
   corrían en cada arranque además del timer (hoy tres veces: tres barridos completos y ~720 MiB
   de prueba de velocidad); el orden `morerecent` antes que `ping` dejaba 35 espejos alemanes y
@@ -297,8 +301,9 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
   power-profiles-daemon activo (equilibrado); ambos en la fase «Escritorio» de INSTALL.md.
 - 2026-09-24 **Node para Claude**: `nodejs` de pacman fuera (era dependencia de una compilación
   de AUR del 23, nada lo usaba); `mise` de pacman con paquete stow `mise/` (node LTS, pnpm con
-  `minimumReleaseAge`, shims en `environment.d`), activado en `60-tools.zsh`; fase
-  «Desarrollo» en INSTALL.md.
+  `minimumReleaseAge`), activado en `60-tools.zsh`; fase «Desarrollo» en INSTALL.md. Los shims
+  iban en `environment.d`, que niri-session pisa al importar el entorno de la shell de login;
+  corregido el 2026-09-25: van en `.zshenv` (aplica al volver a entrar).
 - 2026-09-24 **Limpieza del escritorio**: a la papelera (`trash-put`, recuperable con `trash-restore`)
   las configs GTK y xsettingsd de KDE apartadas, la config de niri anterior, el `settings.toml`
   de noctalia previo a la declarativa y la copia entera de su estado. Quedan los paquetes.

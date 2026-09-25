@@ -2,8 +2,10 @@
 # Arch: pacman -S mise. Fedora/Ubuntu: no está en dnf/apt; instalador oficial (https://mise.run)
 # o COPR jdxcode/mise. La primera vez, `mise install` descarga lo declarado aquí.
 # Por proyecto, un mise.toml en su raíz fija otra versión y `mise activate` (zsh) la aplica al
-# entrar en el directorio. Las apps gráficas ven las herramientas por los shims que exporta
-# ~/.config/environment.d/50-mise.conf.
+# entrar en el directorio. Las apps gráficas (VS Code, SonarLint, Claude Code y sus MCP por
+# npx) ven node por los shims (~/.local/share/mise/shims), que .zshenv pone en el PATH. No
+# sirve ~/.config/environment.d: niri-session importa el entorno de la shell de login a
+# systemd --user y ese PATH pisa al de environment.d.
 
 [tools]
 # Node solo para lo que lo exige: servidores MCP y plugins de Claude Code por npx. Claude Code

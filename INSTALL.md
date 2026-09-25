@@ -717,5 +717,6 @@ Noctalia: la primera vez, `noctalia msg plugins update` descarga los plugins dec
 que pisa a la config del repo (ver `noctalia/.config/noctalia/README.md`).
 
 mise: la primera vez, `mise install` descarga node LTS y pnpm, declarados en
-`mise/.config/mise/config.toml`. Las apps gráficas los ven al volver a entrar, por los shims
-que exporta `environment.d`.
+`mise/.config/mise/config.toml`. Las apps gráficas los ven al volver a entrar: `.zshenv` pone
+los shims en el PATH y niri-session importa ese entorno a systemd --user (un `environment.d`
+no vale: esa importación lo pisa). Comprobación: `systemctl --user show-environment | rg shims`.

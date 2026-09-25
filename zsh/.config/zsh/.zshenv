@@ -30,6 +30,11 @@ export STARSHIP_CONFIG="$ZDOTDIR/starship.toml"
 
 # ---------- PATH ----------
 # Personal binaries/scripts. Machine-specific PATH entries go in hosts/<hostname>.zsh.
+# Los shims de mise van aquí y no en ~/.config/environment.d: niri-session se relanza bajo la
+# shell de login y luego hace `systemctl --user import-environment`, que pisa el PATH que
+# environment.d había puesto. Todo lo que lanza la sesión (VS Code, Claude Code dentro de él,
+# sus MCP por npx, el node de SonarLint) hereda este PATH. Aplica al volver a entrar.
+#   Ubuntu/Fedora: igual mientras la sesión pase por una shell de login (niri-session lo hace).
 typeset -U path PATH            # keep PATH free of duplicates
-path=("$HOME/.local/bin" $path)
+path=("$HOME/.local/bin" "$HOME/.local/share/mise/shims" $path)
 export PATH

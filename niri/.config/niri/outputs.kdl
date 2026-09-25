@@ -1,28 +1,42 @@
 // Salidas. Declaradas aquí para que sobrevivan al reinicio; antes el giro del HDMI lo
 // aplicaba en caliente el plugin niri-displays de noctalia y se perdía.
 // Nombres y modos: niri msg outputs. Una salida que no esté conectada se ignora.
+// Disposición, de izquierda a derecha: HDMI en vertical, portátil, tercer monitor. Las
+// posiciones son en píxeles lógicos y los bordes tienen que tocarse para que el ratón pase
+// de una pantalla a otra; si dos se solapan, niri coloca la segunda por su cuenta.
 
 // Panel del portátil (ASUS TUF F15): 144 Hz. VRR solo cuando una ventana lo pide
 // (juegos, vídeo a pantalla completa); con VRR permanente la barra parpadea al cambiar
 // de frecuencia.
 output "eDP-1" {
     mode "1920x1080@144.000"
-    position x=0 y=0
+    // Justo a la derecha del HDMI, que en vertical mide 768 de ancho.
+    position x=768 y=0
     variable-refresh-rate on-demand=true
 }
 
-// ViewSonic VA1903 en vertical, a la derecha del portátil. "90" = 90° antihorario, que es
-// lo que reporta niri msg outputs.
+// ViewSonic VA1903 en vertical, a la izquierda del portátil. "90" = 90° antihorario, que es
+// lo que reporta niri msg outputs. Girado mide 768 x 1366.
 output "HDMI-A-1" {
     mode "1366x768@59.790"
     transform "90"
-    position x=1920 y=0
+    position x=0 y=0
 }
 
-// Tercer monitor, pendiente. Copiar y ajustar cuando esté conectado (niri msg outputs
-// da el nombre exacto). Si llega por DisplayLink (evdi) comprobar antes que niri lo
-// enumera: ese soporte no está verificado (TODO.md).
-// output "DP-2" {
-//     mode "1920x1080@60.000"
-//     position x=-1920 y=0
-// }
+// Tercer monitor: ASUS MB169CK por DisplayPort sobre USB-C, no DisplayLink. Ese puerto está
+// cableado a la NVIDIA (card0, conectores DP-2 y DP-3), así que con este monitor puesto la
+// NVIDIA no se apaga. niri renderiza en la Intel (render-drm-device en startup.kdl) y copia
+// cada fotograma a la NVIDIA, que solo lo saca por el puerto. Verificado con el driver
+// nvidia-open el 2026-09-25: imagen estable, sin parpadeos y sin avisos en el log de niri.
+// Si algún día parpadea o sale en blanco: disable-10bit-output en el bloque debug de
+// startup.kdl. Apagar la NVIDIA del todo (envycontrol integrated) dejaría esta salida sin
+// señal (TODO.md).
+output "DP-2" {
+    mode "1920x1080@60.000"
+    // A la derecha del portátil: 768 del HDMI + 1920 del portátil.
+    position x=2688 y=0
+    // Debajo del HDMI, alineado a su borde izquierdo: 1366 es su alto girado. Desde el
+    // portátil no se baja a él, porque el portátil acaba en y=1080.
+    // position x=0 y=1366
+    // Debajo del portátil, si al final va ahí: position x=768 y=1080
+}

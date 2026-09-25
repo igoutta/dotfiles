@@ -1,0 +1,9 @@
+# /etc/udev/rules.d/80-nvidia-pm.rules — dejar que el kernel apague la GPU NVIDIA cuando el
+# driver lo permita (RTD3, capítulo 21 del README de NVIDIA). El driver dice «Enabled
+# (fine-grained)» pero el PCI seguía en power/control=on, y con eso nunca se suspende. Al
+# enlazar el driver: auto; al desenlazarlo: on. Clase 0x030000 = VGA, 0x030200 = 3D.
+# Ubuntu/Fedora: misma regla; nvidia-utils de Arch no la trae.
+ACTION=="bind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TEST=="power/control", ATTR{power/control}="auto"
+ACTION=="bind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030200", TEST=="power/control", ATTR{power/control}="auto"
+ACTION=="unbind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030000", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="unbind", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{class}=="0x030200", TEST=="power/control", ATTR{power/control}="on"

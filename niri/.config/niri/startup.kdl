@@ -33,4 +33,7 @@ environment {
 // sin esto niri lo ignora y la ventana no sube.
 debug {
     honor-xdg-activation-with-invalid-serial
+    // Render siempre en la Intel, por ruta PCI para que no dependa del número de renderD.
+    // La NVIDIA solo atiende sus salidas (el USB-C) y lo que se lance con prime-run.
+    render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
 }

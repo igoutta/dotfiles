@@ -97,13 +97,17 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       Veredicto: hacerlo después de la pasada visual, si el login animado importa más que el
       greeter a juego con noctalia sin tocar nada. Sin Xorg no hay opción hoy: noctalia-greeter
       1.5.0 no admite vídeo.
-- [ ] **NVIDIA + Intel**: RTX 3050 Ti Mobile junto a Intel TigerLake UHD; solo mesa e
-      intel-media-driver. Restricción nueva (2026-09-24): el USB-C con DisplayPort está
-      cableado a la NVIDIA, así que apagarla del todo (envycontrol integrated) deja sin señal
-      el tercer monitor; hoy lo sirve nouveau con GSP. El driver propietario solo hace falta
-      para CUDA y juegos (wine, ares); para la salida de vídeo nouveau ya basta.
-      Camino si se instala: nvidia-open-dkms, `nvidia-drm.modeset=1`, PRIME render offload;
-      envycontrol o supergfxctl solo en modo híbrido, nunca integrated.
+- [~] **NVIDIA + Intel**: driver `nvidia-open` 615 instalado el 2026-09-25 y verificado: nouveau
+      fuera, `modeset`/`fbdev`, initramfs sin `kms`, GRUB con `PARTLABEL` y sin `udl`, niri
+      renderizando en la Intel por ruta PCI, `vulkan-intel` y `vulkan-tools` puestos, la regla udev
+      instalada y la GPU en `runtime_status=suspended` (su ventilador parado, su sensor a 0);
+      `prime-run vulkaninfo` la lista junto a la Intel. Resuelto por el camino: mpvpaper caía con
+      segfault en libnvidia-glcore y mantenía la RTX encendida (contexto Vulkan → NVIDIA, y libmpv
+      cargando el interop CUDA); `30-plugins.toml` lo fija en la Intel por tres opciones. Dato
+      nuevo: el HDMI y el DP-1 cuelgan de la Intel (`card1`); solo el USB-C (DP-2 y DP-3) va por la
+      NVIDIA, así que un monitor por HDMI no la despierta. El monitor del USB-C por la NVIDIA,
+      verificado ese día: estable y sin parpadeos. Falta: sacar `LIBGL_ALWAYS_SOFTWARE=1` del
+      script de Mission Planner y gpu-screen-recorder con NVENC.
 - [ ] **Reinstalación de Arch**, al terminar los dotfiles. La guía ya está corregida (2026-09-24):
       dos particiones (ESP de 1 G en `/efi` y un LUKS2), LVM dentro del LUKS con swap de 34 G
       redimensionable y raíz Btrfs, `/boot` como directorio de `@` (cifrado y dentro de las
@@ -164,9 +168,13 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       va por DisplayPort sobre USB-C, y ese puerto cuelga de la NVIDIA (nouveau con GSP), no
       de evdi. niri no renderiza en nouveau («software EGL renderers are skipped») y pinta en
       la Intel copiando cada fotograma; conectado, con modo, EDID y DPMS On, sin errores.
-      Declarado en `niri/outputs.kdl` a la derecha del HDMI. Falta: decidir su sitio real
-      (`position`), y confirmar que `displaylink` y `evdi-dkms` no sirven para nada más
-      antes de desinstalarlos (auditoría).
+      Desde el 2026-09-25 lo sirve el driver nvidia-open (fase «GPU»). Disposición nueva ese
+      día en `niri/outputs.kdl`: HDMI a la izquierda, portátil en medio y este a la derecha;
+      la alternativa, debajo del HDMI, va comentada al lado. Funciona sin parpadeos en esa
+      posición. Falta: fijar su sitio definitivo si al final va abajo,
+      `noctalia msg greeter-sync` para que el greeter tome la disposición nueva, y confirmar
+      que `displaylink` y `evdi-dkms` no sirven para nada más antes de desinstalarlos
+      (auditoría).
 - [ ] **Auditoría de paquetes**: 71 instalados explícitamente que la guía no menciona. El
       que se quede entra en su fase con su comentario; el resto se desinstala.
       Además, `pacman -Qtdq` lista 38 huérfanos: 11 `-debug` de compilar AUR con la opción

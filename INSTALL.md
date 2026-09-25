@@ -402,14 +402,16 @@ helix /etc/mkinitcpio.conf
 
 `encrypt` abre el LUKS con la clave (`cryptkey=` en la línea del kernel), `lvm2` activa swap y
 raíz, `resume` reanuda desde `/dev/system/swap` y `grub-btrfs-overlayfs` permite arrancar una
-instantánea de solo lectura desde GRUB. Sin `btrfs` (solo para Btrfs en varios discos) ni
-`tpm_crb`. El paquete `grub-btrfs` ya está instalado por pacstrap, así que el hook existe.
+instantánea de solo lectura desde GRUB. Sin `btrfs` (solo para Btrfs en varios discos), sin
+`tpm_crb`, y sin `kms`: metería nouveau en el initramfs junto al driver NVIDIA (fase «GPU»);
+la consola temprana la da `i915` desde MODULES. El paquete `grub-btrfs` ya está instalado por
+pacstrap, así que el hook existe.
 
 ~~~sh
 MODULES=(btrfs i915)
 BINARIES=(/usr/bin/btrfs)
 FILES=(/etc/keys/system.key)
-HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt lvm2 resume filesystems fsck grub-btrfs-overlayfs)
+HOOKS=(base udev autodetect microcode modconf keyboard keymap consolefont block encrypt lvm2 resume filesystems fsck grub-btrfs-overlayfs)
 COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-v -5 --long)
 ~~~
@@ -610,6 +612,54 @@ noctalia msg greeter-sync                          # primer sync; el greeter sol
 journalctl -b | rg apply-appearance                # comprobación: pkexec ejecutando "--sync"; si no aparece, no se aplicó
 ~~~
 
+# GPU: NVIDIA junto a Intel
+
+Como usuario con sudo. Portátil híbrido: la Intel pinta el escritorio y la RTX 3050 Ti se usa
+para juegos y CUDA a demanda, y para el USB-C con DisplayPort, que está cableado a ella. Sin
+driver, nouveau con firmware GSP ya da esa salida, pero niri no puede renderizar en él y no
+hay juegos ni CUDA. Con el driver, la GPU se apaga sola cuando nadie la usa.
+
+~~~sh
+# "nvidia-open" módulos abiertos precompilados para el kernel linux (los que NVIDIA recomienda de Turing en
+#   adelante); "nvidia-utils" el resto del driver y la lista negra de nouveau; "lib32-nvidia-utils" para
+#   wine y juegos de 32 bits (multilib)
+# "nvidia-prime" el comando prime-run: `prime-run juego` lo lanza en la NVIDIA; todo lo demás sigue en Intel
+# "libva-nvidia-driver" VA-API sobre NVDEC para navegadores y mpv cuando se fuerce la NVIDIA
+# "vulkan-intel" y "lib32-vulkan-intel": sin ellos el único dispositivo Vulkan es la NVIDIA y cualquier app
+#   Vulkan (mpv con hwdec=auto, por ejemplo) cae en ella sin querer. "vulkan-tools": vulkaninfo para comprobar
+sudo pacman -S --needed nvidia-open nvidia-utils lib32-nvidia-utils nvidia-prime libva-nvidia-driver \
+                        vulkan-intel lib32-vulkan-intel vulkan-tools
+~~~
+
+Las opciones del módulo (`modeset`, apagado automático, memoria de vídeo al suspender) van en
+`etc/modprobe.d/nvidia.conf` y la regla que permite el apagado en `etc/udev/rules.d/80-nvidia-pm.rules`
+(sección Dotfiles); `HOOKS` ya va sin `kms`. Con eso instalado:
+
+~~~sh
+sudo mkinitcpio -P                                                  # initramfs sin nouveau
+sudo systemctl enable nvidia-suspend.service nvidia-resume.service  # memoria de vídeo al suspender y despertar
+~~~
+
+niri fija la Intel como GPU de render en `startup.kdl` (`render-drm-device`), así el driver
+NVIDIA solo atiende sus propias salidas y lo que se lance con `prime-run`. Tras reiniciar:
+
+~~~sh
+nvidia-smi                                   # ve la GPU y el driver
+niri msg outputs                             # el DP-2 del USB-C sigue ahí
+prime-run vulkaninfo --summary | rg deviceName   # la NVIDIA responde bajo prime-run
+cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status   # suspended sin monitor en el USB-C
+~~~
+
+Apps que usan libmpv o Vulkan pueden caer en la NVIDIA sin querer, porque mpv prefiere el
+contexto Vulkan y libmpv carga el interop CUDA al arrancar: el fondo de vídeo de noctalia lo
+fija en la Intel con `gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi`
+(`30-plugins.toml`). Comprobar quién tiene abierta la GPU: `ls -l /proc/*/fd 2>/dev/null | rg nvidia0`.
+
+Si la pantalla no enciende o sale en blanco al entrar, es un problema conocido de Intel +
+NVIDIA con salida a 10 bits: `disable-10bit-output` en el bloque `debug` de niri.
+supergfxctl y envycontrol no hacen falta: el modo híbrido es el de fábrica y el modo
+«integrated» dejaría sin señal el USB-C. Ubuntu/Fedora: `nvidia-driver` de sus repos o RPM Fusion.
+
 # Mantenimiento: instantáneas, firmware y batería
 
 Como usuario con sudo. Sin esto no hay ni una instantánea aunque grub-btrfs esté instalado.
@@ -685,6 +735,8 @@ sudo install -Dm644 etc/snap-pac.ini /etc/snap-pac.ini
 sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook   # solo si /boot está fuera de Btrfs (instalación de 2026-08)
 sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hooks/91-grub-reinstall.hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
+sudo install -Dm644 etc/modprobe.d/nvidia.conf /etc/modprobe.d/nvidia.conf
+sudo install -Dm644 etc/udev/rules.d/80-nvidia-pm.rules /etc/udev/rules.d/80-nvidia-pm.rules
 sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
 sudo install -Dm644 etc/security/faillock.conf /etc/security/faillock.conf
 sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror.service etc/systemd/system/ghostmirror.timer etc/systemd/system/ghostmirror-deep.service etc/systemd/system/ghostmirror-deep.timer

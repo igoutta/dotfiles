@@ -128,13 +128,15 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       busybox), swapfile (por preferencia), swap nueva encogiendo la raíz (una hora con riesgo
       para algo que la reinstalación da gratis). Al reinstalar: `suspend-then-hibernate` en
       logind y en el idle de noctalia.
-- [ ] **Drop-in de mkinitcpio unificado**: el `HOOKS` del repo ya es el definitivo (con `lvm2`,
-      sin `btrfs`), válido también aquí. Reinstalarlo y regenerar: `sudo install -Dm644
-      etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf && sudo mkinitcpio -P`.
-- [ ] **GRUB tras actualizarlo**: hoy grub pasó a 2.16 y la ESP sigue con 2.14 de agosto
-      (`grub-mkconfig` corrió antes de la actualización). Ejecutar una vez `grub-install … --recheck`
-      y `grub-mkconfig`, e instalar `etc/pacman.d/hooks/91-grub-reinstall.hook` para que pase
-      solo en adelante.
+- [ ] **sudo, un archivo menos en la máquina**: `sudo rm /etc/sudoers.d/10-pwfeedback && sudo install
+      -Dm440 etc/sudoers.d/20-defaults /etc/sudoers.d/20-defaults && sudo visudo -c` (pwfeedback ya
+      está dentro de 20-defaults; con los dos instalados solo hay una opción repetida, sin daño).
+- [ ] **ghostmirror, aplicar los units revisados** (análisis cerrado el 2026-09-25, ver Hecho):
+      `sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror*.{service,timer} &&
+      sudo systemctl disable ghostmirror.service ghostmirror-deep.service && sudo systemctl
+      daemon-reload && sudo systemctl restart ghostmirror.timer ghostmirror-deep.timer && sudo
+      systemctl start ghostmirror-deep.service ghostmirror.service`; luego `head -20
+      /etc/pacman.d/mirrorlist` debería mezclar Worldwide, EE. UU. y algo de Brasil o Chile.
 - [ ] **Servicios en la guía**: `bluetooth` y `avahi-daemon` están activos y la guía no los
       activa; añadirlos a los `systemctl enable` del chroot (greetd ya está en «Escritorio»).
 - [ ] **cups**: instalado y apagado. Activar `cups.socket`; avahi-daemon ya está activo.
@@ -270,6 +272,24 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 
 ## Hecho
 
+- 2026-09-25 **ghostmirror analizado**: los dos .service estaban habilitados en multi-user.target y
+  corrían en cada arranque además del timer (hoy tres veces: tres barridos completos y ~720 MiB
+  de prueba de velocidad); el orden `morerecent` antes que `ping` dejaba 35 espejos alemanes y
+  5 Worldwide, ninguno americano. Units reescritos en `etc/`: sin [Install] en los .service,
+  mensual por sanidad y latencia con `-T https -d 8 -O 10` y países útiles desde Ecuador (que
+  no tiene espejo oficial), semanal en vez de diario para la prueba «light». reflector se
+  queda solo para el USB de instalación, donde no hay AUR. `-D` (timers de usuario con linger)
+  descartado: la lista es de root, que es justo lo que pedía el issue 22.
+- 2026-09-25 **sudo y faillock decididos**: `etc/sudoers.d/20-defaults` (5 intentos, sin sermón,
+  contraseña 10 min para todas las terminales, `sudoedit` con Helix) y `etc/security/faillock.conf`
+  (5 fallos, 2 min). Con `insults`, sin `NOPASSWD`. Pendiente instalar en la máquina (sección
+  Dotfiles de la guía).
+- 2026-09-25 **sudo versionado**: `etc/sudoers.d/10-wheel` (permiso) y `20-defaults` (opciones, con el
+  `pwfeedback` que había a mano); la guía escribe el de wheel en el chroot y ya no edita
+  `/etc/sudoers` con visudo, que quedó como el del paquete.
+- 2026-09-24 **Initramfs y GRUB al día**: drop-in de mkinitcpio unificado instalado y regenerado
+  (23:54); GRUB 2.16 reinstalado en la ESP tras la actualización (22:41) y hook de pacman para
+  que pase solo en adelante.
 - 2026-09-24 **xdg**: paquete stow con `mimeapps.list` (imágenes en PhotoQt, carpetas en yazi
   dentro de ghostty, web en Zen), `yazi-ghostty.desktop` y `xdg-terminals.list` para
   xdg-terminal-exec (paquete pendiente de instalar: en «Escritorio» de INSTALL.md).

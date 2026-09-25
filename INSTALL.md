@@ -419,7 +419,10 @@ mkinitcpio -P
 chmod 600 /boot/initramfs-linux*.img      # llevan la clave; /boot ya está cifrado, pero por si acaso
 ~~~
 
-Note: ==> WARNING: Possibly missing firmware for module: 'qat_6xxx'
+Aviso esperable: `Possibly missing firmware for module: 'qat_6xxx'`. Es el acelerador Intel
+QuickAssist de sexta generación, hardware de servidor que este portátil no tiene; el hook
+`encrypt` mete todos los módulos de cifrado y `linux-firmware` aún no trae ese archivo.
+No afecta al arranque; desaparecerá cuando lo empaqueten.
 
 Esta guía usa GRUB con `/boot` cifrado. La alternativa con rEFInd está en
 [docs/refind.md](docs/refind.md). **El orden importa**: `GRUB_ENABLE_CRYPTODISK=y` tiene que

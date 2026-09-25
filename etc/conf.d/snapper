@@ -1,0 +1,4 @@
+# /etc/conf.d/snapper — qué configuraciones de snapper existen (Arch; en Fedora es
+# /etc/sysconfig/snapper y en Ubuntu /etc/default/snapper). Cada nombre es un archivo en
+# /etc/snapper/configs/.
+SNAPPER_CONFIGS="root home"

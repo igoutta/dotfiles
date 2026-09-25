@@ -21,7 +21,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `etc/` | Archivos del sistema fuera de `$HOME`: zshenv, pam_env, greetd y su PAM. **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (Btrfs + LUKS2 + GRUB) y, al final, despliegue de estos dotfiles |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |
-| `docs/` | Guías secundarias: alternativas no usadas hoy (`refind.md`) |
+| `docs/` | Guías secundarias: `snapper.md` (instantáneas: análisis, decisiones y vuelta atrás), `refind.md` (alternativa no usada) |
 | `.stowrc` | Opciones fijas de stow: `--no-folding` (enlaces archivo a archivo, directorios reales) |
 | `.stow-local-ignore` | Lo que stow no debe enlazar: docs, licencia, `etc/` |
 
@@ -31,7 +31,6 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 sudo pacman -S --needed stow git
 git clone <url-del-repo> ~/dotfiles && cd ~/dotfiles
 sudo install -Dm644 etc/zsh/zshenv /etc/zsh/zshenv
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise
 stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise xdg
 ~~~
 

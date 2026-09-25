@@ -218,7 +218,8 @@ cat !$
 # "grub" the bootloader
 # "grub-btrfs" adds btrfs support for the grub bootloader and enables the user to directly boot from snapshots
 
-# "timeshift" a GUI app to easily create,plan and restore snapshots using BTRFS capabilities
+# Instantáneas: snapper + snap-pac se instalan y configuran tras el primer arranque (fase «Mantenimiento»);
+#   grub-btrfs y grub-btrfsd las muestran en GRUB. timeshift descartado: snapper va solo y encaja con grub-btrfs
 
 # "networkmanager" to manage Internet connections both wired and wireless ( it also has an applet package network-manager-applet )
 # "openssh" to use ssh and manage keys
@@ -587,6 +588,35 @@ noctalia msg greeter-sync                          # primer sync; el greeter sol
 journalctl -b | rg apply-appearance                # comprobación: pkexec ejecutando "--sync"; si no aparece, no se aplicó
 ~~~
 
+# Mantenimiento: instantáneas, firmware y batería
+
+Como usuario con sudo. Sin esto no hay ni una instantánea aunque grub-btrfs esté instalado.
+
+~~~sh
+# "snapper" instantáneas Btrfs con limpieza automática; "snap-pac" una antes y otra después de cada pacman,
+#   que es lo que salva de una actualización rota. grub-btrfsd las añade a GRUB al aparecer
+# "fwupd" actualizaciones de firmware por LVFS (SSD, controladoras): fwupdmgr get-devices / update
+sudo pacman -S --needed snapper snap-pac fwupd
+~~~
+
+Análisis, decisiones y vuelta atrás: `docs/snapper.md`. La config va como archivos de `etc/`
+(sección Dotfiles: dos configs, `conf.d/snapper`, `snap-pac.ini`, el hook de `/boot` y el
+drop-in de mkinitcpio); no se usa `snapper create-config` porque la guía ya monta `@snapshots`.
+Con esos archivos instalados, en este orden:
+
+~~~sh
+sudo chmod 750 /.snapshots                                       # root y, por ACL, wheel
+sudo btrfs subvolume create /home/.snapshots && sudo chmod 750 /home/.snapshots   # instantáneas de home
+# Fuera de las instantáneas de home, como subvolúmenes anidados (con la sesión cerrada o sin apps abiertas):
+mv ~/.cache ~/.cache.old && btrfs subvolume create ~/.cache && cp -a ~/.cache.old/. ~/.cache/ && rm -rf ~/.cache.old
+mkdir -p ~/.local/share && btrfs subvolume create ~/.local/share/containers                 # antes de usar podman
+sudo mkinitcpio -P                                               # initramfs con grub-btrfs-overlayfs
+sudo grub-mkconfig -o /boot/grub/grub.cfg                        # entra el submenú de instantáneas
+sudo systemctl enable --now grub-btrfsd snapper-timeline.timer snapper-cleanup.timer
+sudo snapper -c root create -d "base" && sudo snapper -c home create -d "base"
+snapper -c root list                                              # sin sudo: ALLOW_GROUPS=wheel
+~~~
+
 # Desarrollo: node con mise
 
 Como usuario con sudo. Claude Code va con instalador nativo y no necesita node; sí lo
@@ -626,6 +656,12 @@ sudo install -Dm644 etc/greetd/config.toml /etc/greetd/config.toml
 sudo install -Dm644 etc/pam.d/greetd /etc/pam.d/greetd
 sudo install -Dm640 -o greeter -g greeter etc/noctalia-greeter/greeter.toml /var/lib/noctalia-greeter/greeter.toml
 sudo install -Dm644 etc/tmpfiles.d/charge-limit.conf /etc/tmpfiles.d/charge-limit.conf && sudo systemd-tmpfiles --create charge-limit.conf
+sudo install -Dm640 etc/snapper/configs/root /etc/snapper/configs/root
+sudo install -Dm640 etc/snapper/configs/home /etc/snapper/configs/home
+sudo install -Dm644 etc/conf.d/snapper /etc/conf.d/snapper
+sudo install -Dm644 etc/snap-pac.ini /etc/snap-pac.ini
+sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook
+sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`

@@ -1,0 +1,17 @@
+# /etc/pacman.d/hooks/95-bootbackup.hook — copia /boot (vfat, fuera de Btrfs) a /.bootbackup
+# después de cada transacción que instale o quite un kernel. Así la instantánea «post» de
+# snap-pac (zz-, corre después) guarda el kernel e initramfs que casan con sus módulos, y se
+# puede restaurar /boot al volver atrás (docs/snapper.md). Fedora/Ubuntu: no hay hooks de
+# pacman; SysGuides lo evita poniendo /boot en Btrfs.
+[Trigger]
+Operation = Upgrade
+Operation = Install
+Operation = Remove
+Type = Path
+Target = usr/lib/modules/*/vmlinuz
+
+[Action]
+Depends = rsync
+Description = Copiando /boot a /.bootbackup…
+When = PostTransaction
+Exec = /usr/bin/rsync -a --delete /boot /.bootbackup

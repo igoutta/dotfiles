@@ -1,0 +1,41 @@
+# /etc/snapper/configs/root — instantáneas del subvolumen raíz (@), guardadas en /.snapshots
+# (@snapshots). Escrito a mano: `snapper create-config` quiere crear él .snapshots y la guía ya
+# monta @snapshots ahí. Va con etc/conf.d/snapper. Análisis y vuelta atrás: docs/snapper.md.
+# Ubuntu/Fedora: mismo archivo y valores.
+
+SUBVOLUME="/"
+FSTYPE="btrfs"
+# Sin cuotas Btrfs: SPACE_LIMIT no actúa; limpian los límites de abajo y FREE_LIMIT.
+QGROUP=""
+SPACE_LIMIT="0.5"
+FREE_LIMIT="0.2"
+
+# wheel lista y compara sin sudo; SYNC_ACL da lectura sobre /.snapshots a esos usuarios.
+ALLOW_USERS=""
+ALLOW_GROUPS="wheel"
+SYNC_ACL="yes"
+
+# Comparar en segundo plano: la raíz es pequeña.
+BACKGROUND_COMPARISON="yes"
+
+# Numeradas = las de pacman (snap-pac): máximo 20, y 5 de las importantes (etc/snap-pac.ini).
+NUMBER_CLEANUP="yes"
+NUMBER_MIN_AGE="1800"
+NUMBER_LIMIT="20"
+NUMBER_LIMIT_IMPORTANT="5"
+
+# Timeline: solo una diaria durante 7 días, por los cambios a mano en /etc que no pasan por
+# pacman. El timer crea una cada hora; la limpieza deja las diarias.
+TIMELINE_CREATE="yes"
+TIMELINE_CLEANUP="yes"
+TIMELINE_MIN_AGE="1800"
+TIMELINE_LIMIT_HOURLY="0"
+TIMELINE_LIMIT_DAILY="7"
+TIMELINE_LIMIT_WEEKLY="0"
+TIMELINE_LIMIT_MONTHLY="0"
+TIMELINE_LIMIT_QUARTERLY="0"
+TIMELINE_LIMIT_YEARLY="0"
+
+# Pares pre/post de pacman sin cambios entre sí: fuera a los 30 minutos.
+EMPTY_PRE_POST_CLEANUP="yes"
+EMPTY_PRE_POST_MIN_AGE="1800"

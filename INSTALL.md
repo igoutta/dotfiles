@@ -255,7 +255,7 @@ cat !$
 # "starship" prompt, "atuin" shell history
 # terminus-font for ter-132 family font for the hooks
 
-# "helix" my editor ($EDITOR). "micro" for visudo. "neovim" installed but never configured (see TODO.md)
+# "helix" my editor ($EDITOR). "micro" editor de respaldo en la consola. "neovim" installed but never configured (see TODO.md)
 
 # "mandoc" provides man (instead of man-db), "man-pages" the pages themselves
 # "navi" is an interactive cheatsheet tool for the command-line (Ctrl-G in zsh)
@@ -466,7 +466,7 @@ teclado numérico activo en el prompt de LUKS.
 ~~~sh
 useradd -m -U -G wheel,users,uucp,storage,power --shell /bin/zsh ga
 passwd ga
-EDITOR=micro visudo        # descomentar %wheel ALL=(ALL:ALL) ALL
+printf '%%wheel ALL=(ALL:ALL) ALL\n' > /etc/sudoers.d/10-wheel && chmod 440 /etc/sudoers.d/10-wheel && visudo -c   # sudo para wheel; /etc/sudoers queda intacto
 ~~~
 
 ~~~sh
@@ -682,6 +682,8 @@ sudo install -Dm644 etc/snap-pac.ini /etc/snap-pac.ini
 sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook   # solo si /boot está fuera de Btrfs (instalación de 2026-08)
 sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hooks/91-grub-reinstall.hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
+sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
+sudo install -Dm644 etc/security/faillock.conf /etc/security/faillock.conf
 ~~~
 
 Paquetes de usuario. El `.stowrc` de la raíz añade `--no-folding` a todo comando `stow`

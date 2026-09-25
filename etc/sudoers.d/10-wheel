@@ -1,0 +1,5 @@
+# /etc/sudoers.d/10-wheel — el grupo wheel puede usar sudo con su contraseña. Va aquí y no
+# descomentado en /etc/sudoers para que ese archivo quede como el del paquete y no haya que
+# editarlo con visudo en cada instalación. Modo 440; validar con `visudo -c`.
+# Ubuntu: el grupo es `sudo`; Fedora: `wheel`, ya activo por defecto.
+%wheel ALL=(ALL:ALL) ALL

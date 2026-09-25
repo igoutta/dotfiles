@@ -1,0 +1,27 @@
+# /etc/sudoers.d/20-defaults — ajustes de sudo elegidos el 2026-09-25. Modo 440; validar con
+# `visudo -c`. Lo que no está aquí queda con el valor compilado de sudo. Mismo archivo en
+# Ubuntu/Fedora.
+
+# Cinco intentos de contraseña antes de que sudo se rinda (de fábrica, tres). Va a juego con
+# el `deny = 5` de /etc/security/faillock.conf: si PAM bloqueara al tercer fallo, los otros dos
+# intentos no servirían.
+Defaults passwd_tries=5
+
+# Sin el sermón de la primera vez ("With great power…").
+Defaults lecture=never
+
+# Burlas al fallar la contraseña en vez del «Sorry, try again». Solo humor.
+Defaults insults
+
+# Asteriscos al teclear la contraseña, para ver que se está escribiendo.
+Defaults pwfeedback
+
+# La contraseña vale diez minutos (de fábrica, cinco) y para todas las terminales de la
+# sesión a la vez (de fábrica, una caché por terminal).
+Defaults timestamp_timeout=10
+Defaults timestamp_type=global
+
+# Editor de `sudoedit` y `visudo`: abre una copia temporal del archivo con tu editor y tu
+# usuario, y al guardar sudo la devuelve a su sitio con los permisos de root. Más seguro que
+# `sudo helix archivo`, que arranca el editor entero como root. Cambiar aquí si se pasa a nvim.
+Defaults editor=/usr/bin/helix

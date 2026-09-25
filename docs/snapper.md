@@ -21,6 +21,15 @@ Que casi todo lo mutable esté en subvolúmenes propios es la mejor parte: una i
 `@` no arrastra logs, cachés, contenedores ni `/home`, y una vuelta atrás de la raíz no toca
 los datos del usuario.
 
+## Con la reinstalación
+
+Snapper no mira debajo del sistema de archivos: Btrfs sobre LVM sobre LUKS le da igual, y GRUB
+lee esa pila con sus módulos `cryptodisk`, `lvm` y `btrfs`. Lo que cambia con la disposición
+nueva de la guía: `/boot` pasa a estar dentro de `@`, así que cada instantánea lleva su kernel
+y el hook de copia de `/boot` sobra; la swap es un volumen lógico y no aparece en ninguna
+instantánea; las configs `root` y `home`, `snap-pac`, `grub-btrfsd` y el hook overlayfs siguen
+iguales. La tabla de arriba describe la instalación de 2026-08.
+
 ## Qué hace SysGuides en Fedora y qué equivale aquí
 
 | SysGuides (Fedora) | Aquí (Arch) |
@@ -58,7 +67,10 @@ además usa el driver btrfs cuando el almacén es un subvolumen.
 de rendimiento y un historial de problemas. Bastan los límites por número, por tiempo y
 `FREE_LIMIT=0.2` (con menos del 20 % libre, snapper limpia).
 
-**`/boot` fuera de Btrfs es el punto débil.** Una instantánea de `@` guarda los módulos del
+**`/boot` fuera de Btrfs es el punto débil de la instalación de 2026-08.** En la disposición
+nueva de la guía (LVM dentro del LUKS, `/boot` como directorio de `@`, ESP en `/efi`) el kernel
+va dentro de cada instantánea y el hook de copia sobra; lo de abajo aplica a la máquina actual.
+ Una instantánea de `@` guarda los módulos del
 kernel de ese momento, pero no el kernel ni el initramfs, que viven en la vfat. Volver a una
 instantánea anterior a una actualización del kernel deja `/boot` nuevo con módulos viejos: no
 arranca bien. SysGuides lo resuelve poniendo `/boot` en Btrfs; cambiar eso aquí es rehacer el
@@ -75,7 +87,10 @@ varios discos) se deciden con la hibernación, que sigue pendiente en TODO.md.
 
 **GRUB.** `GRUB_DEFAULT=saved` con `GRUB_SAVEDEFAULT=true` guarda la última entrada elegida.
 Las entradas de instantáneas de grub-btrfs no usan `savedefault`, así que arrancar una no la
-convierte en predeterminada. Comprobar la primera vez.
+convierte en predeterminada. Comprobar la primera vez. Cuando haya hibernación (`resume=` en
+la línea del kernel), las entradas de instantáneas deben llevar `noresume`:
+`GRUB_BTRFS_SNAPSHOT_KERNEL_PARAMETERS="noresume"` en `/etc/default/grub-btrfs/config`, para
+que arrancar una instantánea nunca intente reanudar una imagen de memoria de otro sistema.
 
 ## Vuelta atrás de la raíz
 

@@ -77,14 +77,34 @@ dd if=/dev/urandom bs=10M status=progress of=*DRIVE*
 
 ### Definir las particiones
 
+Dos particiones, no tres: la ESP y un solo contenedor LUKS que dentro lleva swap y raíz como
+volúmenes lógicos (LVM). Así la swap queda cifrada con clave persistente sin archivos de clave
+en `/boot`, se puede cambiar de tamaño cuando haga falta (`lvresize`), y la hibernación sale
+sola. La instalación de 2026-08 usaba tres particiones con la swap en medio y de clave
+aleatoria; de ahí venía que no se pudiera hibernar ni agrandar la swap.
+
 ~~~sh
 sgdisk --clear \
-       --new=1:0:+2GiB --typecode=1:ef00 --change-name=1:EFI \
-       --new=2:0:+16GiB --typecode=2:8200 --change-name=2:cryptswap \
-       --new=3:0:0 --typecode=3:8300 --change-name=3:cryptsystem *DRIVE*
+       --new=1:0:+1GiB --typecode=1:ef00 --change-name=1:EFI \
+       --new=2:0:0     --typecode=2:8309 --change-name=2:cryptsystem *DRIVE*
 ~~~
 
-### Configurar el cifrado de la partición principal
+### Configurar el cifrado del contenedor principal
+
+GRUB abre este contenedor para leer el kernel (`/boot` va cifrado, dentro de la raíz). GRUB
+2.14 y posteriores entienden Argon2, pero su implementación es lenta y necesita mucha memoria
+en el arranque; la ranura de la contraseña va con PBKDF2, que GRUB abre en segundos. La ranura
+de la clave de archivo que usa el initramfs (más abajo) sí va con Argon2id.
+
+PBKDF2 resiste peor que Argon2id un ataque por fuerza bruta con GPU, y se compensa con
+longitud: 20 caracteres o más. Si en la prueba en máquina virtual GRUB abre en pocos segundos
+una ranura Argon2id con memoria limitada (`--pbkdf argon2id --pbkdf-memory 262144`), usar esa
+en vez de PBKDF2; lo que no se puede es dejar la memoria por defecto, que GRUB no tiene.
+
+**La contraseña se teclea en GRUB con distribución US y sin eco**: solo letras minúsculas y
+dígitos, que están en el mismo sitio en US y en latam. Nada de `-`, `'`, `¿` ni mayúsculas
+con símbolos. Una contraseña mal tecleada en GRUB acaba en `grub rescue>`; se reinicia y se
+vuelve a intentar.
 
 ~~~sh
 cryptsetup luksFormat \
@@ -92,8 +112,8 @@ cryptsetup luksFormat \
            --cipher aes-xts-plain64 \
            --key-size 512 \
            --hash sha512 \
+           --pbkdf pbkdf2 \
            --iter-time 2000 \
-           --pbkdf argon2id \
            --use-urandom \
            --verify-passphrase \
            /dev/disk/by-partlabel/cryptsystem
@@ -103,21 +123,23 @@ cryptsetup luksFormat \
 cryptsetup open /dev/disk/by-partlabel/cryptsystem system
 ~~~
 
-### Configurar el cifrado de la partición de intercambio
+### LVM dentro del contenedor: swap y raíz
 
 ~~~sh
-cryptsetup open --type plain --cipher aes-xts-plain64 --key-size 512 --key-file /dev/urandom /dev/disk/by-partlabel/cryptswap swap
-~~~
-
-~~~sh
-mkswap -L swap /dev/mapper/swap
-swapon -L swap
+pvcreate /dev/mapper/system
+vgcreate system /dev/mapper/system
+lvcreate -L 34G -n swap system          # ≥ RAM (32 G) para hibernar; luego se cambia con lvresize
+lvcreate -l 100%FREE -n root system
+mkswap -L swap /dev/system/swap && swapon /dev/system/swap
 ~~~
 
 ### Formatear y montar el sistema de archivos con subvolumenes usando BTRFS
 
+`/boot` no es una partición: es un directorio dentro de `@`, cifrado y dentro de cada
+instantánea, así que una vuelta atrás lleva el kernel que casa con sus módulos.
+
 ~~~sh
-mkfs.btrfs --label system --nodesize 32k /dev/mapper/system
+mkfs.btrfs --label system --nodesize 32k /dev/system/root
 mount -t btrfs LABEL=system /mnt
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@snapshots
@@ -166,14 +188,14 @@ Para cambiar una opción de un punto ya montado sin desmontar:
 mount -o remount,<opciones> /mnt/<punto>
 ~~~
 
-### Formatear y montar la partición de arranque
+### Formatear y montar la partición EFI en /efi
+
+Solo lleva el binario de GRUB; el kernel y el initramfs viven cifrados en `/boot`.
 
 ~~~sh
 mkfs.fat -F32 -n EFI /dev/disk/by-partlabel/EFI
-mount --mkdir LABEL=EFI /mnt/boot
+mount --mkdir LABEL=EFI /mnt/efi
 ~~~
-
-# Instalación del sistema
 
 ## Actualización de los repositorios espejo óptimos para descarga
 
@@ -214,6 +236,7 @@ cat !$
 
 # "efibootmgr" needed to install grub
 # "btrfs-progs" are user-space utilities for file system management ( needed to harness the potential of btrfs )
+# "lvm2" volúmenes lógicos dentro del LUKS (swap y raíz) y el hook lvm2 del initramfs
 # "inotify-tools" used by grub btrfsd deamon to automatically spot new snapshots and update grub entries
 # "grub" the bootloader
 # "grub-btrfs" adds btrfs support for the grub bootloader and enables the user to directly boot from snapshots
@@ -247,7 +270,7 @@ cat !$
 #   continuation (the backslash escapes the space) and the command silently ends there.
 pacstrap -iK /mnt base base-devel \
                   linux linux-headers linux-firmware intel-ucode mkinitcpio \
-                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs dosfstools cryptsetup \
+                  efibootmgr btrfs-progs inotify-tools fuse3 ntfs-3g ntfsprogs dosfstools cryptsetup lvm2 \
                   grub grub-btrfs os-prober \
                   util-linux dhcpcd networkmanager iwd firewalld bluez bluez-utils cups \
                   avahi acpi acpi_call acpid \
@@ -267,23 +290,15 @@ genfstab -L -p /mnt >> /mnt/etc/fstab
 cat !$
 ~~~
 
-### Configurar el cifrado del espacio de intercambio (swap)
+### Comprobar swap y raíz en fstab
 
-Replace 'LABEL=swap' with '/dev/mapper/swap' in FSTAB file at '/mnt/etc/fstab'.
-
-~~~sh
-sed -i -e 's/^LABEL=swap/\/dev\/mapper\/swap/' /mnt/etc/fstab
-cat !$
-~~~
-
-Con ese cambio, el kernel esperará que un contenedor cifrado abierto llamado swap, así que agregue lo siguiente al archivo '/mnt/etc/crypttab' para que se abra en el arranque.
+`genfstab -L` deja la swap como `LABEL=swap` y la raíz como `LABEL=system`; los dos son
+volúmenes lógicos dentro del LUKS y systemd los resuelve. No hace falta `crypttab`: el
+initramfs abre el contenedor con la clave de archivo y LVM activa el resto.
 
 ~~~sh
-printf '\nswap\t/dev/disk/by-partlabel/cryptswap\t/dev/urandom\tswap,offset=2048,cipher=aes-xts-plain64,size=512\n' >> /mnt/etc/crypttab
-cat !$
+rg -n 'swap|LABEL=system.* / ' /mnt/etc/fstab
 ~~~
-
-Tenga en cuenta que esto generará una clave aleatoria en cada arranque, por lo que el intercambio (swap) no será persistente. Esto tiene implicaciones en la hibernación, téngalo en cuenta.
 
 ~~~sh
 echo tuf > /mnt/etc/hostname
@@ -373,73 +388,77 @@ curl -O https://blackarch.org/strap.sh && \
 pacman -S xdg-utils xdg-user-dirs dialog
 ~~~
 
-Modify /etc/mkinitcpio.conf to have btrfs in MODULES, /usr/bin/btrfs in BINARIES, and encrypt in HOOKS. Add encrypt hook after block and before filesystems.
+Clave de archivo para que el initramfs abra la raíz sin pedir la contraseña por segunda vez
+(GRUB ya la pidió). Va dentro del initramfs, que vive en `/boot` cifrado; nunca en la ESP.
 
-If hibernation is to be used, resume needs to be added (somewhere after udev). If it is from a swap file inside an encrypted container (as in this case), then resume should be placed after the encrypt and filesystem hooks.
+~~~sh
+mkdir -m 700 /etc/keys && dd if=/dev/urandom of=/etc/keys/system.key bs=4096 count=1 && chmod 000 /etc/keys/system.key
+cryptsetup luksAddKey --pbkdf argon2id /dev/disk/by-partlabel/cryptsystem /etc/keys/system.key
+~~~
 
 ~~~sh
 helix /etc/mkinitcpio.conf
 ~~~
 
-BTRFS support, Intel Graphics
-
-TPM2, UKI,
+`encrypt` abre el LUKS con la clave (`cryptkey=` en la línea del kernel), `lvm2` activa swap y
+raíz, `resume` reanuda desde `/dev/system/swap` y `grub-btrfs-overlayfs` permite arrancar una
+instantánea de solo lectura desde GRUB. Sin `btrfs` (solo para Btrfs en varios discos) ni
+`tpm_crb`. El paquete `grub-btrfs` ya está instalado por pacstrap, así que el hook existe.
 
 ~~~sh
-MODULES=(btrfs tpm_crb i915)
+MODULES=(btrfs i915)
 BINARIES=(/usr/bin/btrfs)
-HOOKS=(base udev resume btrfs autodetect microcode modconf kms keyboard keymap consolefont block encrypt filesystems fsck)
+FILES=(/etc/keys/system.key)
+HOOKS=(base udev autodetect microcode modconf kms keyboard keymap consolefont block encrypt lvm2 resume filesystems fsck grub-btrfs-overlayfs)
 COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-v -5 --long)
 ~~~
 
 ~~~sh
 mkinitcpio -P
+chmod 600 /boot/initramfs-linux*.img      # llevan la clave; /boot ya está cifrado, pero por si acaso
 ~~~
 
 Note: ==> WARNING: Possibly missing firmware for module: 'qat_6xxx'
 
-Esta guía usa GRUB. La alternativa con rEFInd está en [docs/refind.md](docs/refind.md).
+Esta guía usa GRUB con `/boot` cifrado. La alternativa con rEFInd está en
+[docs/refind.md](docs/refind.md). **El orden importa**: `GRUB_ENABLE_CRYPTODISK=y` tiene que
+estar en `/etc/default/grub` antes de `grub-install`; si no, el núcleo de GRUB sale sin los
+módulos de cifrado, no encuentra su propio `/boot` y arranca en `grub rescue>`. Ese fue el
+fallo de los intentos de 2026-08 (la guía de entonces instalaba GRUB primero), sumado a la
+contraseña tecleada en distribución US sin eco.
+
+El hook `encrypt` acepta `UUID=`, `LABEL=`, `PARTUUID=` y `PARTLABEL=` en `cryptdevice=`, así
+que no hace falta copiar ningún UUID: la etiqueta de partición que puso `sgdisk` basta, y el
+archivo queda igual en cualquier máquina que siga esta guía.
 
 ~~~sh
-grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck
-~~~
-
-# Opening default grub config file with nvim
 helix /etc/default/grub
+~~~
 
-Uncomment the line GRUB_ENABLE_CRYPTODISK=y
-
-# Uncomment to enable booting from LUKS encrypted disks
+~~~sh
 GRUB_ENABLE_CRYPTODISK=y
-
-Search other operational systems
-
-If you want that grub search for other operational systems, you can also uncomment the line GRUB_DISABLE_OS_PROBER=false:
-
-GRUB_DISABLE_OS_PROBER=false
-
-Remember last selected entry
-
-If you want that grub remember the last selected entry, you can also uncomment the line GRUB_SAVEDEFAULT=true and change the line GRUB_DEFAULT=0 to GRUB_DEFAULT=saved:
-
-...
-GRUB_DEFAULT=saved
-...
+GRUB_CMDLINE_LINUX_DEFAULT="cryptdevice=PARTLABEL=cryptsystem:system:allow-discards cryptkey=rootfs:/etc/keys/system.key root=/dev/system/root rootflags=subvol=@ resume=/dev/system/swap loglevel=3 quiet"
+GRUB_DISABLE_OS_PROBER=false      # encuentra Windows de otros discos
+GRUB_DEFAULT=saved                # recuerda la última entrada elegida
 GRUB_SAVEDEFAULT=true
-...
+~~~
+
+Las entradas de instantáneas de grub-btrfs no deben reanudar una imagen de hibernación:
 
 ~~~sh
-blkid -s UUID -o value /dev/disk/by-partlabel/cryptsystem
+sed -i 's|^#GRUB_BTRFS_SNAPSHOT_KERNEL_PARAMETERS=.*|GRUB_BTRFS_SNAPSHOT_KERNEL_PARAMETERS="noresume"|' /etc/default/grub-btrfs/config
 ~~~
 
 ~~~sh
-GRUB_CMDLINE_LINUX_DEFAULT="cryptdevice=UUID=***XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX***:system:allow-discards root=/dev/mapper/system"
-~~~
-
-~~~sh
+grub-install --target=x86_64-efi --efi-directory=/efi --boot-directory=/boot --bootloader-id=GRUB --recheck
 grub-mkconfig -o /boot/grub/grub.cfg
 ~~~
+
+En el primer arranque GRUB pide la contraseña del contenedor (teclado US, sin eco), tarda unos
+segundos en abrirlo y en leer kernel e initramfs, y el initramfs ya no vuelve a preguntar.
+Si aparece `grub rescue>`, la causa casi siempre es una de las dos de arriba; desde ahí
+`cryptomount -a` permite reintentar la contraseña sin reiniciar.
 
 `mkinitcpio-numlock` (AUR) se instala con yay tras el primer arranque si se quiere el
 teclado numérico activo en el prompt de LUKS.
@@ -660,7 +679,7 @@ sudo install -Dm640 etc/snapper/configs/root /etc/snapper/configs/root
 sudo install -Dm640 etc/snapper/configs/home /etc/snapper/configs/home
 sudo install -Dm644 etc/conf.d/snapper /etc/conf.d/snapper
 sudo install -Dm644 etc/snap-pac.ini /etc/snap-pac.ini
-sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook
+sudo install -Dm644 etc/pacman.d/hooks/95-bootbackup.hook /etc/pacman.d/hooks/95-bootbackup.hook   # solo si /boot está fuera de Btrfs (instalación de 2026-08)
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 ~~~
 

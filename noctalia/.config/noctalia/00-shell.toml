@@ -34,24 +34,57 @@ remember_last_region = true
 # Sin el widget "bar" del plugin niri-displays, que ya no se usa (outputs en niri).
 [bar.default]
 start = [ "launcher", "mpvpaper", "wallpaper", "workspaces" ]
-# temp y cpu son los widgets nativos sysmon (cpu_temp, cpu_usage) que noctalia define por defecto.
+# temp es el widget nativo sysmon (cpu_temp); pulse (CPU y RAM) y claude son de plugins,
+# definidos en 30-plugins.toml. Sin bluetooth ni brillo (2026-09-25, la derecha iba
+# saturada): los dos están en el centro de control, y el brillo en Fn+F7/F8. Sin el búho
+# (widget control-center): el clic derecho en cualquier hueco de la barra ya abre el centro
+# de control, y Mod+S también.
 end = [
     "media",
     "power_profile",
     "usb",
     "temp",
-    "cpu",
+    "pulse",
+    "claude",
     "tray",
     "notifications",
     "clipboard",
     "network",
-    "bluetooth",
     "volume",
-    "brightness",
     "battery",
-    "control-center",
     "session",
 ]
+
+# El HDMI va en vertical y mide 768 de ancho: la barra completa no cabe. Ahí solo
+# workspaces, reloj y notificaciones. match es el conector de niri. Márgenes en 15-style.toml.
+[bar.default.monitor.hdmi]
+match = "HDMI-A-1"
+start = [ "workspaces" ]
+center = [ "clock" ]
+end = [ "notifications" ]
+
+# Menos texto en la derecha: solo iconos en red y volumen (el SSID y el porcentaje están en
+# el centro de control y en el OSD), multimedia oculto si no suena nada (quitaba «Nothing
+# Playing»), la bandeja en un solo botón que abre sus iconos, y de Claude solo la ventana
+# de 5 horas. La batería conserva su porcentaje.
+[widget.media]
+hide_when_no_media = true
+
+[widget.network]
+show_label = false
+
+[widget.volume]
+show_label = false
+
+[widget.tray]
+drawer = true
+
+[widget.claude]
+usage_percent_display = "session"
+
+# Clic derecho en la batería: la gráfica del plugin battery-graph (30-plugins.toml).
+[widget.battery.actions]
+right = "panel-toggle frai3mega/battery-graph:battery-panel"
 
 [dock]
 enabled = true

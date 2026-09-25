@@ -21,6 +21,9 @@ binds {
     Mod+S hotkey-overlay-title="Centro de control" { spawn-sh "noctalia msg panel-toggle control-center"; }
     Mod+N hotkey-overlay-title="Notificaciones" { spawn-sh "noctalia msg panel-toggle notification-history"; }
     Mod+Shift+S hotkey-overlay-title="Ajustes de noctalia" { spawn-sh "noctalia msg settings-toggle"; }
+    // Paneles de plugins. Mod+Shift+Escape como el Ctrl+Shift+Escape de otros sistemas.
+    Mod+Shift+Escape hotkey-overlay-title="Monitor del sistema" { spawn-sh "noctalia msg panel-toggle arrifat346afs/systempulse:panel"; }
+    Mod+Shift+C hotkey-overlay-title="Claude Code: uso y sesiones" { spawn-sh "noctalia msg panel-toggle nightwatch75/claude-cockpit:panel"; }
     Alt+Tab hotkey-overlay-title="Selector de ventanas" { spawn-sh "noctalia msg window-switcher"; }
 
     // ---------- programas ----------

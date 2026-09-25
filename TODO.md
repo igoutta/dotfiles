@@ -339,6 +339,13 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 
 ## Hecho
 
+- 2026-09-25 **Plugins nuevos en el repo**: claude-cockpit (widget `claude` y `Mod+Shift+C`),
+  systempulse (widget `pulse` en lugar del `cpu` nativo, `Mod+Shift+Escape`, sin GPU porque
+  nvtop despierta la NVIDIA) y battery-graph (clic derecho en la batería, con `battery_BAT1`:
+  el `BAT0` por defecto rompía el panel). Estaban solo en el `settings.toml` de la GUI; su
+  bloque `[plugins]` se retiró para que mande `30-plugins.toml`. Barra reducida en el HDMI
+  vertical (`[bar.default.monitor.hdmi]`). Reinicio de noctalia documentado en su CHEATSHEET:
+  los mpvpaper se cierran antes, o quedan dos vídeos por pantalla.
 - 2026-09-25 **Fondo de vídeo sin recodificar**: la biblioteca a 1080p del mismo día se descarta
   (obligaba a recodificar cada vídeo nuevo). Medido por el socket IPC de mpvpaper que lo caro
   eran los filtros por defecto de mpv, no el 4K: con `scale=bilinear dscale=bilinear dither=no

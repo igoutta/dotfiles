@@ -17,6 +17,8 @@ primera/última columna en `Mod+A`/`Mod+E` y workspaces en `Mod+U`/`Mod+I`.
 | `Mod+S` | Centro de control |
 | `Mod+N` | Historial de notificaciones |
 | `Mod+Shift+S` | Ajustes de noctalia |
+| `Mod+Shift+Escape` | Monitor del sistema: CPU, RAM, disco y red (plugin systempulse) |
+| `Mod+Shift+C` | Claude Code: uso, sesiones y CLAUDE.md (plugin claude-cockpit) |
 | `Alt+Tab` | Selector de ventanas |
 | `Mod+Alt+Esc` | Bloquear pantalla |
 | `Mod+T` | Terminal (ghostty) |

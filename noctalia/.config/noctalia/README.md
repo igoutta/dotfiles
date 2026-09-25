@@ -24,7 +24,8 @@ Comprobado el 2026-09-24 en esta máquina:
   partir de ahí ese archivo pisa a los `.toml` del repo clave a clave.
 - `config-reload` relee los archivos pero no re-evalúa la paleta ni la lista de plugins y
   widgets de la barra. Tras cambiar `10-theme.toml` o `30-plugins.toml`, reiniciar:
-  `pkill -x noctalia; niri msg action spawn -- noctalia`.
+  `pkill -x mpvpaper; pkill -x noctalia; niri msg action spawn -- noctalia`. Los mpvpaper
+  van primero: si noctalia muere antes se quedan colgados y salen dos vídeos por pantalla.
 
 Regla: lo que se quiera conservar va a un `.toml` de aquí; `settings.toml` es desechable.
 Cuando la GUI haya guardado algo que interese:

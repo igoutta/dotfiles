@@ -4,9 +4,10 @@ Cada tarea vive en una sola sección. Dentro de cada sección, el orden es la pr
 terminado baja a «Hecho» con fecha. Lo de «Sistema» se hace en la máquina y, a la vez, se
 escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
-**En curso**, en este orden: (1) pasada visual de niri + noctalia y usarla unos días; (2) sistema
-pesado: NVIDIA, hibernación; (3) sistema menor: servicios, cups, firewalld, bluetooth, Windows,
-user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segunda vuelta.
+**En curso**, en este orden: (1) OneDrive (2026-09-28); (2) sistema menor: servicios, cups,
+firewalld, bluetooth, Windows, user-dirs, portapapeles; (3) auditoría de paquetes; después
+ghostty y zsh segunda vuelta. NVIDIA y la pasada visual quedaron cerradas; la hibernación
+espera a la reinstalación.
 
 ## Sistema
 
@@ -64,8 +65,10 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       o solo web. Decidir.
 - [ ] **keepassxc**: sin decidir. Contraseñas hoy en el llavero de GNOME (seahorse); keepassxc
       añade base de datos portátil y navegador. Decidir.
-- [ ] **Greeter, formulario abajo a la izquierda**: no se puede en 1.5.0, la última versión
-      (2026-09-10). El formulario va siempre centrado; solo se colocan los botones de
+- [ ] **Greeter, formulario abajo a la izquierda**: no se puede en 1.5.0 ni en 1.6.0 (revisado
+      el 2026-09-28 en su ejemplo de config). Desde ese día el formulario va solo en eDP-1
+      (`[output] name`; las demás salidas se apagan durante el greeter). El formulario va
+      siempre centrado; solo se colocan los botones de
       apagado (`power_buttons_position`) y el selector de esquema (`scheme_selector_position`),
       con valores `top-left`, `top-right`, `bottom-left`, `bottom-right` o `hidden`, en
       `[appearance]` de `etc/noctalia-greeter/greeter.toml`. Nadie lo ha pedido en GitHub:
@@ -97,30 +100,6 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       Veredicto: hacerlo después de la pasada visual, si el login animado importa más que el
       greeter a juego con noctalia sin tocar nada. Sin Xorg no hay opción hoy: noctalia-greeter
       1.5.0 no admite vídeo.
-- [~] **NVIDIA + Intel**: driver `nvidia-open` 615 instalado el 2026-09-25 y verificado: nouveau
-      fuera, `modeset`/`fbdev`, initramfs sin `kms`, GRUB con `PARTLABEL` y sin `udl`, niri
-      renderizando en la Intel por ruta PCI, `vulkan-intel` y `vulkan-tools` puestos, la regla udev
-      instalada y la GPU en `runtime_status=suspended` (su ventilador parado, su sensor a 0);
-      `prime-run vulkaninfo` la lista junto a la Intel. Resuelto por el camino: mpvpaper caía con
-      segfault en libnvidia-glcore y mantenía la RTX encendida (contexto Vulkan → NVIDIA, y libmpv
-      cargando el interop CUDA); `30-plugins.toml` lo fija en la Intel por tres opciones. Dato
-      nuevo: el HDMI y el DP-1 cuelgan de la Intel (`card1`); solo el USB-C (DP-2 y DP-3) va por la
-      NVIDIA, así que un monitor por HDMI no la despierta. El monitor del USB-C por la NVIDIA,
-      verificado ese día: estable y sin parpadeos. Falta: sacar `LIBGL_ALWAYS_SOFTWARE=1` del
-      script de Mission Planner y gpu-screen-recorder con NVENC.
-- [ ] **Mensajes al entrar y salir** (2026-09-25), medidos en el journal; ninguno frena nada:
-      - «Calling import-environment without a list of variable names is deprecated»: lo imprime
-        `/usr/bin/niri-session` en la consola al pasar del greeter a niri. Es un aviso de systemd,
-        y upstream sigue igual en main. Desde la contraseña: niri a los 0,5 s, la barra a los
-        1,2 s y los vídeos a los 2 s. No tocar el script del paquete.
-      - `pam_open_session: SERVICE_ERR` de greetd: solo al reiniciar o apagar desde la sesión.
-        greetd relanza el greeter y logind se niega porque el apagado ya está en marcha. Tres
-        veces este mes, nunca en un cierre de sesión normal. Inofensivo.
-      - Hallazgo: el compositor del greeter (wlroots) renderiza en la NVIDIA («EGL vendor:
-        NVIDIA» en `journalctl -b -t noctalia-greeter-compositor`), así que la despierta en cada
-        arranque. Probar `WLR_DRM_DEVICES` con la Intel primero en `etc/greetd/config.toml`;
-        ojo, los números de `cardN` no son fijos y las rutas by-path llevan `:`, que es el
-        separador de esa variable.
 - [ ] **Reinstalación de Arch**, al terminar los dotfiles. La guía ya está corregida (2026-09-24):
       dos particiones (ESP de 1 G en `/efi` y un LUKS2), LVM dentro del LUKS con swap de 34 G
       redimensionable y raíz Btrfs, `/boot` como directorio de `@` (cifrado y dentro de las
@@ -145,9 +124,6 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
       busybox), swapfile (por preferencia), swap nueva encogiendo la raíz (una hora con riesgo
       para algo que la reinstalación da gratis). Al reinstalar: `suspend-then-hibernate` en
       logind y en el idle de noctalia.
-- [ ] **sudo, un archivo menos en la máquina**: `sudo rm /etc/sudoers.d/10-pwfeedback && sudo install
-      -Dm440 etc/sudoers.d/20-defaults /etc/sudoers.d/20-defaults && sudo visudo -c` (pwfeedback ya
-      está dentro de 20-defaults; con los dos instalados solo hay una opción repetida, sin daño).
 - [ ] **ghostmirror, aplicar los units revisados** (análisis cerrado el 2026-09-25, ver Hecho):
       `sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror*.{service,timer} &&
       sudo systemctl disable ghostmirror.service ghostmirror-deep.service && sudo systemctl
@@ -297,7 +273,7 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
         misma acción. Mod+B abre o enfoca Zen y Mod+D, VS Code (`niri-focus-or-spawn`).
       - Usarlo unos días: paleta Ayu Red vs Vesper, `Mod+Alt+Esc` para bloquear, `Mod+N`
         notificaciones, `Mod+F1` chuleta en pantalla.
-      - Pasada visual aplicada el 2026-09-25, falta verla unos días: todo a 16 (gaps de niri,
+      - Pasada visual aplicada y aprobada el 2026-09-25: todo a 16 (gaps de niri,
         radio de ventanas antes 20, barra antes 12, dock, esquinas de pantalla encendidas),
         barra flotante a 16 px del borde y de los lados (antes pegada y con 100 a los lados),
         barra a 0.5 (como ghostty) y dock a 0.85 de opacidad, paneles en `transparency_mode = "soft"` y sombras de
@@ -314,11 +290,6 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 - [~] **ghostty**: paquete stow hecho el 2026-09-23 (fuente Nerd, padding, sin CSD para
       niri, shell integration con ssh-terminfo, copy-on-select al portapapeles, resize de
       splits sin tres modificadores). Falta usarlo unos días.
-- [ ] **bin**: paquete stow para `~/.local/bin`. Hoy solo `mission-planner`, sin versionar y
-      propiedad de root (`chown ga:ga`). Arranca un Xwayland con ventana raíz en `:10` con
-      openbox dentro y lanza ahí Mission Planner (mono), porque bajo xwayland-satellite los
-      menús de WinForms no se dibujan. Comentarios al español; revisar
-      `LIBGL_ALWAYS_SOFTWARE=1` cuando esté NVIDIA.
 - [ ] **zsh, segunda vuelta**: usarlo unos días y anotar aquí la fricción real; luego
       pasar los comentarios de `conf.d/*.zsh` y `.zshenv` al español (hoy en inglés); luego
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
@@ -365,6 +336,75 @@ user-dirs, portapapeles; (4) auditoría de paquetes; después ghostty y zsh segu
 
 ## Hecho
 
+- 2026-09-28 **NVIDIA + Intel**, cerrado: driver `nvidia-open` 615 instalado el 2026-09-25 y verificado: nouveau
+  fuera, `modeset`/`fbdev`, initramfs sin `kms`, GRUB con `PARTLABEL` y sin `udl`, niri
+  renderizando en la Intel por ruta PCI, `vulkan-intel` y `vulkan-tools` puestos, la regla udev
+  instalada y la GPU en `runtime_status=suspended` (su ventilador parado, su sensor a 0);
+  `prime-run vulkaninfo` la lista junto a la Intel. Resuelto por el camino: mpvpaper caía con
+  segfault en libnvidia-glcore y mantenía la RTX encendida (contexto Vulkan → NVIDIA, y libmpv
+  cargando el interop CUDA); `30-plugins.toml` lo fija en la Intel por tres opciones. Dato
+  nuevo: el HDMI y el DP-1 cuelgan de la Intel (`card1`); solo el USB-C (DP-2 y DP-3) va por la
+  NVIDIA, así que un monitor por HDMI no la despierta. El monitor del USB-C por la NVIDIA,
+  verificado ese día: estable y sin parpadeos. Cerrado también ese día: gpu-screen-recorder
+  se queda en la Intel (`--info`: h264, hevc y hevc 10 bits por VA-API; NVENC despertaría la
+  NVIDIA para lo mismo) y Mission Planner sin `LIBGL_ALWAYS_SOFTWARE=1` (su Xwayland da
+  OpenGL 4.6 en la Intel; con la variable iba por llvmpipe, en la CPU). El script ya está en
+  el paquete `bin/` (ver Hecho); HUD con GL por hardware comprobado en su log.
+  Otro culpable de tener la NVIDIA encendida (2026-09-28: 1203 s activa y 2 suspendida
+  en una sesión sin monitor en el USB-C): el monitor del sistema de noctalia elige NVML si
+  al arrancar la NVIDIA está despierta, y al entrar siempre lo está; luego la consulta cada
+  5 s. `[system.monitor] gpu_poll_seconds = 0` en `00-shell.toml` lo apaga: con la NVIDIA
+  despierta al arrancar noctalia, se suspende a los 6 s y no vuelve.
+- 2026-09-28 **Mensajes al entrar y salir**, cerrado (medidos el 2026-09-25), medidos en el journal; ninguno frena nada:
+  - «Calling import-environment without a list of variable names is deprecated»: lo imprime
+    `/usr/bin/niri-session` en la consola al pasar del greeter a niri. Es un aviso de systemd,
+    y upstream sigue igual en main. Desde la contraseña: niri a los 0,5 s, la barra a los
+    1,2 s y los vídeos a los 2 s. No tocar el script del paquete.
+  - `pam_open_session: SERVICE_ERR` de greetd: solo al reiniciar o apagar desde la sesión.
+    greetd relanza el greeter y logind se niega porque el apagado ya está en marcha. Tres
+    veces este mes, nunca en un cierre de sesión normal. Inofensivo.
+  - Bloq Num que se enciende y apaga varias veces al entrar: lo provoca RustDesk, no niri.
+    Su servicio (`rustdesk.service`, de sistema) lanza `rustdesk --server` dos veces para
+    el greeter y dos para `ga` al entrar, y lo relanza cada hora a los :13; cada vez crea un
+    teclado virtual («RustDesk UInput Keyboard») y al aparecer invierte el Bloq Num global.
+    Reproducido el 2026-09-25 matando el `--server` de `ga`: el LED de `input3::numlock`
+    (teclado del portátil) pasó de 1 a 0 y se quedó así. Si no se usa el acceso sin
+    vigilancia: `sudo systemctl disable --now rustdesk` y abrir RustDesk a mano cuando haga
+    falta. Si se usa, no hay arreglo del lado de niri. Servicio desactivado el 2026-09-28
+    (el paquete sigue): en ese arranque ningún teclado virtual de RustDesk y el LED de
+    Bloq Num fijo en 1. Confirmado tras reiniciar el 2026-09-28: sin el vaivén, Bloq Num
+    activo al entrar.
+  - Hallazgo: el compositor del greeter (wlroots) renderiza en la NVIDIA («EGL vendor:
+    NVIDIA» en `journalctl -b -t noctalia-greeter-compositor`), así que la despierta en cada
+    arranque. Preparado el 2026-09-25: `etc/udev/rules.d/61-gpu-names.rules` crea
+    `/dev/dri/igpu` y `/dev/dri/dgpu` (los `cardN` cambian y by-path lleva `:`), y
+    `etc/greetd/greeter-intel-first` pone `WLR_DRM_DEVICES` con la Intel primero solo si
+    esos nombres existen. Primer intento roto (2026-09-25): la regla por `ATTRS{vendor}`
+    también casaba con el puerto PCIe de Intel del que cuelga la NVIDIA, igpu y dgpu
+    acabaron en card0 y el greeter solo encendió el monitor del USB-C. Corregido por
+    `DRIVERS` y el script ahora exige que igpu sea Intel y distinta de dgpu. Reinstalado y
+    comprobado ese día: igpu → card1 (i915), dgpu → card0 (nvidia), y el script exportaría
+    `/dev/dri/card1:/dev/dri/card0` (`udevadm trigger` no espera: `udevadm settle` antes de
+    mirar). Tras reiniciar el 2026-09-28: el greeter ve las dos GPU, dibuja con la Intel
+    (Mesa) y enciende eDP-1 y HDMI. Queda un detalle: 63 «Atomic commit failed: Device or
+    resource busy» en eDP-1 durante los 14 s siguientes a encender el HDMI, que paran
+    solos antes de entrar; en los arranques anteriores no había ninguno. Sin efecto que
+    importe: la pantalla interna muestra el cuadro de ingreso (confirmado el 2026-09-28), el
+    resto es solo visual.
+- 2026-09-28 **sudo, un archivo menos**: en `/etc/sudoers.d` ya solo están `10-wheel` y
+  `20-defaults`; el `10-pwfeedback` viejo no está (pwfeedback va dentro de 20-defaults).
+- 2026-09-25 **bin y Mission Planner**: paquete stow `bin/` con `mission-planner`, que ya no es
+  de root. Su Xwayland abre maximizado (regla de niri por app-id: Xwayland fija la resolución
+  al abrir y luego ajusta la imagen a la ventana), openbox maximiza Mission Planner sin marco, se cierra con
+  Mod+Q, y al terminar Mission Planner se cierra también la ventana de Xwayland (el `wait`
+  esperaba a Xwayland y openbox). Sin `LIBGL_ALWAYS_SOFTWARE`: OpenGL 4.6 en la Intel.
+  Probado por él el 2026-09-28: fluido, y al redimensionar se ve bien.
+- 2026-09-25 **Sin botones de ventana**: gsettings `button-layout ':'` (INSTALL.md) y
+  `gtk-decoration-layout=:` en gtk-3.0 y gtk-4.0 para GTK, libadwaita (Karere, Exhibit) y
+  Firefox/Zen; VS Code con `window.controlsStyle: hidden`, fuera de Settings Sync para no
+  llevarlo a Windows; Vivaldi con `vivaldi.windows.use_native_decoration` (ventana nativa).
+  Las dos últimas viven fuera del repo (settings.json de VS Code, Preferences de Vivaldi).
+  Confirmado a ojo el 2026-09-28 en VS Code, Zen y Vivaldi.
 - 2026-09-25 **Plugins nuevos en el repo**: claude-cockpit (widget `claude` y `Mod+Shift+C`),
   systempulse (widget `pulse` en lugar del `cpu` nativo, `Mod+Shift+Escape`, sin GPU porque
   nvtop despierta la NVIDIA) y battery-graph (clic derecho en la batería, con `battery_BAT1`:

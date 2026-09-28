@@ -97,6 +97,13 @@ enable_overdrive = true
 enable_sounds = true
 
 # Brillo del monitor externo por DDC/CI (ddcutil). Requiere estar en el grupo i2c: TODO.md.
+# Sin sondear la GPU: si noctalia arranca con la NVIDIA despierta (siempre al entrar, porque
+# el greeter y niri acaban de usarla) elige NVML y la consulta cada 5 s, y la NVIDIA no se
+# vuelve a dormir en toda la sesión (visto el 2026-09-28: 1203 s activa y 2 suspendida). No
+# hay widget de GPU en la barra; 0 desactiva el sondeo por completo (docs de noctalia).
+[system.monitor]
+gpu_poll_seconds = 0
+
 [brightness]
 enable_ddcutil = true
 

@@ -598,6 +598,7 @@ gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
+gsettings set org.gnome.desktop.wm.preferences button-layout ':'   # sin botones de ventana en GTK, libadwaita y Firefox/Zen
 ~~~
 
 La configuración de niri, noctalia, gtk y ghostty, y los archivos de sistema de greetd, PAM

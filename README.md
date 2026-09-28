@@ -18,6 +18,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
 | `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web), `yazi-ghostty.desktop` y `xdg-terminals.list` |
 | `mise/` | Versiones de herramientas: node LTS y pnpm declarados en `config.toml`, y `config.yaml` de pnpm con `minimumReleaseAge`; las apps gráficas los ven por los shims que `zsh/.zshenv` pone en el PATH |
+| `bin/` | Scripts de `~/.local/bin` que no son de un programa concreto: `mission-planner` (Mission Planner en un Xwayland propio con openbox, maximizado y sin marco) |
 | `etc/` | Archivos del sistema fuera de `$HOME`: zshenv, pam_env, greetd y su PAM. **No es un paquete stow**: se copian con `install`, ver `etc/README.md` |
 | `INSTALL.md` | Guía de instalación de Arch (LUKS2 con LVM dentro: swap y raíz Btrfs; `/boot` cifrado; GRUB en `/efi`) y, al final, despliegue de estos dotfiles. La máquina actual (2026-08) sigue la disposición anterior; ver TODO «Reinstalación» |
 | `TODO.md` | Hoja de ruta y decisiones tomadas |

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# mission-planner — Mission Planner (ArduPilot, WinForms sobre mono) en un Xwayland propio.
+# Bajo xwayland-satellite, el X que da niri, los menús de WinForms no se dibujan; por eso va
+# en un Xwayland con ventana raíz (:10) y openbox dentro, que además da foco a los diálogos.
+# - La ventana de Xwayland abre maximizada (regla en niri/rules.kdl) y Xwayland fija ahí la
+#   resolución de su escritorio X. Si después cambia el ancho de la columna, la resolución no
+#   cambia, pero la imagen se ajusta a la ventana y se ve bien (comprobado el 2026-09-28).
+# - openbox maximiza la ventana principal y le quita el marco, sin botones. Se cierra con
+#   Mod+Q sobre la ventana de Xwayland (Xwayland termina y Mission Planner con él) o desde el
+#   propio Mission Planner.
+# - Al terminar Mission Planner se cierran openbox y Xwayland. Antes el `wait` esperaba
+#   también a ellos y la ventana de Xwayland se quedaba abierta y vacía.
+# - Sin LIBGL_ALWAYS_SOFTWARE: venía de la época de nouveau. Con nvidia-open y niri en la
+#   Intel, este Xwayland da OpenGL 4.6 por hardware (Mesa iris); forzar software lo pasaba a
+#   llvmpipe, en la CPU.
+# Arch: pacman -S xorg-xwayland openbox mono, y ardupilot-mission-planner (AUR).
+#   Ubuntu/Fedora: xwayland, openbox y mono-complete; Mission Planner desde su zip oficial,
+#   cambiando la ruta de `app`.
+set -euo pipefail
+
+app=/opt/ardupilot-mission-planner/MissionPlanner.exe
+pantalla=10
+config=$(mktemp)
+xwayland_pid=
+openbox_pid=
+
+limpiar() {
+    [[ -n "$openbox_pid" ]] && kill "$openbox_pid" 2>/dev/null || true
+    [[ -n "$xwayland_pid" ]] && kill "$xwayland_pid" 2>/dev/null || true
+    rm -f "$config"
+}
+trap limpiar EXIT INT TERM
+
+# openbox: la ventana principal maximizada y sin marco; los diálogos con foco y encima (si no,
+# quedan detrás y parece colgado); HUD y mapa sueltos como ventanas normales.
+cat > "$config" <<'XML'
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <applications>
+    <application type="normal">
+      <focus>yes</focus>
+    </application>
+    <application type="normal" title="Mission Planner*">
+      <focus>yes</focus>
+      <layer>normal</layer>
+      <decor>no</decor>
+      <maximized>yes</maximized>
+    </application>
+    <application type="dialog">
+      <focus>yes</focus>
+      <layer>above</layer>
+    </application>
+    <application title="*HUD*">
+      <focus>yes</focus>
+      <layer>normal</layer>
+    </application>
+    <application title="*Map*">
+      <focus>yes</focus>
+      <layer>normal</layer>
+    </application>
+  </applications>
+</openbox_config>
+XML
+
+Xwayland :"$pantalla" &
+xwayland_pid=$!
+for _ in {1..50}; do
+    [[ -S /tmp/.X11-unix/X$pantalla ]] && break
+    sleep 0.1
+done
+if [[ ! -S /tmp/.X11-unix/X$pantalla ]]; then
+    echo "Xwayland no arrancó en :$pantalla (¿ya está en uso? ls /tmp/.X*-lock)" >&2
+    exit 1
+fi
+
+DISPLAY=:"$pantalla" openbox --config-file "$config" &
+openbox_pid=$!
+sleep 0.5
+
+# Solo se espera a Mission Planner; al volver, el trap cierra openbox y Xwayland.
+DISPLAY=:"$pantalla" mono "$app" &
+wait $!

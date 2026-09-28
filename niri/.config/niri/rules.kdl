@@ -37,6 +37,16 @@ window-rule {
     open-floating true
 }
 
+// Mission Planner (bin/.local/bin/mission-planner) va en un Xwayland con ventana raíz en :10.
+// Xwayland fija la resolución de su escritorio X con el tamaño que tiene al abrir (luego ajusta
+// la imagen a la ventana, pero sin ganar resolución), así que abre maximizada. Solo por
+// app-id: el título «Xwayland on :10» llega después del primer tamaño y con él la regla no
+// entraba (abría a 1253 de ancho). Es el único Xwayland con ventana raíz que se usa.
+window-rule {
+    match app-id=r#"^org\.freedesktop\.Xwayland$"#
+    open-maximized true
+}
+
 // Gestores de contraseñas fuera de las capturas y del compartir pantalla. Desactivado
 // (/-) como venía; quitar el /- para activarlo.
 /-window-rule {

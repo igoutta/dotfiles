@@ -17,7 +17,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
 | `qt/` | Qt6: `qt6ct.conf` (estilo Fusion, iconos Adwaita) que engancha la paleta de noctalia; niri exporta `QT_QPA_PLATFORMTHEME=qt6ct` |
-| `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web), `yazi-ghostty.desktop` y `xdg-terminals.list` |
+| `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web, el Editor de PDF4QT para PDF), `yazi-ghostty.desktop` y `xdg-terminals.list` |
 | `mise/` | Versiones de herramientas: node LTS y pnpm declarados en `config.toml`, y `config.yaml` de pnpm con `minimumReleaseAge`; las apps gráficas los ven por los shims que `zsh/.zshenv` pone en el PATH |
 | `bin/` | Scripts de `~/.local/bin` que no son de un programa concreto: `mission-planner` (Mission Planner en un Xwayland propio con openbox, maximizado y sin marco) |
 | `onedrive/` | OneDrive con el cliente de abraunegg: `config` (sincronización completa en `~/OneDrive`), `onedrive-ctl` (ayudante: estado, pausa, exclusiones con prueba previa, inicio de sesión) y el plugin local de noctalia `ga/onedrive`: nube de estado en la barra y panel de configuración, en inglés con traducción al español |

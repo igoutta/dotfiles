@@ -778,6 +778,69 @@ excluir la carpeta desde el panel o moverla en la web.
 Ubuntu/Fedora: paquete `onedrive` en Fedora; en Ubuntu, el repo de OpenSUSE Build Service que
 indica el proyecto (el de apt está anticuado). El resto es idéntico.
 
+# Impresión, escáner y PDF
+
+Como usuario con sudo. La Epson L4160 va por la red (Wi-Fi) y sin driver: imprime por IPP
+Everywhere (anuncia `pwg-raster` y `urf`, AirPrint) y escanea por eSCL. `cups` y `avahi` ya
+vienen del pacstrap. Pegar los comandos de uno en uno: al pegar varios, la línea siguiente puede
+caer en la pregunta de contraseña de sudo y la instalación se corta.
+
+~~~sh
+# "nss-mdns" resuelve los nombres .local (la impresora es EPSON4EB54A.local). avahi la descubre, pero
+#   sin nss-mdns en nsswitch (abajo) CUPS no puede conectar y ni la cola temporal imprime
+# "sane" escaneo; "sane-airscan" escáneres de red por eSCL y WSD, sin driver
+# "tesseract" OCR con "tesseract-data-spa" y "-eng"; lo usan ocrmypdf y NAPS2
+sudo pacman -S --needed nss-mdns sane sane-airscan tesseract tesseract-data-spa tesseract-data-eng
+~~~
+
+~~~sh
+# "pdf4qt" visor y editor de PDF (Qt6, sin KDE): formularios, anotaciones, firma digital, tachado,
+#   PageMaster (unir, dividir, reordenar), Diff y PdfTool en la terminal. No hace OCR. Se compila
+#   contra el Qt del sistema; pdf4qt-bin copia el AppImage con su propio Qt dentro
+# "ocrmypdf" añade texto buscable a un PDF escaneado: ocrmypdf -l spa+eng entrada.pdf salida.pdf
+# "naps2-bin" escaneo a PDF de varias páginas, con OCR al escanear (GTK3 y SANE, sin GNOME)
+# Descartados: papers y simple-scan (GNOME), okular y skanpage (KDE), zathura (no rellena
+#   formularios ni firma), mupdf (solo X11 y sin imprimir), sioyek (solo -git en AUR, sin imprimir),
+#   gscan2pdf (ImageMagick y una quincena de módulos de Perl), epson-inkjet-printer-escpr2 (no trae
+#   la L4160, y con IPP Everywhere no hace falta driver)
+yay -S pdf4qt ocrmypdf naps2-bin
+~~~
+
+~~~sh
+# nombres .local por mDNS antes de resolve (systemd-resolved está apagado; si se enciende, apagar
+#   su MulticastDNS para que no choque con avahi en el puerto 5353)
+sudo sed -i 's/^hosts: mymachines resolve/hosts: mymachines mdns_minimal [NOTFOUND=return] resolve/' /etc/nsswitch.conf
+sudo systemctl enable --now avahi-daemon cups.socket
+# un solo escáner: fuera el módulo escl de SANE (duplica la Epson y vuelca su página web en la
+#   terminal) y v4l (la webcam cuenta como escáner)
+sudo sed -i -e 's/^escl$/#escl/' -e 's/^v4l$/#v4l/' /etc/sane.d/dll.conf
+~~~
+
+Cola de impresión, sin sudo: wheel administra CUPS por el socket local. Va por
+descubrimiento (`dnssd://`) y no por IP, así sigue valiendo si el router le cambia la
+dirección; la URI con su uuid sale de `lpinfo -v | rg dnssd`. `cups-browsed` no hace falta:
+CUPS 2.4 descubre la impresora solo y la cola es fija.
+
+~~~sh
+lpadmin -p EPSON_L4160 -D "Epson L4160" -L "Red local" -E -m everywhere \
+        -v 'dnssd://EPSON%20L4160%20Series._ipp._tcp.local/?uuid=cfe92100-67c4-11d4-a45f-e0bb9e4eb54a'
+lpadmin -p EPSON_L4160 -o PageSize=A4   # la impresora anuncia Carta de fábrica (media-default) y su web no lo cambia
+lpadmin -d EPSON_L4160                  # predeterminada: sin ella los diálogos arrancan en «Imprimir a archivo»
+lpstat -t                               # comprobación: EPSON_L4160 idle y predeterminada
+scanimage -L                            # comprobación: una sola línea «airscan:… EPSON L4160 Series»
+~~~
+
+Tras el stow (sección Dotfiles), `mimeapps.list` del paquete xdg abre los PDF con el Editor de
+PDF4QT, y el tema oscuro de Qt (fase Escritorio) le pone la paleta de noctalia.
+
+Si se recrea la cola, vuelve a salir Carta: repetir el `-o PageSize=A4`. PDF4QT 1.6.0: el
+LaunchPad no abre las demás apps (fuera de AppImage o Flatpak las busca como `./Pdf4QtEditor`,
+en la carpeta actual); usar las entradas sueltas del lanzador (Editor, Viewer, PageMaster, Diff).
+
+Ubuntu/Fedora: CUPS, avahi y nss-mdns vienen instalados y configurados; `sane-airscan`,
+`tesseract` y `ocrmypdf` están en apt y dnf; PDF4QT por Flatpak (`io.github.JakubMelka.Pdf4qt`)
+y NAPS2 por Flatpak o los .deb/.rpm de su web. La cola y el `dll.conf` son idénticos.
+
 # Dotfiles
 
 Ya como usuario, tras el primer arranque. El repo es un árbol de paquetes

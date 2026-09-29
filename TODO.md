@@ -4,7 +4,7 @@ Cada tarea vive en una sola sección. Dentro de cada sección, el orden es la pr
 terminado baja a «Hecho» con fecha. Lo de «Sistema» se hace en la máquina y, a la vez, se
 escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
-**En curso**, en este orden: (1) OneDrive (2026-09-28); (2) sistema menor: servicios, cups,
+**En curso**, en este orden: (1) OneDrive (2026-09-28); (2) sistema menor: servicios,
 firewalld, bluetooth, Windows, user-dirs, portapapeles; (3) auditoría de paquetes; después
 ghostty y zsh segunda vuelta. NVIDIA y la pasada visual quedaron cerradas; la hibernación
 espera a la reinstalación.
@@ -27,7 +27,7 @@ espera a la reinstalación.
         `sound-theme-freedesktop`, `ttf-nerd-fonts-symbols`, `noto-fonts-cjk`: noctalia lleva
         idle, bloqueo y sonidos; FiraCode Nerd ya trae los símbolos; CJK solo si se lee chino,
         japonés o coreano.
-      - Falta decidir, cada uno con tarea propia abajo: PDF, utilidad de discos, documentos de
+      - Falta decidir, cada uno con tarea propia abajo: utilidad de discos, documentos de
         oficina, keepassxc.
       - Curiosidad, asusctl y supergfxctl: asusctl es un demonio (asusd) sobre el driver
         asus-wmi del kernel que añade curvas de ventilador, RGB del teclado, perfiles y límite
@@ -57,8 +57,6 @@ espera a la reinstalación.
 - [ ] **KDE Connect**, decidido: `kdeconnect` (extra); `kdeconnectd` al entrar (spawn-at-startup
       en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). Necesita
       firewalld con el servicio `kdeconnect` (puertos 1714-1764 tcp/udp): va con esa tarea.
-- [ ] **PDF**: hoy los abre Vivaldi. Candidatos: papers (GNOME, coherente con adw-gtk3),
-      zathura (teclas vi, ligero), sioyek (para papers técnicos). Decidir y `xdg-mime`.
 - [ ] **Utilidad de discos**: gnome-disk-utility (LUKS, SMART, imágenes ISO) o solo
       `udisksctl`/`cryptsetup` en terminal. Decidir.
 - [ ] **Documentos de oficina**: libreoffice-fresh (libre) u onlyoffice-bin (fiel a MS Office);
@@ -201,9 +199,9 @@ espera a la reinstalación.
       `onedrive-ctl` vive en `~/.local/bin` (paquete onedrive/) y tiene que ir dentro del plugin
       o quedar como dependencia documentada; probar «Apply» de verdad; leer las normas de
       publicación de ese repo.
-- [ ] **Servicios en la guía**: `bluetooth` y `avahi-daemon` están activos y la guía no los
-      activa; añadirlos a los `systemctl enable` del chroot (greetd ya está en «Escritorio»).
-- [ ] **cups**: instalado y apagado. Activar `cups.socket`; avahi-daemon ya está activo.
+- [ ] **Servicios en la guía**: `bluetooth` está activo y la guía no lo activa; añadirlo a los
+      `systemctl enable` del chroot (greetd ya está en «Escritorio»; avahi-daemon y cups.socket,
+      en «Impresión, escáner y PDF»).
 - [ ] **firewalld**: instalado y apagado. Activar y abrir lo que se use (ssh, kdeconnect).
 - [ ] **Bluetooth dual con Windows**: compartir las claves de emparejamiento (chntpw
       sobre el registro, o bt-dualboot) para no re-emparejar en cada cambio de sistema.
@@ -356,6 +354,20 @@ espera a la reinstalación.
   chuletas, comentarios, README, títulos de `Mod+F1` y commits.
 
 ## Hecho
+
+- 2026-09-29 **Impresión, escáner y PDF**, cerrado; fase nueva en INSTALL.md. Epson L4160 por
+  red y sin driver: cola `EPSON_L4160` por IPP Everywhere con URI `dnssd://`, A4 y
+  predeterminada (la impresora anuncia Carta de fábrica y su web no lo cambia). Faltaba
+  `mdns_minimal` en `/etc/nsswitch.conf`: avahi la veía, pero nada resolvía `.local` y ni la
+  cola temporal imprimía. Escáner por eSCL con `sane-airscan`; fuera los módulos `escl` y `v4l`
+  de SANE, que la duplicaban y contaban la webcam. `escpr2` quitado: no trae la L4160 y no hace
+  falta. PDF: el Editor de PDF4QT (AUR, compilado contra el Qt del sistema) como app por defecto
+  en `mimeapps.list`; OCR con `ocrmypdf` y tesseract en español e inglés; NAPS2 para escanear a
+  PDF. Descartados papers, simple-scan, okular, skanpage, zathura, mupdf, sioyek y gscan2pdf,
+  con el porqué en INSTALL. El LaunchPad de PDF4QT 1.6.0 no abre las demás apps (las busca en la
+  carpeta actual); se usan las entradas sueltas. Tema oscuro de Qt: paquete stow `qt/`
+  (`qt6ct.conf`), plantilla `qt` de noctalia y `QT_QPA_PLATFORMTHEME=qt6ct` en niri, con
+  `qt6-wayland` para que las apps Qt vayan nativas.
 
 - 2026-09-28 **NVIDIA + Intel**, cerrado: driver `nvidia-open` 615 instalado el 2026-09-25 y verificado: nouveau
   fuera, `modeset`/`fbdev`, initramfs sin `kms`, GRUB con `PARTLABEL` y sin `udl`, niri

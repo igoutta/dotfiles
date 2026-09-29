@@ -1,7 +1,9 @@
 # ~/.config/mimeapps.list — qué app abre cada tipo de archivo (xdg-open, gio, navegadores).
 # Imágenes en PhotoQt; carpetas en yazi dentro de ghostty (yazi-ghostty.desktop, en este mismo
-# paquete); html y enlaces en Zen; texto en Helix por defecto del sistema. Mismo archivo en
-# Ubuntu/Fedora. Cambiar en caliente: xdg-mime default <app.desktop> <tipo>.
+# paquete); html y enlaces en Zen; PDF en el Editor de PDF4QT (el LaunchPad también se anuncia
+# para PDF y en 1.6.0 no abre nada); texto en Helix por defecto del sistema. Mismo archivo en
+# Ubuntu/Fedora (con el Flatpak de PDF4QT, comprobar el nombre del .desktop en
+# /var/lib/flatpak/exports/share/applications). Cambiar en caliente: xdg-mime default <app.desktop> <tipo>.
 
 [Added Associations]
 application/x-desktop=com.mitchellh.ghostty.desktop;io.github.nokse22.Exhibit.desktop;Helix.desktop;micro.desktop;nvim.desktop;
@@ -39,3 +41,4 @@ image/avif=org.photoqt.PhotoQt.desktop
 image/bmp=org.photoqt.PhotoQt.desktop
 image/tiff=org.photoqt.PhotoQt.desktop
 image/svg+xml=org.photoqt.PhotoQt.desktop
+application/pdf=io.github.JakubMelka.Pdf4qt.Pdf4QtEditor.desktop

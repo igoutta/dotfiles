@@ -1,0 +1,17 @@
+#!/bin/sh
+# pdf-ocr — añade texto buscable (OCR en español e inglés) a PDF escaneados, con ocrmypdf y
+# tesseract. Deja archivo-ocr.pdf al lado y no toca el original; las páginas que ya tienen
+# texto se dejan como están (--mode skip). Uso: pdf-ocr archivo.pdf… (yazi: tecla R).
+# Ubuntu/Fedora: ocrmypdf y tesseract-langpack-spa (dnf) o tesseract-ocr-spa (apt); igual.
+[ $# -gt 0 ] || { echo "uso: pdf-ocr archivo.pdf…"; exit 1; }
+for f; do
+    case "$f" in
+        *.pdf|*.PDF) ;;
+        *) echo "No es PDF, se salta: ${f##*/}"; continue ;;
+    esac
+    out="${f%.*}-ocr.pdf"
+    echo "OCR: ${f##*/} → ${out##*/}"
+    ocrmypdf -l spa+eng --mode skip -- "$f" "$out" || echo "Falló: ${f##*/}"
+done
+printf 'Enter para volver'
+read -r _

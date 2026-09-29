@@ -1,0 +1,21 @@
+#!/bin/sh
+# imprimir — manda archivos a la impresora predeterminada de CUPS (la Epson L4160, ver INSTALL
+# «Impresión, escáner y PDF») con las opciones de su cola (A4). Pide confirmación antes: una
+# tecla mal pulsada en yazi (i) no gasta papel. Uso: imprimir archivo…
+# Ubuntu/Fedora: igual (lp y lpstat son de CUPS).
+[ $# -gt 0 ] || { echo "uso: imprimir archivo…"; exit 1; }
+dest=$(lpstat -d 2>/dev/null | sed -n 's/^[^:]*: *//p')
+if [ -z "$dest" ]; then
+    echo "No hay impresora predeterminada (lpstat -d)."
+else
+    echo "Imprimir en $dest:"
+    for f; do echo "  ${f##*/}"; done
+    printf '¿Seguro? [s/N] '
+    read -r r
+    case "$r" in
+        s|S) lp -d "$dest" -- "$@" ;;
+        *) echo "Cancelado." ;;
+    esac
+fi
+printf 'Enter para volver'
+read -r _

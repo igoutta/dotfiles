@@ -1,7 +1,7 @@
 # Machine-specific config for `tuf` (Arch laptop). Sourced by .zshrc when $HOST matches.
 
-# ArduPilot toolchain
-path=(/opt/gcc-arm-none-eabi-10-2020-q4-major/bin "$HOME/ardupilot/Tools/autotest" $path)
+# ArduPilot: ccache delante (waf busca g++ y arm-none-eabi-g++ por PATH), luego el toolchain
+path=(/usr/lib/ccache/bin /opt/gcc-arm-none-eabi-10-2020-q4-major/bin $path)
 export MAP_SERVICE=GoogleSat
 
 # USB capture card as a low-latency fullscreen stream

@@ -1,0 +1,206 @@
+#!/bin/sh
+# onedrive-ctl — ayudante del panel de OneDrive de noctalia (plugin ga/onedrive, paquete stow
+# onedrive/). Hace el trabajo con el cliente de abraunegg y responde en líneas «clave<TAB>valor»
+# que el plugin lee. Se puede usar a mano: `onedrive-ctl status`, `onedrive-ctl log`.
+#   status              estado: noinstall, noauth, paused, failed, offline, error, syncing, synced, running
+#   summary             tamaño y número de archivos de la carpeta sincronizada
+#   folders             carpetas de primer nivel: nombre, si se sincroniza y bytes locales
+#   log [N]             últimas N acciones del registro (hora y mensaje); sin los «Sync complete»
+#   notify [get|errors|all|none]    avisos del cliente (escribe en la config del repo)
+#   pause | resume      parar o arrancar el servicio
+#   test EXCL | apply EXCL          probar o aplicar qué carpetas de la raíz se quedan solo en la
+#                       nube; EXCL son nombres separados por «/» ("" = ninguna). En segundo plano: `job`
+#   login               iniciar sesión en el navegador y arrancar el servicio (en segundo plano)
+#   cleanup NOMBRE      mandar a la papelera la copia local de una carpeta ya excluida
+#   job                 estado y resumen del último trabajo en segundo plano (la salida
+#                       completa del cliente queda en $XDG_RUNTIME_DIR/onedrive-ctl/*.log)
+# Exclusiones con skip_dir y skip_dir_strict_match en un bloque marcado al final de la config (en el
+# repo): todo lo demás, también las carpetas nuevas de la nube, se sigue bajando solo. No con
+# sync_list: onedrive 2.5.11 rechaza la regla "/*" (hay que listar a mano cada carpeta incluida).
+# Seguridad: `test` hace una prueba (--dry-run) con el servicio parado, guarda y restaura la config
+# entera y sus hash, y la deja como estaba. `apply` es el único que rehace el índice.
+# `cleanup` solo actúa sobre carpetas que la config ya excluye, y a la papelera, no rm.
+# Ubuntu/Fedora: igual (cliente `onedrive`, systemd de usuario, trash-cli o gio).
+set -u
+conf="${XDG_CONFIG_HOME:-$HOME/.config}/onedrive"
+run="${XDG_RUNTIME_DIR:-/tmp}/onedrive-ctl"
+mkdir -p "$run"
+tab=$(printf '\t')
+
+sync_dir() {
+    d=$(sed -n 's/^[[:space:]]*sync_dir[[:space:]]*=[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' "$conf/config" 2>/dev/null | tail -n 1)
+    [ -n "$d" ] || d="~/OneDrive"
+    case "$d" in "~"/*) d="$HOME/${d#\~/}" ;; esac
+    printf '%s\n' "$d"
+}
+
+MARCA="# Carpetas solo en la nube: las escribe el panel de OneDrive (onedrive-ctl); no editar a mano."
+
+# Nombres excluidos ahora (bloque de skip_dir de la config), uno por línea.
+excluded() {
+    sed -n 's/^skip_dir[[:space:]]*=[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' "$conf/config" 2>/dev/null | tr '|' '\n' | sed '/^$/d'
+}
+
+# Reescribe el bloque de exclusiones de la config con EXCL («a/b/c»); vacío = sin bloque.
+write_skip() {
+    c=$(readlink -f "$conf/config"); tmp=$(mktemp)
+    awk -v m="$MARCA" '$0 == m {skip=1; next} skip && /^skip_dir(_strict_match)?[[:space:]]*=/ {next} {skip=0; print}' "$c" > "$tmp"
+    if [ -n "$1" ]; then
+        # sin la línea en blanco final repetida
+        sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$tmp"
+        { echo; echo "$MARCA"; echo 'skip_dir_strict_match = "true"'
+          printf 'skip_dir = "%s"\n' "$(printf '%s' "$1" | tr '/' '|')"; } >> "$tmp"
+    fi
+    cat "$tmp" > "$c"; rm -f "$tmp"
+}
+
+cuenta() { n=$(rg -c "$1" "$2" 2>/dev/null); printf '%s' "${n:-0}"; }
+
+estado() {
+    command -v onedrive >/dev/null 2>&1 || { echo noinstall; return; }
+    [ -e "$conf/refresh_token" ] || { echo noauth; return; }
+    s=$(systemctl --user is-active onedrive 2>/dev/null)
+    l=$(journalctl --user -u onedrive -n 80 -o short-iso --no-pager 2>/dev/null \
+        | rg 'Starting a sync|is complete|was interrupted|not reachable|ERROR|Downloading file|Uploading|Deleting|Moving' | tail -n 1)
+    t=$(printf '%s' "$l" | sed -n 's/^[0-9-]*T\([0-9][0-9]:[0-9][0-9]\).*/\1/p')
+    case "$s" in
+        failed) k=failed ;;
+        active|activating)
+            case "$l" in
+                *"not reachable"*) k=offline ;;
+                *ERROR*) k=error ;;
+                *"is complete"*) k=synced ;;
+                "") k=running ;;
+                *) k=syncing ;;
+            esac ;;
+        *) k=paused ;;
+    esac
+    printf '%s\t%s\n' "$k" "$t"
+}
+
+# Trabajos largos (prueba, aplicar, iniciar sesión) como unidad de systemd de usuario: siguen
+# aunque se cierre el panel o se reinicie noctalia, y su salida queda también en el journal.
+job_start() {   # job_start TIPO [ARG]
+    systemctl --user is-active --quiet onedrive-ctl-job && { echo busy; return 1; }
+    printf '%s' "$1" > "$run/job.kind"; printf 'running' > "$run/job.phase"; : > "$run/job.out"
+    systemctl --user reset-failed onedrive-ctl-job 2>/dev/null
+    systemd-run --user --quiet --collect --unit=onedrive-ctl-job "$0" _run "$1" "${2:-}" && echo started
+}
+
+do_test() {
+    antes=$(systemctl --user is-active onedrive 2>/dev/null)
+    c=$(readlink -f "$conf/config")
+    mkdir -p "$run/respaldo"; rm -f "$run/respaldo/"* "$run/respaldo/".[!.]* 2>/dev/null
+    cp -p "$c" "$run/respaldo/config"
+    for h in .config.hash .sync_list.hash .config.backup; do [ -e "$conf/$h" ] && cp -p "$conf/$h" "$run/respaldo/"; done
+    systemctl --user stop onedrive
+    write_skip "$1"
+    onedrive --sync --resync --resync-auth --dry-run --verbose > "$run/prueba.log" 2>&1; r=$?
+    # dejar todo como estaba: config (contenido, sin tocar el enlace) y sus hash
+    cat "$run/respaldo/config" > "$c"
+    for h in .config.hash .sync_list.hash .config.backup; do
+        if [ -e "$run/respaldo/$h" ]; then cp -p "$run/respaldo/$h" "$conf/$h"; else rm -f "$conf/$h"; fi
+    done
+    case "$antes" in active|activating) systemctl --user start onedrive ;; esac
+    L="$run/prueba.log"
+    printf 'exit\t%s\n' "$r"
+    printf 'downloads\t%s\n' "$(cuenta '^Downloading file' "$L")"
+    printf 'uploads\t%s\n' "$(cuenta '^Uploading' "$L")"
+    printf 'deletes_online\t%s\n' "$(cuenta 'Deleting item from Microsoft OneDrive' "$L")"
+    printf 'deletes_local\t%s\n' "$(cuenta '^(Trying to delete local|Deleting local)' "$L")"
+    printf 'skipped\t%s\n' "$(cuenta '(?i)skipping.*(skip_dir|excluded)' "$L")"
+    printf 'errors\t%s\n' "$(cuenta 'ERROR' "$L")"
+    printf 'error_msg\t%s\n' "$(rg -m1 'ERROR' "$L" | cut -c1-200)"
+    [ "$r" = 0 ] && [ "$(cuenta 'ERROR' "$L")" = 0 ]
+}
+
+do_apply() {
+    systemctl --user stop onedrive
+    write_skip "$1"
+    onedrive --sync --resync --resync-auth > "$run/aplicar.log" 2>&1; r=$?
+    systemctl --user enable --now onedrive
+    printf 'exit\t%s\n' "$r"
+    printf 'errors\t%s\n' "$(cuenta 'ERROR' "$run/aplicar.log")"
+    return "$r"
+}
+
+do_login() {
+    if ! onedrive --display-quota > "$run/login.log" 2>&1; then
+        printf 'exit\t1\n'
+        # Con cuenta de trabajo, si la organización no deja entrar a la app: el enlace que tendría
+        # que aprobar su administrador.
+        printf 'consent\t%s\n' "$(onedrive --display-admin-consent-url 2>/dev/null | rg -o 'https://\S+' | head -n 1)"
+        return 1
+    fi
+    mkdir -p "$(sync_dir)"
+    systemctl --user enable --now onedrive
+    m="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/bookmarks"; linea="file://$(sync_dir) OneDrive"
+    mkdir -p "$(dirname "$m")"; grep -qxF "$linea" "$m" 2>/dev/null || echo "$linea" >> "$m"
+}
+
+case "${1:-}" in
+    status) estado ;;
+    summary)
+        d=$(sync_dir)
+        printf 'size\t%s\n' "$(du -sh "$d" 2>/dev/null | cut -f1)"
+        printf 'files\t%s\n' "$(find "$d" -type f 2>/dev/null | wc -l)" ;;
+    folders)
+        d=$(sync_dir); ex=$(excluded)
+        { find "$d" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null; printf '%s\n' "$ex"; } | sort -u | while IFS= read -r n; do
+            [ -n "$n" ] || continue
+            inc=1; printf '%s\n' "$ex" | grep -qxF "$n" && inc=0
+            b=0; [ -d "$d/$n" ] && b=$(du -sb "$d/$n" 2>/dev/null | cut -f1)
+            printf '%s\t%s\t%s\n' "$n" "$inc" "$b"
+        done ;;
+    _run)   # interno: lo lanza job_start dentro de la unidad
+        case "$2" in test) f=do_test ;; apply) f=do_apply ;; login) f=do_login ;; *) exit 1 ;; esac
+        if "$f" "${3:-}" > "$run/job.out" 2>&1; then printf done > "$run/job.phase"; else printf failed > "$run/job.phase"; fi ;;
+    log)
+        journalctl --user -u onedrive -n 400 -o short-iso --no-pager 2>/dev/null \
+            | rg 'was interrupted|not reachable|ERROR|WARNING|Error Message:|Downloading file:.*done|Uploading.*done|Deleting|Moving|Creating' \
+            | sed -n 's/^[0-9-]*T\([0-9][0-9]:[0-9][0-9]\)[^ ]* [^ ]* [^:]*: \(.*\)$/\1\t\2/p' \
+            | awk -F'\t' '
+                # «ERROR: … with the following message:» + «Error Message: X» → «Error: X»
+                /with the following message:$/ { h=$1; pend=1; next }
+                pend && /Error Message:/ { sub(/^[[:space:]]*Error Message:[[:space:]]*/, "", $2); print h "\tError: " $2; pend=0; next }
+                pend { print h "\tERROR"; pend=0 }
+                { print }' \
+            | tail -n "${2:-30}" ;;
+    notify)
+        c=$(readlink -f "$conf/config")
+        case "${2:-get}" in
+            get)
+                if rg -q '^disable_notifications *= *"true"' "$c"; then echo none
+                elif rg -q '^notify_file_actions *= *"true"' "$c"; then echo all
+                else echo errors; fi ;;
+            errors|all|none)
+                fa=false; dn=false; [ "$2" = all ] && fa=true; [ "$2" = none ] && dn=true
+                # En su sitio, sin mover las líneas ni sus comentarios (el archivo está en el repo).
+                for par in "notify_file_actions:$fa" "disable_notifications:$dn"; do
+                    k=${par%%:*}; v=${par#*:}
+                    if rg -q "^$k *=" "$c"; then sed -i "s|^$k *=.*|$k = \"$v\"|" "$c"
+                    else printf '%s = "%s"\n' "$k" "$v" >> "$c"; fi
+                done
+                systemctl --user try-restart onedrive
+                echo ok ;;
+        esac ;;
+    pause) systemctl --user stop onedrive && echo ok ;;
+    resume) systemctl --user start onedrive && echo ok ;;
+    test) job_start test "${2:-}" ;;
+    apply) job_start apply "${2:-}" ;;
+    login) job_start login ;;
+    cleanup)
+        n="${2:-}"; d=$(sync_dir)
+        [ -n "$n" ] && excluded | grep -qxF "$n" || { echo "not_excluded"; exit 1; }
+        [ -d "$d/$n" ] || { echo "missing"; exit 1; }
+        if command -v trash-put >/dev/null 2>&1; then trash-put -- "$d/$n"; else gio trash -- "$d/$n"; fi && echo ok ;;
+    job)
+        # si la unidad murió sin escribir la fase, no quedarse en «running» para siempre
+        if [ "$(cat "$run/job.phase" 2>/dev/null)" = running ] && ! systemctl --user is-active --quiet onedrive-ctl-job; then
+            printf failed > "$run/job.phase"
+        fi
+        printf 'kind\t%s\n' "$(cat "$run/job.kind" 2>/dev/null)"
+        printf 'phase\t%s\n' "$(cat "$run/job.phase" 2>/dev/null)"
+        cat "$run/job.out" 2>/dev/null || true ;;
+    *) sed -n '2,20p' "$0"; exit 1 ;;
+esac

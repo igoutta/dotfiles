@@ -43,6 +43,7 @@ end = [
     "media",
     "power_profile",
     "usb",
+    "onedrive",
     "temp",
     "pulse",
     "claude",

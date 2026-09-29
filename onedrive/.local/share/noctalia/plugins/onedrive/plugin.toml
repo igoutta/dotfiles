@@ -1,0 +1,30 @@
+# Plugin local de noctalia (lo carga de ~/.local/share/noctalia/plugins/onedrive): la nube de
+# OneDrive en la barra y su panel. Se activa en noctalia/30-plugins.toml y se coloca en
+# 00-shell.toml como "onedrive". Textos en translations/ (en y es): siguen el idioma de noctalia.
+# El trabajo con el cliente lo hace onedrive-ctl (paquete onedrive/, ~/.local/bin).
+id = "ga/onedrive"
+name = "OneDrive"
+version = "1.1.0"
+plugin_api = 24
+author = "ga"
+license = "MIT"
+icon = "cloud"
+description = "OneDrive for the abraunegg client: status, pause, which folders to keep, notifications and activity."
+dependencies = ["onedrive", "onedrive-ctl", "systemctl", "journalctl", "rg", "xdg-open"]
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[widget]]
+id = "widget"
+entry = "widget.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 480
+height = 820
+placement = "attached"
+open_near_click = true
+dismiss_on_outside_click = true

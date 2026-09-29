@@ -14,6 +14,7 @@ enabled = [
     "nightwatch75/claude-cockpit", # uso de Claude Code (ventanas de 5 h y 7 días), sesiones y CLAUDE.md
     "frai3mega/battery-graph",     # gráfica de la batería; se abre con clic derecho en la batería de la barra
     "arrifat346afs/systempulse",   # CPU y RAM en la barra, con panel de detalle; sustituye al widget nativo cpu
+    "ga/onedrive",                 # local, del paquete stow onedrive/: estado de OneDrive en la barra
 ]
 
 # Fondos de vídeo, uno por salida. Mientras haya vídeo, noctalia retira su capa de fondo en
@@ -85,3 +86,9 @@ type = "arrifat346afs/systempulse:sysmon"
 show_cpu = true
 show_ram = true
 show_gpu = false
+
+# OneDrive: plugin local (onedrive/.local/share/noctalia/plugins/onedrive). Nube con el estado
+# del cliente de abraunegg; oculta si el cliente no está instalado. Clic abre el panel (sesión,
+# carpetas solo en la nube, avisos, actividad); clic derecho pausa o reanuda.
+[widget.onedrive]
+type = "ga/onedrive:widget"

@@ -117,6 +117,11 @@ espera a la reinstalación.
         actual; el comentario de `91-grub-reinstall.hook` sobre la ESP en `/boot`.
       - Los ítems de esta lista que sean de esta máquina (greeter, tercer monitor, hibernación).
       - Comprobar que el `HOOKS` del drop-in y el de la guía siguen siendo el mismo.
+      **OneDrive al reinstalar:** hacen falta las carpetas compartidas. Con la app ya aprobada
+      (abraunegg): `sync_business_shared_items = "true"` y, para no bajarlas enteras, excluir
+      subcarpetas. El panel hoy solo excluye carpetas de la raíz: ampliarlo a rutas
+      (`skip_dir` con la ruta entera y `skip_dir_strict_match`) y ver antes con «Test changes»
+      cuánto bajaría. Esa clave pide `--resync`, que el panel ya hace al aplicar.
 - [ ] **Hibernación**: imposible en esta instalación y no se toca; la reinstalación la trae de
       serie (swap como volumen lógico dentro del LUKS, `resume=/dev/system/swap`). Descartes
       para esta máquina, por si vuelve la tentación: `openswap` (AUR, una clave más, 16 G de
@@ -180,6 +185,22 @@ espera a la reinstalación.
         software. Y la base: la entrada de aire está debajo; nada de camas ni telas.
       - Puntual: `code` y `cpptools` consumían el 60 % de un núcleo indexando; revisar qué
         indexa la extensión de C++.
+- [~] **OneDrive** (2026-09-28): paquete stow `onedrive/` hecho: cliente abraunegg 2.5.11 como
+      servicio de usuario, sesión iniciada y todo sincronizado (41 G, 2425 archivos).
+      `onedrive-ctl` y plugin local `ga/onedrive`: nube de estado en la barra (clic abre el
+      panel, derecho pausa) y panel con pausa, carpetas solo en la nube por `skip_dir` (prueba
+      en seco que restaura la config y sus hash, y «Apply» solo tras una prueba limpia),
+      liberar copia local, avisos y actividad con el detalle de los errores; inglés y español.
+      Probado: «Test changes» con Proyectos fuera (0 bajadas, 0 subidas, 0 borrados, 10
+      omitidas) y el estado idéntico después. Falta: probar «Apply» cuando haga falta excluir
+      algo de verdad. Las carpetas compartidas se usan por la web mientras tanto: bajarlas
+      enteras no, y bajo demanda solo lo da rclone, cuya app la organización tendría que
+      aprobar aparte.
+- [ ] **Publicar el plugin de OneDrive** en `noctalia-dev/community-plugins` (la fuente
+      `community` de noctalia). Antes: el id `ga/onedrive` pasa al autor con el que se publique;
+      `onedrive-ctl` vive en `~/.local/bin` (paquete onedrive/) y tiene que ir dentro del plugin
+      o quedar como dependencia documentada; probar «Apply» de verdad; leer las normas de
+      publicación de ese repo.
 - [ ] **Servicios en la guía**: `bluetooth` y `avahi-daemon` están activos y la guía no los
       activa; añadirlos a los `systemctl enable` del chroot (greetd ya está en «Escritorio»).
 - [ ] **cups**: instalado y apagado. Activar `cups.socket`; avahi-daemon ya está activo.

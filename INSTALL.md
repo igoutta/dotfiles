@@ -740,6 +740,41 @@ sudo pacman -S --needed mise
 Ubuntu/Fedora: mise no está en apt ni dnf; instalador oficial (`curl https://mise.run | sh`)
 o el COPR `jdxcode/mise` en Fedora. El resto es idéntico.
 
+# Nube: OneDrive
+
+Como usuario con sudo. Sincronización completa de OneDrive en `~/OneDrive`, en los dos
+sentidos y sin conexión, como servicio de usuario que arranca al entrar. La config, el
+ayudante `onedrive-ctl` y el panel de noctalia (nube en la barra) van en el paquete stow
+`onedrive/`.
+
+~~~sh
+# "onedrive-abraunegg" cliente de OneDrive mantenido (2.5.x): cuentas personales y de trabajo,
+#   modo monitor con inotify y WebSocket, avisos por notificación y servicio de usuario
+#   onedrive.service. Precompilado en arch4edu (fase «Pasos preliminares»); en AUR compila con
+#   el compilador de D. Descartados: onedriver (bajo demanda por FUSE, sin sentido con 859 G
+#   libres), rclone (el único con archivos bajo demanda, pero su app necesita otra aprobación de
+#   la organización) y onedrivegui (tira de pyside6 para lo que ya da el panel).
+sudo pacman -S --needed onedrive-abraunegg
+~~~
+
+Tras el stow (sección Dotfiles) y reiniciar noctalia: clic en la nube de la barra y «Sign in»
+en el panel. Abre el navegador para iniciar sesión, arranca `onedrive.service` y añade
+`~/OneDrive` a los marcadores de los diálogos de archivos; la primera sincronización corre en
+segundo plano y lo baja todo. Con una cuenta de trabajo, si la organización no deja usar la
+app, el panel muestra la dirección de consentimiento para su administrador.
+
+El panel también pausa y reanuda, elige qué carpetas de la raíz se quedan solo en la nube
+(«Test changes» hace una prueba sin tocar nada; «Apply» solo aparece si la prueba salió
+limpia), libera la copia local de las excluidas (a la papelera), cambia los avisos y muestra la
+actividad reciente con el detalle de los errores. Textos en inglés, con traducción al español
+en `translations/es.json`. A mano: `onedrive-ctl status`, `onedrive-ctl log`.
+
+Cuidado: borrar en `~/OneDrive` borra en la nube. Para sacar algo de la sincronización,
+excluir la carpeta desde el panel o moverla en la web.
+
+Ubuntu/Fedora: paquete `onedrive` en Fedora; en Ubuntu, el repo de OpenSUSE Build Service que
+indica el proyecto (el de apt está anticuado). El resto es idéntico.
+
 # Dotfiles
 
 Ya como usuario, tras el primer arranque. El repo es un árbol de paquetes
@@ -790,7 +825,7 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise xdg bin
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise xdg bin onedrive
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete

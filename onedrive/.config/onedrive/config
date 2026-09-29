@@ -1,0 +1,20 @@
+# ~/.config/onedrive/config — cliente de OneDrive de abraunegg (paquete onedrive-abraunegg).
+# Sincronización completa y en ambos sentidos con ~/OneDrive: todo está en el disco y funciona
+# sin conexión (hay 859 G libres; no hace falta bajar archivos bajo demanda). Corre como servicio
+# de usuario (`systemctl --user … onedrive`) en modo monitor: cambios locales al momento por
+# inotify y remotos casi al momento por WebSocket; además un repaso cada 5 min.
+# Solo este archivo es del repo: el token (refresh_token) y la base de datos (items.sqlite3) que
+# el cliente guarda aquí mismo son estado y no se versionan.
+# Primera vez: `onedrive-setup` o clic en la nube de la barra (paquete onedrive/). Cambiar
+# sync_dir o las exclusiones pide `onedrive --resync` (el cliente avisa).
+# Ubuntu/Fedora: mismo archivo; paquete `onedrive` (Fedora) o el repo OpenSUSE Build Service
+# que indica el proyecto (el de Ubuntu está anticuado).
+
+sync_dir = "~/OneDrive"
+
+# Avisos por notificación solo de lo importante (errores, reautenticación); no uno por archivo.
+notify_file_actions = "false"
+
+# Exclusiones por defecto del cliente (~*, .~*, *.tmp, *.swp, *.partial) cubren los temporales de
+# Office y LibreOffice. Para no sincronizar una carpeta local, dejar dentro un archivo .nosync.
+check_nosync = "true"

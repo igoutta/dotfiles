@@ -552,6 +552,9 @@ Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
 #   (noctalia no lo trae; sin él el sync del greeter y cualquier acción privilegiada fallan en silencio)
 # "adw-gtk-theme" GTK3 con el aspecto de libadwaita; es el que colorea la plantilla gtk3 de noctalia
 # "adwaita-cursors" cursor Adwaita, el mismo que declaran niri (startup.kdl) y gtk (settings.ini)
+# "qt6-wayland" apps Qt nativas en Wayland (PhotoQt, PDF4QT); sin él van por Xwayland
+# "qt6ct" tema de las apps Qt: la plantilla qt de noctalia le escribe la paleta y niri exporta
+#   QT_QPA_PLATFORMTHEME=qt6ct (paquete stow qt/). Sin él las apps Qt salen en claro
 # "power-profiles-daemon" perfiles de energía (ahorro, equilibrado, rendimiento); es lo que noctalia muestra y cambia
 # "ddcutil" brillo del monitor externo por DDC/CI desde noctalia; requiere el grupo i2c (abajo)
 # "udiskie" monta solo los USB al conectarlos y avisa; yazi es el gestor de archivos principal y no tiene barra
@@ -566,7 +569,7 @@ sudo pacman -S --needed niri xwayland-satellite \
                         xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit polkit-gnome \
                         adw-gtk-theme adwaita-cursors power-profiles-daemon ddcutil \
                         udiskie ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp wl-clipboard xdg-terminal-exec \
-                        wl-mirror jq
+                        wl-mirror jq qt6-wayland qt6ct
 ~~~
 
 ~~~sh
@@ -825,7 +828,7 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk mise xdg bin onedrive
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk qt mise xdg bin onedrive
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete

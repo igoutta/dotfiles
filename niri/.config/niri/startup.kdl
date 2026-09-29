@@ -24,9 +24,12 @@ cursor {
     xcursor-size 24
 }
 
+// QT_QPA_PLATFORMTHEME: las apps Qt leen qt6ct (paquete stow qt/), que toma la paleta de
+// noctalia. Llega a lo que lanza niri, noctalia incluido; lo abierto antes lo ve al volver a entrar.
 environment {
     XCURSOR_THEME "Adwaita"
     XCURSOR_SIZE "24"
+    QT_QPA_PLATFORMTHEME "qt6ct"
 }
 
 // Algunas apps (noctalia entre ellas) piden el foco con un serial de activación no válido;

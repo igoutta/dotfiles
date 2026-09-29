@@ -17,8 +17,8 @@ wallpaper_scheme = "vibrant"
 # Plantillas: noctalia escribe un archivo de tema junto a la config de cada app y espera
 # una línea de enganche en su config principal (escrita a mano en el repo, ver README.md).
 # gtk3 y gtk4 → gtk-{3,4}.0/noctalia.css; ghostty → themes/noctalia; niri → noctalia.kdl;
-# btop y helix → themes/. Comunidad: bat. fastfetch NO: su apply.sh usa jq y rompe con
-# los comentarios de config.jsonc.
+# btop y helix → themes/; qt → qt6ct/colors/noctalia.conf (y qt5ct). Comunidad: bat.
+# fastfetch NO: su apply.sh usa jq y rompe con los comentarios de config.jsonc.
 [theme.templates]
-builtin_ids = [ "btop", "gtk3", "gtk4", "ghostty", "helix", "niri" ]
+builtin_ids = [ "btop", "gtk3", "gtk4", "ghostty", "helix", "niri", "qt" ]
 community_ids = [ "bat" ]

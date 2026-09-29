@@ -69,6 +69,7 @@ archivos son enlaces de stow **acabaría escribiendo dentro del repo**.
 | btop | `btop/themes/noctalia.theme` | `color_theme = "noctalia"` en `btop.conf` |
 | helix | `helix/themes/noctalia.toml` | `theme = "noctalia"` en `config.toml` |
 | bat (comunidad) | `bat/themes/noctalia.tmTheme` | `--theme=noctalia` en `bat/config` |
+| qt | `qt6ct/colors/noctalia.conf` (y el de qt5ct) | `color_scheme_path=` en `qt6ct.conf` (paquete qt/); sin `apply.sh`, nunca toca el repo |
 
 Comprobación tras cualquier cambio de paleta: `noctalia msg templates-apply` y
 `git -C ~/dotfiles status` debe salir limpio.

@@ -16,6 +16,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia. En `.local/bin`, los scripts de proyectar, touchpad y modo avión |
 | `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
+| `qt/` | Qt6: `qt6ct.conf` (estilo Fusion, iconos Adwaita) que engancha la paleta de noctalia; niri exporta `QT_QPA_PLATFORMTHEME=qt6ct` |
 | `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web), `yazi-ghostty.desktop` y `xdg-terminals.list` |
 | `mise/` | Versiones de herramientas: node LTS y pnpm declarados en `config.toml`, y `config.yaml` de pnpm con `minimumReleaseAge`; las apps gráficas los ven por los shims que `zsh/.zshenv` pone en el PATH |
 | `bin/` | Scripts de `~/.local/bin` que no son de un programa concreto: `mission-planner` (Mission Planner en un Xwayland propio con openbox, maximizado y sin marco) |

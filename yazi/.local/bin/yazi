@@ -1,0 +1,7 @@
+#!/bin/sh
+# yazi con su propio ffmpeg delante en el PATH (~/.local/lib/yazi/ffmpeg, mismo paquete stow):
+# las vistas previas de vídeo van por la Intel y no despiertan la NVIDIA. Se llama igual que el
+# programa para cubrir todas las entradas (terminal, yazi-ghostty.desktop, xdg-open de
+# carpetas); ~/.local/bin va primero en el PATH. Lo que se lance desde yazi hereda ese PATH.
+# Ubuntu/Fedora: igual; en una máquina sin NVIDIA sobra.
+PATH="$HOME/.local/lib/yazi:$PATH" exec /usr/bin/yazi "$@"

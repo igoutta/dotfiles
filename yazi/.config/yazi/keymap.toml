@@ -1,0 +1,23 @@
+# ~/.config/yazi/keymap.toml — teclas propias encima de las de fábrica (preset de yazi 26.9).
+# Todas estaban libres en keymap-default.toml de v26.9.1; una tecla por acción. Lista para
+# leer: CHEATSHEET.md de este paquete (`keys yazi`). Dentro de yazi, ~ o F1 muestra todas y
+# se filtra escribiendo.
+
+[mgr]
+prepend_keymap = [
+	# De fábrica Enter sobre una carpeta la abría en Helix; así entra, y en un archivo lo abre
+	{ on = "<Enter>", run = "plugin smart-enter", desc = "Entrar en la carpeta o abrir el archivo" },
+
+	# USB y particiones (udisksctl): dentro, m monta, u desmonta, e expulsa, l entra, q sale
+	{ on = "M", run = "plugin mount", desc = "Montar y desmontar USB" },
+
+	# Saltos, junto a los de fábrica (gh inicio, gd Downloads, gc .config, gt papelera)
+	{ on = [ "g", "o" ], run = "cd ~/OneDrive",    desc = "Ir a OneDrive" },
+	{ on = [ "g", "u" ], run = "cd /run/media/ga", desc = "Ir a los USB montados" },
+
+	{ on = "T", run = "plugin toggle-pane max-preview", desc = "Agrandar o restaurar la vista previa" },
+
+	# Scripts de bin/: imprimir pide confirmación; pdf-ocr deja una copia -ocr.pdf al lado
+	{ on = "i", run = "shell --block -- imprimir %s", desc = "Imprimir en la Epson (pide confirmación)" },
+	{ on = "R", run = "shell --block -- pdf-ocr %s",  desc = "OCR: copia del PDF con texto buscable" },
+]

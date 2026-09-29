@@ -314,7 +314,11 @@ espera a la reinstalación.
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
 - [ ] **rust-motd**: paquete stow y que funcione al entrar por SSH, donde hoy no hay banner
       (fastfetch se salta en SSH desde `80-fastfetch.zsh`).
-- [ ] **yazi**: paquete stow y arreglar la configuración.
+- [ ] **yazi, lo que falta** (2026-09-29): ripdrag ya instalado (AUR 0.4.13): asignarle `e`
+      (arrastrar lo seleccionado a otra app) y `E` (soltar en la carpeta actual) y probarlo;
+      es lo último para lo que se abre Nautilus. exiftool ya instalado: ver una foto con datos
+      de cámara para comprobar el EXIF de `ficha`. Tras cada yazi nuevo, mirar que `ficha`
+      siga funcionando (es propio, nadie más lo actualiza).
 - [ ] **kitty**: desinstalar, `sudo pacman -Rns kitty`. No se usa y ghostty ya está integrado
       (tema por noctalia, shell integration, GTK4). En velocidad real están a la par: los dos
       renderizan en GPU; kitty gana en pruebas sintéticas de caudal, no en uso. Con él se va
@@ -354,6 +358,24 @@ espera a la reinstalación.
   chuletas, comentarios, README, títulos de `Mod+F1` y commits.
 
 ## Hecho
+
+- 2026-09-29 **yazi**, cerrado de momento (lo pendiente, en «yazi, lo que falta»): paquete
+  stow `yazi/` sobre el preset de 26.9.1. Teclas: Enter entra en carpetas (smart-enter; de
+  fábrica las abría en Helix), `M` panel de USB (mount), `go`/`gu` OneDrive y USB, `T` vista
+  previa grande, `i` imprimir y `R` OCR (scripts `imprimir` y `pdf-ocr` de bin/). git,
+  full-border, mime-ext y toggle-pane oficiales y fijados; acentos rojos por nombre de color;
+  CHEATSHEET (`keys yazi`). mime-ext: file(1) tardaba 3,4 s en 2000 archivos de OneDrive.
+  Vídeo por VA-API en la Intel con un `ffmpeg` propio en el PATH de yazi: `-hwaccel auto`
+  elegía CUDA, 1871 ms y la NVIDIA despierta; ahora 104 ms y dormida (CUDA_VISIBLE_DEVICES no
+  sirve: el driver carga igual). Plugin propio `ficha`: datos con ffprobe (60-80 ms,
+  precargados) debajo del fotograma de fábrica, la foto o la portada del audio; EXIF con
+  exiftool. Cuadrícula de 4 fotogramas probada y quitada: 0,4-0,6 s por vídeo, lenta.
+  video-grid no: decodifica todo el vídeo y llama a `ya.preview_widgets`, que no existe en
+  26.9.1. Probado en ghostty de verdad con capturas (la terminal simulada no dibuja imágenes).
+  Fallos por el camino: con LANG=es_EC el «%.2f» de Lua da «1,50» y ffmpeg lo rechaza (ahora
+  milisegundos enteros), y la precarga y la vista previa escribían la misma caché a la vez.
+  Descartados mediainfo.yazi y file-extra-metadata (abandonados por su autor el 2026-09-08),
+  exifaudio.yazi (15 meses parado), mediainfo y piper. Animadas no hay: yazi dibuja una imagen.
 
 - 2026-09-29 **Impresión, escáner y PDF**, cerrado; fase nueva en INSTALL.md. Epson L4160 por
   red y sin driver: cola `EPSON_L4160` por IPP Everywhere con URI `dnssd://`, A4 y

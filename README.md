@@ -17,6 +17,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | `noctalia/` | Shell del escritorio: config declarativa en cuatro TOML por tema; README con las dos capas de configuración |
 | `gtk/` | GTK3/4: adw-gtk3, cursor e iconos Adwaita, y el `gtk.css` que engancha la paleta de noctalia |
 | `qt/` | Qt6: `qt6ct.conf` (estilo Fusion, iconos Adwaita) que engancha la paleta de noctalia; niri exporta `QT_QPA_PLATFORMTHEME=qt6ct` |
+| `yazi/` | Gestor de archivos: teclas propias (Enter inteligente, USB con `M`, `go` OneDrive, `gu` USB, `i` imprimir, `R` OCR), acentos rojos que siguen la paleta de la terminal, plugins oficiales fijados en `package.toml`, el plugin propio `ficha` (imagen arriba y datos abajo en vídeo, foto y audio) y un `ffmpeg` propio para que las de vídeo vayan por la Intel sin despertar la NVIDIA, y CHEATSHEET |
 | `xdg/` | Apps por defecto: `mimeapps.list` (PhotoQt para imágenes, yazi en ghostty para carpetas, Zen para web, el Editor de PDF4QT para PDF), `yazi-ghostty.desktop` y `xdg-terminals.list` |
 | `mise/` | Versiones de herramientas: node LTS y pnpm declarados en `config.toml`, y `config.yaml` de pnpm con `minimumReleaseAge`; las apps gráficas los ven por los shims que `zsh/.zshenv` pone en el PATH |
 | `bin/` | Scripts de `~/.local/bin` que no son de un programa concreto: `mission-planner` (Mission Planner en un Xwayland propio con openbox, maximizado y sin marco), `imprimir` (a la impresora predeterminada, con confirmación) y `pdf-ocr` (copia del PDF con texto buscable) |

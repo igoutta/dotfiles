@@ -891,14 +891,26 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk qt mise xdg bin onedrive
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk qt mise xdg bin onedrive yazi
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete
 ~~~
 
 Abre una terminal nueva: zinit clona los plugins en el primer arranque. Chuletas de teclas y
-alias: `keys` (todas) o `keys niri`, `keys ghostty`, `keys noctalia`.
+alias: `keys` (todas) o `keys niri`, `keys ghostty`, `keys noctalia`, `keys yazi`.
+
+yazi: la primera vez, `ya pkg install` baja los plugins oficiales fijados en
+`yazi/.config/yazi/package.toml` (mount, smart-enter, git, full-border, toggle-pane, mime-ext)
+a `plugins/`, fuera del repo. `ya pkg add` y `upgrade` reescriben `package.toml` sin romper el
+enlace de stow (comprobado); tras un `upgrade`, probar yazi antes de commitear. El plugin
+`ficha` (vídeo, foto y audio con imagen arriba y datos abajo) es propio, del repo: no lo
+toca `ya pkg`, y tras cada yazi nuevo hay que mirar que siga funcionando. Usa ffprobe;
+`exiftool` (`perl-image-exiftool`) es opcional, para los datos de cámara de las fotos.
+El paquete trae `~/.local/bin/yazi`, que pone delante su propio `ffmpeg`: la vista previa de
+vídeo pide `-hwaccel auto`, que aquí elige CUDA, despierta la NVIDIA y tarda ~1,9 s; con
+VA-API en la Intel son ~0,1 s. Comprobación: tras ver un vídeo en yazi,
+`cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status` sigue en `suspended`.
 
 Noctalia: la primera vez, `noctalia msg plugins update` descarga los plugins declarados en
 `30-plugins.toml`; su ventana de ajustes escribe en `~/.local/state/noctalia/settings.toml`,

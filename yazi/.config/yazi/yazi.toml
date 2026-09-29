@@ -1,0 +1,52 @@
+# ~/.config/yazi/yazi.toml — yazi 26.9, gestor de archivos principal (las carpetas se abren
+# aquí, dentro de ghostty: paquete xdg/). Solo lo que cambia respecto a la config de fábrica;
+# lo demás es el preset de yazi. Abrir archivos va por xdg-open, así que PDF → PDF4QT,
+# imágenes → PhotoQt y web → Zen salen de xdg/.config/mimeapps.list, no de aquí.
+# Ubuntu/Fedora: igual.
+
+[mgr]
+# tamaño a la derecha de cada archivo; m s / m m / m n / m o lo cambian en caliente
+linemode = "size"
+
+# mime-ext: el tipo de archivo sale de la extensión en vez de leer cada archivo con file(1),
+# que tardaba 3,4 s en 2000 archivos de OneDrive. Lo que no conoce sigue yendo a file(1)
+# (fallback_file1 en init.lua).
+[[plugin.prepend_fetchers]]
+url   = "local://*"
+run   = "mime-ext.local"
+prio  = "high"
+group = "mime"
+
+[[plugin.prepend_fetchers]]
+url   = "remote://*"
+run   = "mime-ext.remote"
+prio  = "high"
+group = "mime"
+
+# Vídeo, audio y fotos: imagen arriba y datos abajo (plugins/ficha.yazi, propio del repo).
+# Vídeo, el fotograma de fábrica (J/K lo mueven); audio, la portada; fotos, EXIF si hay exiftool.
+# Las listas de reproducción (m3u) se ven como texto. Otros formatos de imagen (svg, heic,
+# avif, jxl) siguen con los de fábrica. La precarga deja imagen y datos hechos de antemano.
+[plugin]
+prepend_previewers = [
+	{ mime = "audio/{mpegurl,x-mpegurl}", run = "code" },
+	{ mime = "video/*", run = "ficha video" },
+	{ mime = "audio/*", run = "ficha audio" },
+	{ mime = "image/{jpeg,png,webp,gif,bmp,tiff}", run = "ficha image" },
+]
+prepend_preloaders = [
+	{ mime = "video/*", run = "ficha video" },
+	{ mime = "audio/*", run = "ficha audio" },
+	{ mime = "image/{jpeg,png,webp,gif,bmp,tiff}", run = "ficha image" },
+]
+
+# Plugin git: estado de cada archivo dentro de un repo (setup en init.lua)
+[[plugin.prepend_fetchers]]
+url   = "*"
+run   = "git"
+group = "git"
+
+[[plugin.prepend_fetchers]]
+url   = "*/"
+run   = "git"
+group = "git"

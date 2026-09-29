@@ -1,0 +1,42 @@
+# ~/.config/yazi/theme.toml — acentos en rojo (Ayu Red) en vez del azul del tema de fábrica.
+# Solo nombres de color de la terminal: ghostty los toma de la plantilla de noctalia, así que
+# yazi sigue la paleta cuando cambie. Lo que no aparece aquí queda como en el preset.
+
+[mgr]
+cwd = { fg = "red" }
+
+[tabs]
+active   = { bg = "red", bold = true }
+inactive = { fg = "red", bg = "gray" }
+
+[mode]
+normal_main = { bg = "red", bold = true }
+normal_alt  = { fg = "red", bg = "gray" }
+select_main = { fg = "black", bg = "yellow", bold = true }
+select_alt  = { fg = "yellow", bg = "gray" }
+unset_main  = { bg = "magenta", bold = true }
+unset_alt   = { fg = "magenta", bg = "gray" }
+
+[which]
+border = { fg = "red" }
+cand   = { fg = "lightred" }
+
+[confirm]
+border = { fg = "red" }
+title  = { fg = "red" }
+
+[pick]
+border = { fg = "red" }
+
+[input]
+border = { fg = "red" }
+
+[cmp]
+border = { fg = "red" }
+
+[tasks]
+border = { fg = "red" }
+
+[help]
+border = { fg = "red" }
+chord  = { fg = "lightred" }

@@ -1,0 +1,21 @@
+#!/bin/sh
+# ffmpeg para yazi: ~/.local/bin/yazi pone esta carpeta delante en el PATH. La vista previa
+# de vídeo de yazi pide -hwaccel auto, que en este portátil elige CUDA: despierta la NVIDIA y
+# tarda ~1,9 s por vídeo. Aquí se cambia por VA-API en la Intel, por su ruta PCI (el número de
+# renderD cambia entre arranques): ~0,1 s y la NVIDIA sigue dormida (medido el 2026-09-29).
+# Si la Intel no decodifica ese códec, ffmpeg sigue por CPU. El resto de argumentos pasa igual.
+# Ubuntu/Fedora: igual; otra máquina, cambiar la ruta (ls -l /dev/dri/by-path).
+intel=/dev/dri/by-path/pci-0000:00:02.0-render
+n=$#
+prev=
+for a; do
+    if [ "$prev" = -hwaccel ] && [ "$a" = auto ]; then
+        set -- "$@" vaapi
+        [ -e "$intel" ] && set -- "$@" -hwaccel_device "$intel"
+    else
+        set -- "$@" "$a"
+    fi
+    prev=$a
+done
+shift "$n"
+exec /usr/bin/ffmpeg "$@"

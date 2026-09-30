@@ -205,6 +205,14 @@ espera a la reinstalación.
       `systemctl enable` del chroot (greetd ya está en «Escritorio»; avahi-daemon y cups.socket,
       en «Impresión, escáner y PDF»).
 - [ ] **firewalld**: instalado y apagado. Activar y abrir lo que se use (ssh, kdeconnect).
+- [ ] **Inicio rápido de Windows: desactivarlo** (2026-09-30). Tras volver de Windows, el
+      Wi-Fi de Arch salió encendido pero sin redes: el kernel no pudo tomar la tarjeta MediaTek
+      MT7921 (`mt7921e: driver own failed`, `probe … failed with error -5`, arranque -1 de ese
+      día). Con el inicio rápido Windows no apaga del todo el hardware y deja la tarjeta en un
+      estado que Linux no retoma; reiniciar desde Arch la resetea. En Windows: Opciones de
+      energía → comportamiento de los botones → desmarcar «Activar inicio rápido», o
+      `powercfg /h off` como administrador. Hace falta también para el disco de Windows (abajo).
+      Si vuelve a pasar: `sudo modprobe -r mt7921e && sudo modprobe mt7921e` antes de reiniciar.
 - [ ] **Bluetooth dual con Windows**: compartir las claves de emparejamiento (chntpw
       sobre el registro, o bt-dualboot) para no re-emparejar en cada cambio de sistema.
 - [ ] **Disco de Windows fijo**: `nvme0n1p3` (NTFS, 476 G). fstab con `ntfs3` del

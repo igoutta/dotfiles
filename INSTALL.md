@@ -555,6 +555,13 @@ Con eso no hacen falta swaylock, fuzzel, playerctl, wl-clipboard, grim ni mako.
 # "qt6-wayland" apps Qt nativas en Wayland (PhotoQt, PDF4QT); sin él van por Xwayland
 # "qt6ct" tema de las apps Qt: la plantilla qt de noctalia le escribe la paleta y niri exporta
 #   QT_QPA_PLATFORMTHEME=qt6ct (paquete stow qt/). Sin él las apps Qt salen en claro
+# "perl-file-mimeinfo" el comando mimetype: con él xdg-open reconoce el tipo de archivo por la
+#   extensión (shared-mime-info); sin él, fuera de GNOME/KDE, lo adivina con file(1) y un STEP
+#   (texto por dentro) se abre en Helix y un STL no se abre
+# "f3d" visor 3D (STL nativo, STEP e IGES con OpenCASCADE); también dibuja las vistas previas 3D
+#   de yazi, en la GPU de niri (hoy la NVIDIA). El paquete stow f3d/ fuerza su lector de STEP (f3d
+#   3.5 no lo elige solo) y cambia su f3d.desktop por uno con prime-run: la ventana en la NVIDIA
+#   aunque niri vuelva a la Intel, más fluida al girar
 # "power-profiles-daemon" perfiles de energía (ahorro, equilibrado, rendimiento); es lo que noctalia muestra y cambia
 # "ddcutil" brillo del monitor externo por DDC/CI desde noctalia; requiere el grupo i2c (abajo)
 # "udiskie" monta solo los USB al conectarlos y avisa; yazi es el gestor de archivos principal y no tiene barra
@@ -569,7 +576,7 @@ sudo pacman -S --needed niri xwayland-satellite \
                         xdg-desktop-portal-gnome xdg-desktop-portal-gtk polkit polkit-gnome \
                         adw-gtk-theme adwaita-cursors power-profiles-daemon ddcutil \
                         udiskie ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp wl-clipboard xdg-terminal-exec \
-                        wl-mirror jq qt6-wayland qt6ct
+                        wl-mirror jq qt6-wayland qt6ct perl-file-mimeinfo f3d
 ~~~
 
 ~~~sh
@@ -904,7 +911,7 @@ Si ya existe un archivo real donde stow quiere enlazar, muévelo antes o usa
 
 ~~~sh
 cd ~/dotfiles                   # siempre desde aquí, para que aplique .stowrc
-stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk qt mise xdg bin onedrive yazi
+stow zsh atuin fastfetch tealdeer ghostty niri noctalia gtk qt mise xdg bin onedrive yazi f3d
 stow -n zsh                     # simulación: muestra qué haría sin tocar nada
 stow -R zsh                     # re-enlazar tras añadir archivos a un paquete
 stow -D zsh                     # quitar los enlaces de un paquete

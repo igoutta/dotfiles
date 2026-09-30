@@ -1,0 +1,9 @@
+[
+  {
+    "match-type": "glob",
+    "match": "*.{step,stp,STEP,STP}",
+    "options": {
+      "force-reader": "STEP"
+    }
+  }
+]

@@ -1,0 +1,18 @@
+[Desktop Entry]
+# Sustituye al f3d.desktop del paquete (mismo nombre, en ~/.local/share/applications): la ventana
+# de f3d abre en la NVIDIA con prime-run, porque girar y hacer zoom en ensambles pesados va más
+# fluido. Con niri dibujando en la NVIDIA iría ahí sin él; prime-run la deja ahí si niri vuelve a
+# la Intel. La carga no cambia: convertir un STEP en triángulos es trabajo del procesador. Las
+# vistas previas de yazi van en la GPU de niri. Ubuntu/Fedora: prime-run es de Arch
+# (nvidia-prime); en otras, __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia.
+Version=1.0
+Type=Application
+Name=F3D
+GenericName=3D Viewer
+Comment=A fast and minimalist 3D viewer (NVIDIA)
+TryExec=f3d
+Exec=prime-run f3d %F
+Icon=f3d
+Categories=Graphics;3DGraphics;Viewer;
+Keywords=vtk;animations;fbx;step;stl;dcm;ex2;gml;obj;3ds;gltf;pbr;raytracing;scivis;volume;rendering
+MimeType=model/stl;model/step;application/vnd.step;model/iges;

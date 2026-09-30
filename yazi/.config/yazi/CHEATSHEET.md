@@ -16,7 +16,7 @@ es de fábrica (yazi 26.9).
 | `Ctrl+d` / `Ctrl+u` | Media página abajo / arriba |
 | `H` / `L` | Carpeta anterior / siguiente del historial |
 | `K` / `J` | Desplazar la vista previa; en un vídeo, retroceder / avanzar un 5 %; en un PDF, página anterior / siguiente |
-| `T` ★ | Agrandar o restaurar la vista previa (leer un PDF) |
+| `T` ★ | Agrandar o restaurar la vista previa (leer un PDF; en ventana angosta, verla) |
 | `Tab` | Detalles del archivo (tipo, fechas, permisos, tamaño en píxeles) |
 | `.` | Mostrar u ocultar archivos ocultos |
 | `q` | Salir |
@@ -29,9 +29,15 @@ es de fábrica (yazi 26.9).
 | Foto | La imagen; debajo, formato y tamaño (y cámara, lente, exposición y GPS si hay exiftool) |
 | Audio | La portada si la trae; debajo, título, artista, álbum, año, duración y calidad |
 | PDF | La página actual; `J`/`K` cambian de página |
+| Modelo 3D (STL, STEP) | El modelo dibujado por f3d; debajo, triángulos (STL) o modelo, fecha y programa (STEP). Hasta 512 MB; desde 50 MB salen primero los datos («preparándose») y la imagen aparece al volver al archivo |
 
-`T` agranda cualquiera. Lo de vídeo, foto y audio es el plugin propio `ficha`. No hay vistas
-previas animadas: yazi dibuja una sola imagen; `o` abre el vídeo en mpv.
+`T` agranda cualquiera. Lo de vídeo, foto, audio y 3D es el plugin propio `ficha`; sus datos
+largos siguen en la línea de abajo según el ancho. No hay vistas previas animadas: yazi dibuja
+una sola imagen; `o` abre el vídeo en mpv.
+
+Los paneles se adaptan al ancho de la ventana: desde 100 columnas, los tres; de 60 a 99 (los
+monitores en vertical), sin la carpeta de arriba; con menos de 60, solo la lista, y `T` muestra
+la vista previa a pantalla completa.
 
 ## Saltar
 
@@ -52,10 +58,12 @@ previas animadas: yazi dibuja una sola imagen; `o` abre el vídeo en mpv.
 
 | Tecla | Acción |
 | --- | --- |
-| `o` | Abrir con la app por defecto (PDF → PDF4QT, imágenes → PhotoQt, texto → Helix) |
+| `o` | Abrir con la app por defecto (PDF → PDF4QT, imágenes → PhotoQt, modelos 3D → f3d en la NVIDIA, texto → Helix) |
 | `O` | Elegir con qué abrir |
 | `i` ★ | Imprimir en la Epson (pide confirmación) |
 | `R` ★ | OCR: crea `archivo-ocr.pdf` con texto buscable al lado del PDF |
+| `e` ★ | Arrastrar lo marcado a otra app (navegador, correo, chat): abre una ventanita de la que se arrastra. No llega a apps de X11 (f3d, Mission Planner): xwayland-satellite no pasa el arrastre (su fallo #133). Para f3d, `o` |
+| `E` ★ | Soltar aquí: abre una ventanita donde soltar archivos traídos de otra app y los copia a esta carpeta, sin pisar nada |
 
 ## Seleccionar
 

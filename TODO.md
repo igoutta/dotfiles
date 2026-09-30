@@ -324,11 +324,27 @@ espera a la reinstalación.
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
 - [ ] **rust-motd**: paquete stow y que funcione al entrar por SSH, donde hoy no hay banner
       (fastfetch se salta en SSH desde `80-fastfetch.zsh`).
-- [ ] **yazi, lo que falta** (2026-09-29): ripdrag ya instalado (AUR 0.4.13): asignarle `e`
-      (arrastrar lo seleccionado a otra app) y `E` (soltar en la carpeta actual) y probarlo;
-      es lo último para lo que se abre Nautilus. exiftool ya instalado: ver una foto con datos
-      de cámara para comprobar el EXIF de `ficha`. Tras cada yazi nuevo, mirar que `ficha`
-      siga funcionando (es propio, nadie más lo actualiza).
+- [ ] **yazi, lo que falta** (2026-09-30): ripdrag en `e` (arrastrar lo marcado a otra app) y
+      `E` (soltar aquí, script `soltar-aqui`): `e` hacia el navegador probado por Gustavo el
+      2026-09-30 y funciona; `E` sin probar (hacia f3d no hay arrastre posible: es X11 y
+      xwayland-satellite 0.8.2 no pasa arrastres, fallo #133 abierto desde 2025-03); no se sabe si
+      ripdrag entrega rutas o URLs al soltar, el script acepta las dos. Vistas previas 3D en
+      `ficha` (STL y STEP dibujados por f3d, datos de su cabecera): comprobadas por partes,
+      falta verlas en yazi de verdad. exiftool ya instalado: ver una foto con datos de cámara
+      para comprobar el EXIF. Tras cada yazi nuevo, mirar que `ficha` siga funcionando.
+      De paso (2026-09-30): el STEP no abría porque xdg-open, sin `perl-file-mimeinfo`, adivina
+      con file(1) (text/plain → Helix) y porque f3d 3.5 no elige su lector de STEP aunque el
+      glob de /etc/f3d/config.d/10_occt.json coincida («unknown format»; con --force-reader
+      funciona): paquete stow `f3d/` lo fuerza. La ventana de f3d abre en la NVIDIA
+      (`prime-run`, en yazi y en su `f3d.desktop`); las vistas previas, en la GPU de niri
+      (medido con niri en la Intel; desde el 2026-09-30, la NVIDIA): el tiempo es de procesador
+      (STEP de 11 MB, 8 s en las dos). Un STEP de 231 MB (P25-ID) tarda 110 s en un
+      núcleo y 2,3 GB de memoria. Límite de las vistas previas 3D subido de 100 a 512 MB, con
+      f3d a prioridad mínima; desde 50 MB la vista previa muestra los datos al instante y la
+      imagen sale de la precarga (prioridad baja), en segundo plano. Paneles según el ancho
+      (`Tab:layout` en init.lua, copia del preset de 26.9.1: comparar en cada yazi nuevo): ≥ 100
+      columnas los tres, 60-99 sin la carpeta de arriba, < 60 solo la lista (T la vista previa);
+      auto-layout.yazi descartado (14 meses parado). Texto de `ficha` partido según el ancho.
 - [ ] **kitty**: desinstalar, `sudo pacman -Rns kitty`. No se usa y ghostty ya está integrado
       (tema por noctalia, shell integration, GTK4). En velocidad real están a la par: los dos
       renderizan en GPU; kitty gana en pruebas sintéticas de caudal, no en uso. Con él se va

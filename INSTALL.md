@@ -585,8 +585,9 @@ sudo pacman -S --needed niri xwayland-satellite \
 # "mpvpaper" fondos de vídeo, uno por salida, gestionados por el plugin mpvpaper de noctalia
 # "socat" el plugin lo usa para seguir qué vídeo va en una presentación; sin él solo falla ese seguimiento
 # "photoqt" visor de imágenes (Qt, interfaz translúcida); loupe descartado
+# "ripdrag" arrastrar y soltar archivos entre la terminal y otras apps (GTK4); en yazi, e y E
 sudo pacman -S --needed noctalia socat
-yay -S noctalia-greeter mpvpaper photoqt
+yay -S noctalia-greeter mpvpaper photoqt ripdrag
 ~~~
 
 Ubuntu/Fedora: niri en Fedora por COPR `yalter/niri`, en Ubuntu sin paquete oficial; noctalia

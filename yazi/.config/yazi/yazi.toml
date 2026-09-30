@@ -23,8 +23,9 @@ run   = "mime-ext.remote"
 prio  = "high"
 group = "mime"
 
-# Vídeo, audio y fotos: imagen arriba y datos abajo (plugins/ficha.yazi, propio del repo).
-# Vídeo, el fotograma de fábrica (J/K lo mueven); audio, la portada; fotos, EXIF si hay exiftool.
+# Vídeo, audio, fotos y modelos 3D: imagen arriba y datos abajo (plugins/ficha.yazi, propio
+# del repo). Vídeo, el fotograma de fábrica (J/K lo mueven); audio, la portada; fotos, EXIF si
+# hay exiftool; STL y STEP, dibujados por f3d (un STEP grande tarda varios segundos la 1.ª vez).
 # Las listas de reproducción (m3u) se ven como texto. Otros formatos de imagen (svg, heic,
 # avif, jxl) siguen con los de fábrica. La precarga deja imagen y datos hechos de antemano.
 [plugin]
@@ -33,11 +34,27 @@ prepend_previewers = [
 	{ mime = "video/*", run = "ficha video" },
 	{ mime = "audio/*", run = "ficha audio" },
 	{ mime = "image/{jpeg,png,webp,gif,bmp,tiff}", run = "ficha image" },
+	{ mime = "model/{stl,step}", run = "ficha 3d" },
 ]
 prepend_preloaders = [
 	{ mime = "video/*", run = "ficha video" },
 	{ mime = "audio/*", run = "ficha audio" },
 	{ mime = "image/{jpeg,png,webp,gif,bmp,tiff}", run = "ficha image" },
+	{ mime = "model/{stl,step}", run = "ficha 3d", prio = "low" },
+]
+
+# Modelos 3D: abrir con f3d directamente. xdg-open, fuera de GNOME/KDE y sin perl-file-mimeinfo,
+# adivina el tipo con file(1) y mandaba el STEP a Helix; f3d fuerza el lector de STEP con su
+# config (paquete stow f3d/). La ventana, en la NVIDIA (prime-run, para que siga ahí aunque niri
+# vuelva a la Intel): más fluida al girar.
+[opener]
+modelo = [
+	{ run = "prime-run f3d %s1", orphan = true, desc = "f3d (NVIDIA)" },
+]
+
+[open]
+prepend_rules = [
+	{ mime = "model/{stl,step}", use = [ "modelo", "reveal" ] },
 ]
 
 # Plugin git: estado de cada archivo dentro de un repo (setup en init.lua)

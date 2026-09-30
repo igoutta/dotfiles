@@ -1,0 +1,21 @@
+#!/bin/sh
+# soltar-aqui — abre una ventanita de ripdrag donde soltar archivos traídos de otra app
+# (navegador, correo, chat) y los copia a la carpeta actual, sin pisar los que ya existan.
+# En yazi: tecla E (copia a la carpeta que se está viendo). ripdrag entrega rutas o URLs
+# file://; las dos valen. Uso: soltar-aqui. Ubuntu/Fedora: ripdrag por cargo o su repo; igual.
+command -v ripdrag >/dev/null 2>&1 || { echo "Falta ripdrag (AUR ripdrag)."; exit 1; }
+echo "Suelta los archivos en la ventana de ripdrag…"
+ripdrag --target --and-exit | while IFS= read -r f; do
+    case "$f" in
+        file://*) f=$(printf '%s' "${f#file://}" | python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.stdin.read()))') ;;
+    esac
+    if [ ! -e "$f" ]; then
+        echo "No es un archivo local, se salta: $f"
+    elif [ -e "./${f##*/}" ]; then
+        echo "Ya existe aquí, no se copia: ${f##*/}"
+    else
+        cp -r -- "$f" . && echo "Copiado: ${f##*/}"
+    fi
+done
+printf 'Enter para volver'
+read -r _

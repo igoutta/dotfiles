@@ -17,6 +17,12 @@ prepend_keymap = [
 
 	{ on = "T", run = "plugin toggle-pane max-preview", desc = "Agrandar o restaurar la vista previa" },
 
+	# Arrastrar y soltar con ripdrag (AUR): e arrastra lo marcado (o el archivo bajo el cursor)
+	# a otra app como un solo paquete; E abre dónde soltar lo que venga de otra app y lo copia
+	# aquí (script soltar-aqui de bin/). Lo último para lo que hacía falta Nautilus.
+	{ on = "e", run = "shell --orphan -- ripdrag --and-exit --all-compact --no-click %s", desc = "Arrastrar a otra app" },
+	{ on = "E", run = "shell --block -- soltar-aqui", desc = "Soltar aquí archivos de otra app" },
+
 	# Scripts de bin/: imprimir pide confirmación; pdf-ocr deja una copia -ocr.pdf al lado
 	{ on = "i", run = "shell --block -- imprimir %s", desc = "Imprimir en la Epson (pide confirmación)" },
 	{ on = "R", run = "shell --block -- pdf-ocr %s",  desc = "OCR: copia del PDF con texto buscable" },

@@ -36,7 +36,16 @@ environment {
 // sin esto niri lo ignora y la ventana no sube.
 debug {
     honor-xdg-activation-with-invalid-serial
-    // Render siempre en la Intel, por ruta PCI para que no dependa del número de renderD.
-    // La NVIDIA solo atiende sus salidas (el USB-C) y lo que se lance con prime-run.
-    render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
+    // Desde el 2026-09-30 niri dibuja en la NVIDIA: con el render en la Intel, el ViewSonic por
+    // USB-C (cableado a la NVIDIA) a su nativa 1366x768 salía como basura (outputs.kdl). Precio:
+    // la NVIDIA ya no se duerme y las apps pintan en ella; medido con los tres fondos de vídeo,
+    // 15 W y 2,4 GB de memoria de vídeo frente a 4 W y 27 MB. Necesita el perfil
+    // etc/nvidia/nvidia-application-profiles-rc.d/ (memoria de vídeo, wiki de niri). Por ruta
+    // PCI. Se lee al entrar en la sesión, no al recargar la config.
+    // Volver a la Intel (o si la sesión no arranca: Ctrl+Alt+F3, entrar), y luego el ViewSonic
+    // a 1280x720 en outputs.kdl:
+    //   sed -i '/pci-0000:01:00.0-render/d; s|^    // render-drm-device|    render-drm-device|' ~/dotfiles/niri/.config/niri/startup.kdl
+    render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+    // En la Intel (la NVIDIA solo atiende el USB-C y lo lanzado con prime-run):
+    // render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
 }

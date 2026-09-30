@@ -621,19 +621,23 @@ journalctl -b | rg apply-appearance                # comprobación: pkexec ejecu
 
 # GPU: NVIDIA junto a Intel
 
-Como usuario con sudo. Portátil híbrido: la Intel pinta el escritorio y la RTX 3050 Ti se usa
-para juegos y CUDA a demanda, y para el USB-C con DisplayPort, que está cableado a ella. Sin
+Como usuario con sudo. Portátil híbrido: la Intel y la RTX 3050 Ti, que tiene cableado el USB-C
+con DisplayPort. niri dibuja el escritorio en la NVIDIA (abajo, por qué); juegos y CUDA también. Sin
 driver, nouveau con firmware GSP ya da esa salida, pero niri no puede renderizar en él y no
-hay juegos ni CUDA. Con el driver, la GPU se apaga sola cuando nadie la usa.
+hay juegos ni CUDA. Con el driver, la GPU se apaga sola cuando nadie la usa (con niri
+dibujando en ella, nunca).
 
 ~~~sh
 # "nvidia-open" módulos abiertos precompilados para el kernel linux (los que NVIDIA recomienda de Turing en
 #   adelante); "nvidia-utils" el resto del driver y la lista negra de nouveau; "lib32-nvidia-utils" para
 #   wine y juegos de 32 bits (multilib)
-# "nvidia-prime" el comando prime-run: `prime-run juego` lo lanza en la NVIDIA; todo lo demás sigue en Intel
-# "libva-nvidia-driver" VA-API sobre NVDEC para navegadores y mpv cuando se fuerce la NVIDIA
+# "nvidia-prime" el comando prime-run: `prime-run juego` lo lanza en la NVIDIA. Con niri dibujando en ella
+#   (abajo) el escritorio, Xwayland y las apps ya van ahí sin él; vuelve a hacer falta si niri vuelve a la Intel
+# "libva-nvidia-driver" VA-API sobre NVDEC: con niri en la NVIDIA lo usan los fondos de vídeo (hwdec=vaapi);
+#   Zen no, porque bloquea la decodificación por hardware en NVIDIA salvo forzarla
 # "vulkan-intel" y "lib32-vulkan-intel": sin ellos el único dispositivo Vulkan es la NVIDIA y cualquier app
-#   Vulkan (mpv con hwdec=auto, por ejemplo) cae en ella sin querer. "vulkan-tools": vulkaninfo para comprobar
+#   Vulkan (mpv con hwdec=auto, por ejemplo) cae en ella sin querer; con niri en la NVIDIA van ahí de todos
+#   modos, porque eligen la GPU del compositor. "vulkan-tools": vulkaninfo para comprobar
 sudo pacman -S --needed nvidia-open nvidia-utils lib32-nvidia-utils nvidia-prime libva-nvidia-driver \
                         vulkan-intel lib32-vulkan-intel vulkan-tools
 ~~~
@@ -647,20 +651,28 @@ sudo mkinitcpio -P                                                  # initramfs 
 sudo systemctl enable nvidia-suspend.service nvidia-resume.service  # memoria de vídeo al suspender y despertar
 ~~~
 
-niri fija la Intel como GPU de render en `startup.kdl` (`render-drm-device`), así el driver
-NVIDIA solo atiende sus propias salidas y lo que se lance con `prime-run`. Tras reiniciar:
+niri fija la NVIDIA como GPU de render en `startup.kdl` (`render-drm-device`, por ruta PCI).
+Con la Intel dibujando, un monitor por USB-C a 1366 de ancho (el ViewSonic) salía corrupto;
+en la NVIDIA sale nítido (2026-09-30). Precio: la NVIDIA ya no se apaga y las apps y los fondos
+de vídeo pintan en ella: 15 W y 2,4 GB de memoria de vídeo frente a 4 W y 27 MB. Necesita el
+perfil de `etc/nvidia/` (sección Dotfiles), que la wiki de niri pide para no guardar memoria de
+vídeo libre. Para volver a la Intel, en `startup.kdl` está la línea comentada, y la
+comprobación de abajo vuelve a dar `suspended`. Tras reiniciar:
 
 ~~~sh
-nvidia-smi                                   # ve la GPU y el driver
+nvidia-smi                                   # ve la GPU y el driver; niri y las apps en la lista de procesos
 niri msg outputs                             # el DP-2 del USB-C sigue ahí
 prime-run vulkaninfo --summary | rg deviceName   # la NVIDIA responde bajo prime-run
-cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status   # suspended sin monitor en el USB-C
+cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status   # active con niri en la NVIDIA; con niri en la Intel, suspended sin monitor en el USB-C
 ~~~
 
-Apps que usan libmpv o Vulkan pueden caer en la NVIDIA sin querer, porque mpv prefiere el
-contexto Vulkan y libmpv carga el interop CUDA al arrancar: el fondo de vídeo de noctalia lo
-fija en la Intel con `gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi`
-(`30-plugins.toml`). Comprobar quién tiene abierta la GPU: `ls -l /proc/*/fd 2>/dev/null | rg nvidia0`.
+Con niri en la Intel, las apps que usan libmpv o Vulkan pueden caer en la NVIDIA sin querer,
+porque mpv prefiere el contexto Vulkan y libmpv carga el interop CUDA al arrancar: el fondo de
+vídeo de noctalia se fija en la Intel con `gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi`
+(`30-plugins.toml`). Con niri en la NVIDIA eso ya no lo lleva a la Intel. Comprobado el
+2026-09-30: los fondos pintan y descodifican en la NVIDIA; mpv y Zen dibujan en ella y
+descodifican en el procesador (mpv sin config no usa hardware; Zen lo bloquea en NVIDIA).
+Comprobar quién tiene abierta la GPU: `ls -l /proc/*/fd 2>/dev/null | rg nvidia0`.
 
 Si la pantalla no enciende o sale en blanco al entrar, es un problema conocido de Intel +
 NVIDIA con salida a 10 bits: `disable-10bit-output` en el bloque `debug` de niri.
@@ -871,6 +883,7 @@ sudo install -Dm644 etc/pacman.d/hooks/91-grub-reinstall.hook /etc/pacman.d/hook
 sudo install -Dm644 etc/mkinitcpio.conf.d/dotfiles.conf /etc/mkinitcpio.conf.d/dotfiles.conf
 sudo install -Dm644 etc/modprobe.d/nvidia.conf /etc/modprobe.d/nvidia.conf
 sudo install -Dm644 etc/udev/rules.d/80-nvidia-pm.rules /etc/udev/rules.d/80-nvidia-pm.rules
+sudo install -Dm644 -t /etc/nvidia/nvidia-application-profiles-rc.d etc/nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json   # niri en la NVIDIA
 sudo install -Dm644 etc/udev/rules.d/61-gpu-names.rules /etc/udev/rules.d/61-gpu-names.rules   # /dev/dri/igpu y dgpu
 sudo install -Dm755 etc/greetd/greeter-intel-first /usr/local/bin/greeter-intel-first           # greeter en la Intel
 sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
@@ -908,9 +921,10 @@ enlace de stow (comprobado); tras un `upgrade`, probar yazi antes de commitear. 
 toca `ya pkg`, y tras cada yazi nuevo hay que mirar que siga funcionando. Usa ffprobe;
 `exiftool` (`perl-image-exiftool`) es opcional, para los datos de cámara de las fotos.
 El paquete trae `~/.local/bin/yazi`, que pone delante su propio `ffmpeg`: la vista previa de
-vídeo pide `-hwaccel auto`, que aquí elige CUDA, despierta la NVIDIA y tarda ~1,9 s; con
-VA-API en la Intel son ~0,1 s. Comprobación: tras ver un vídeo en yazi,
-`cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status` sigue en `suspended`.
+vídeo pide `-hwaccel auto`, que aquí elige CUDA en la NVIDIA y tardaba ~1,9 s (medido con ella
+dormida, el 2026-09-29); con VA-API en la Intel son ~0,1 s. Comprobación:
+`~/.local/lib/yazi/ffmpeg -nostdin -v verbose -hwaccel auto -i vídeo.mp4 -frames:v 1 -f null - 2>&1 | rg 'VAAPI driver'`
+dice «Intel iHD driver».
 
 Noctalia: la primera vez, `noctalia msg plugins update` descarga los plugins declarados en
 `30-plugins.toml`; su ventana de ajustes escribe en `~/.local/state/noctalia/settings.toml`,

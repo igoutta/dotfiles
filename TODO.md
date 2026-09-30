@@ -163,7 +163,9 @@ espera a la reinstalación.
         (tres vídeos): es el descodificador. (2) VS Code: el proceso de la ventana a 0,7
         núcleos de media desde el arranque, en parte por esta sesión de Claude dentro de VS Code;
         cpptools aparte. (3) La NVIDIA no: suspendida, ventilador parado, sensor a 0; estuvo
-        encendida un tercio del arranque por las pruebas de prime-run y nvidia-smi.
+        encendida un tercio del arranque por las pruebas de prime-run y nvidia-smi. Desde el
+        2026-09-30 niri dibuja en la NVIDIA: los fondos pasan a ella y ya no se suspende
+        (15 W y la GPU a 64 °C en vacío); volver a medir.
       - **Perfil por defecto: power-saver**, fijado el 2026-09-25 (ppd lo recuerda entre
         arranques): 28-35 W, frena a 82 °C, sobra para editor y navegador; balanced para compilar.
         Fn+F5 cicla los tres perfiles desde el kernel (`platform_profile_cycle`) y el widget
@@ -235,10 +237,10 @@ espera a la reinstalación.
       va por DisplayPort sobre USB-C, y ese puerto cuelga de la NVIDIA (nouveau con GSP), no
       de evdi. niri no renderiza en nouveau («software EGL renderers are skipped») y pinta en
       la Intel copiando cada fotograma; conectado, con modo, EDID y DPMS On, sin errores.
-      Desde el 2026-09-25 lo sirve el driver nvidia-open (fase «GPU»). Disposición nueva ese
-      día en `niri/outputs.kdl`: HDMI a la izquierda, portátil en medio y este a la derecha;
-      la alternativa, debajo del HDMI, va comentada al lado. Funciona sin parpadeos en esa
-      posición. Falta: fijar su sitio definitivo si al final va abajo,
+      Desde el 2026-09-25 lo sirve el driver nvidia-open (fase «GPU»). Desde el 2026-09-30
+      `niri/outputs.kdl` reconoce cada monitor por marca, modelo y serie (ViewSonic a la
+      izquierda y Samsung a la derecha, en vertical; este ASUS a la derecha, siempre en
+      horizontal) y niri dibuja en la NVIDIA. Falta: verlo conectado en su sitio,
       `noctalia msg greeter-sync` para que el greeter tome la disposición nueva, y confirmar
       que `displaylink` y `evdi-dkms` no sirven para nada más antes de desinstalarlos
       (auditoría).
@@ -359,6 +361,13 @@ espera a la reinstalación.
 
 ## Hecho
 
+- 2026-09-30 **ViewSonic a 1366x768 por USB-C**: con niri dibujando en la Intel, su nativa
+  salía como basura por el USB-C (cableado a la NVIDIA); 1280x720 iba limpio, y modos a medida
+  y `disable-direct-scanout` no sirvieron. Solución: niri dibuja en la NVIDIA
+  (`render-drm-device` en `startup.kdl`, más el perfil de `etc/nvidia/` de la wiki de niri) y
+  sale nítida, confirmado por Gustavo. Precio medido: la NVIDIA siempre despierta, 15 W frente
+  a 4 W y 2,4 GB de memoria de vídeo, casi todo de los tres fondos de mpvpaper (unos 630 MB
+  cada uno), que ahora también pintan en ella.
 - 2026-09-29 **yazi**, cerrado de momento (lo pendiente, en «yazi, lo que falta»): paquete
   stow `yazi/` sobre el preset de 26.9.1. Teclas: Enter entra en carpetas (smart-enter; de
   fábrica las abría en Helix), `M` panel de USB (mount), `go`/`gu` OneDrive y USB, `T` vista

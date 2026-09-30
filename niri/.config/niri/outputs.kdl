@@ -1,43 +1,53 @@
 // Salidas. Declaradas aquí para que sobrevivan al reinicio; antes el giro del HDMI lo
 // aplicaba en caliente el plugin niri-displays de noctalia y se perdía.
-// Nombres y modos: niri msg outputs. Una salida que no esté conectada se ignora.
-// Disposición, de izquierda a derecha: HDMI en vertical, portátil, tercer monitor. Las
+// Los monitores externos se reconocen por marca, modelo y número de serie (el nombre entre
+// comillas de niri msg outputs), no por el puerto: así cada uno lleva su giro y su sitio
+// conecte por HDMI (Intel) o por USB-C (NVIDIA). El panel del portátil siempre es eDP-1.
+// Una salida que no esté conectada se ignora.
+// Disposición del escritorio, de izquierda a derecha: ViewSonic en vertical, portátil, y el
+// Samsung en vertical o el ASUS en horizontal. Sirve con cualquiera de ellos desconectado (un hueco no molesta). Las
 // posiciones son en píxeles lógicos y los bordes tienen que tocarse para que el ratón pase
 // de una pantalla a otra; si dos se solapan, niri coloca la segunda por su cuenta.
+// Ubuntu/Fedora: igual; niri lee los mismos nombres.
 
 // Panel del portátil (ASUS TUF F15): 144 Hz. VRR solo cuando una ventana lo pide
 // (juegos, vídeo a pantalla completa); con VRR permanente la barra parpadea al cambiar
 // de frecuencia.
 output "eDP-1" {
     mode "1920x1080@144.000"
-    // Justo a la derecha del HDMI, que en vertical mide 768 de ancho.
+    // Justo a la derecha del ViewSonic, que en vertical mide 768 de ancho.
     position x=768 y=0
     variable-refresh-rate on-demand=true
 }
 
-// ViewSonic VA1903 en vertical, a la izquierda del portátil. "270" = 270° antihorario (90° en
-// sentido horario), que es lo que reporta niri msg outputs. Si el monitor se gira al otro lado
-// sobre su base, "90". Girado mide 768 x 1366 en los dos casos, así que la posición no cambia.
-output "HDMI-A-1" {
+// ViewSonic VA1903 en vertical, a la izquierda del portátil, con los cables a la derecha.
+// "270" = 270° antihorario (90° en sentido horario), lo que reporta niri msg outputs; si
+// algún día se gira al otro lado sobre su base, "90".
+// Va por USB-C (NVIDIA) porque el HDMI lo usa el Samsung. Su nativa 1366x768 salía corrupta
+// mientras niri dibujaba en la Intel y la NVIDIA solo copiaba la imagen (un ancho de 1366 no
+// le calzaba; modos a medida los rechaza, solo acepta los del EDID). Desde el 2026-09-30 niri
+// dibuja en la NVIDIA (render-drm-device en startup.kdl) y se ve nítida. Si se vuelve a dibujar
+// en la Intel: "1280x720@60.000" aquí (limpio, no nativo) y todo lo de la derecha 48 menos.
+// Girado mide 768 x 1366.
+output "ViewSonic Corporation VA1903 Series VR4211621658" {
     mode "1366x768@59.790"
     transform "270"
     position x=0 y=0
 }
 
-// Tercer monitor: ASUS MB169CK por DisplayPort sobre USB-C, no DisplayLink. Ese puerto está
-// cableado a la NVIDIA (card0, conectores DP-2 y DP-3), así que con este monitor puesto la
-// NVIDIA no se apaga. niri renderiza en la Intel (render-drm-device en startup.kdl) y copia
-// cada fotograma a la NVIDIA, que solo lo saca por el puerto. Verificado con el driver
-// nvidia-open el 2026-09-25: imagen estable, sin parpadeos y sin avisos en el log de niri.
-// Si algún día parpadea o sale en blanco: disable-10bit-output en el bloque debug de
-// startup.kdl. Apagar la NVIDIA del todo (envycontrol integrated) dejaría esta salida sin
-// señal (TODO.md).
-output "DP-2" {
-    mode "1920x1080@60.000"
-    // A la derecha del portátil: 768 del HDMI + 1920 del portátil.
+// Samsung S19D300 en vertical, a la derecha del portátil (768 + 1920), por el HDMI (Intel)
+// con un convertidor HDMI a VGA. Cables a la derecha, como el ViewSonic: "270". Su nativa
+// 1366x768 va bien. Girado mide 768 x 1366.
+output "Samsung Electric Company S19D300 H4LFA04245" {
+    mode "1366x768@59.790"
+    transform "270"
     position x=2688 y=0
-    // Debajo del HDMI, alineado a su borde izquierdo: 1366 es su alto girado. Desde el
-    // portátil no se baja a él, porque el portátil acaba en y=1080.
-    // position x=0 y=1366
-    // Debajo del portátil, si al final va ahí: position x=768 y=1080
+}
+
+// ASUS MB169CK (portátil, USB-C) siempre en horizontal, a la derecha del portátil: 768 + 1920.
+// El USB-C está cableado a la NVIDIA (card0), la misma GPU en la que dibuja niri. Si algún día
+// parpadea o sale en blanco: disable-10bit-output en el bloque debug de startup.kdl.
+output "ASUSTek COMPUTER INC MB169CK T6LMTR000959" {
+    mode "1920x1080@60.000"
+    position x=2688 y=0
 }

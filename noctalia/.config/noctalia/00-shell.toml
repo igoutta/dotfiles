@@ -56,10 +56,18 @@ end = [
     "session",
 ]
 
-# El HDMI va en vertical y mide 768 de ancho: la barra completa no cabe. Ahí solo
-# workspaces, reloj y notificaciones. match es el conector de niri. Márgenes en 15-style.toml.
-[bar.default.monitor.hdmi]
-match = "HDMI-A-1"
+# Los monitores verticales (ViewSonic y Samsung, 768 de ancho): la barra completa no cabe. Ahí
+# solo workspaces, reloj y notificaciones; el ASUS va en horizontal y lleva la completa. match
+# va por modelo, no por conector, para que sigan al monitor conecte donde conecte (como
+# outputs.kdl). Márgenes en 15-style.toml.
+[bar.default.monitor.viewsonic]
+match = "VA1903"
+start = [ "workspaces" ]
+center = [ "clock" ]
+end = [ "notifications" ]
+
+[bar.default.monitor.samsung]
+match = "S19D300"
 start = [ "workspaces" ]
 center = [ "clock" ]
 end = [ "notifications" ]
@@ -101,7 +109,9 @@ enable_sounds = true
 # Sin sondear la GPU: si noctalia arranca con la NVIDIA despierta (siempre al entrar, porque
 # el greeter y niri acaban de usarla) elige NVML y la consulta cada 5 s, y la NVIDIA no se
 # vuelve a dormir en toda la sesión (visto el 2026-09-28: 1203 s activa y 2 suspendida). No
-# hay widget de GPU en la barra; 0 desactiva el sondeo por completo (docs de noctalia).
+# hay widget de GPU en la barra; 0 desactiva el sondeo por completo (docs de noctalia). Con
+# niri dibujando en la NVIDIA (desde el 2026-09-30) no se duerme de todos modos; el 0 queda
+# para cuando vuelva a la Intel.
 [system.monitor]
 gpu_poll_seconds = 0
 

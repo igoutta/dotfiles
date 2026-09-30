@@ -122,6 +122,10 @@ de la Intel en `/sys/class/drm/card1`, 20 s por caso y el HDMI en pausa:
 | 4K 60 fps HEVC, opciones baratas | 1002 MHz | 65 % |
 | 4K 60 fps AV1, opciones baratas | 602 MHz | 52 % |
 
+Medido con niri dibujando en la Intel. Desde el 2026-09-30 niri dibuja en la NVIDIA y los
+fondos pintan y descodifican en ella (unos 630 MiB de memoria de vídeo cada uno): esta tabla y
+lo que sigue valen si se vuelve a la Intel.
+
 Escalar en el procesador de vídeo de la Intel (`vf=lavfi=[scale_vaapi=w=1920:h=1080]`) ayuda
 menos que quitar filtros y no suma sobre ellos. Lo que sigue caro es descodificar HEVC o AV1 a
 60 fps (la Intel sube de frecuencia para el descodificador, no para pintar): hoy son tres vídeos,

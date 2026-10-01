@@ -1,193 +1,122 @@
+// ~/.config/fastfetch/config.jsonc — banner al abrir una terminal (zsh/conf.d/80-fastfetch.zsh).
+// Un solo archivo a propósito: fastfetch 2.69 no sabe incluir otros (un solo -c; "include" se
+// ignora sin avisar), y partirlo con zsh haría que los errores señalen un archivo temporal. Lo
+// que necesita shell va en scripts/, que se prueban solos (`~/.config/fastfetch/scripts/x.sh`).
+// Pensado para una terminal a media pantalla (columna al 50 % en niri: 91 columnas): 20 de logo,
+// 6 de márgenes y hasta 65 de texto. Colores con nombres ANSI, para que sigan la paleta de
+// noctalia. Probar cambios sin tocar nada: `fastfetch --show-errors` (una clave mal escrita solo
+// avisa así). Ubuntu/Fedora: igual, salvo las rutas de /sys y pacman de scripts/.
 {
-"$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+"$schema": "https://github.com/fastfetch-cli/fastfetch/raw/2.69.0/doc/json_schema.json",
+"general": {
+  // Un comando que se cuelgue no frena la terminal: a los 300 ms su línea desaparece.
+  "processingTimeout": 300,
+  // Funciones Lua para los formatos (la barra de la batería con su tope). Ruta absoluta: aquí
+  // fastfetch no expande $XDG_CONFIG_HOME; en otra máquina, cambiar el usuario.
+  "preload": { "lua": "dofile('/home/ga/.config/fastfetch/scripts/battery.lua')" }
+},
 "logo": {
-  // Arte braille del repo (text/: .txt monocromo, .ansi con color propio). Colores con nombres ANSI para que sigan la paleta
-  // que noctalia ponga en el terminal; dentro del .txt se puede cambiar de color por
-  // zonas con $1..$9 y aquí se define cada uno en "color".
-  // Para volver a la imagen: "type": "kitty-direct",
-  //   "source": "$XDG_CONFIG_HOME/fastfetch/images/chainsaw-man.png", "width": 50.
-  "type": "file",
-  "source": "$XDG_CONFIG_HOME/fastfetch/text/the-legend-of-zelda.txt",
-  "color": { "1": "magenta" },
-  "padding": { "left": 2, "right": 4, "top": 7 }   // top = (líneas de módulos - líneas del logo) / 2, para centrarlo
+  // Una Eva al azar en cada terminal (PNG con fondo transparente; README, «Inventario de
+  // imágenes»). fastfetch expande $(…) en la ruta. Para fijar una: la ruta sin $(…).
+  "type": "kitty-direct",
+  "source": "$(shuf -n 1 -e $XDG_CONFIG_HOME/fastfetch/images/evangelion-eva-0[012].png)",
+  "width": 20,
+  "padding": { "left": 2, "right": 4, "top": 15 }   // top ≈ (líneas de texto - líneas del logo) / 2
 },
 "display": {
-  "constants": [
-    "├⎔ ",
-    "└⎔ ",
-    " ⟼  ",
-    "  🜋  ",
-    "\u001b[s\u001b[33C│\u001b[u",
-  ],
+  // Cabeceras «「OS 」»: 「 y 」 ocupan dos columnas y la fuente los dibuja en la mitad izquierda,
+  // así que 「 ya deja su hueco detrás y solo hace falta un espacio antes de 」.
+  // Decoración: la primera línea de cada sección es «icono  󰋘  valor» ($4) y las demás cuelgan
+  // del árbol «├─ icono ❯  valor» ($1/$2 y $3). Todo de FiraCode Nerd Font: los 🜋 y ⎔ de antes
+  // no estaban en la fuente y ghostty los tomaba de otra, más finos y a otra altura.
+  "constants": [ "├─ ", "└─ ", " ❯  ", "  󰋘  " ],
   "separator": "",
+  // Porcentajes con número de color según el valor y barra (sin "num" las variables {…percentage}
+  // salen vacías). La barra toma el mismo color por umbral ("auto").
   "percent": {
-    "type": ["num-color", "bar"],
-    "color": {
-      "green": "green",
-      "yellow": "light_yellow",
-      "red": "light_red"
-    }
+    "type": ["num", "num-color", "bar"],
+    "color": { "green": "green", "yellow": "light_yellow", "red": "light_red" }
   },
   "bar": {
-    "border": {
-      "left": "[",
-      "leftElapsed": "[",
-      "right": "]",
-      "rightElapsed": "]"
-    },
-    "char": {
-      "elapsed": "─",
-      "total": "─"
-    },
-    "color": {
-      "elapsed": "default",
-      "total": "light_black"
-    },
+    "border": { "left": "[", "leftElapsed": "[", "right": "]", "rightElapsed": "]" },
+    "char": { "elapsed": "─", "total": "─" },
+    "color": { "elapsed": "auto", "total": "light_black" },
     "width": 16
   },
+  "temp": { "unit": "C", "ndigits": 0, "color": { "green": "green", "yellow": "light_yellow", "red": "light_red" } },
+  "duration": { "abbreviation": true }
 },
 "modules": [
-    "break",
-    {
-      "type": "custom",
-      "format": "\u001b[33m「 {#1}OS{#1} 」",
-    },
-    {
-      "type": "os",
-      "key": "{icon}{$4}",
-      "keyColor": "yellow",
-      "format": "{name} {version}"
-    },
-    {
-        "type": "kernel",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "yellow"
-    },
-    {
-        "type": "packages",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "yellow"
-    },
-    {
-        "type": "command",
-        "key": "{$1}{$3}",
-        "keyColor": "yellow",
-        "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days"
-    },
-    {
-        "type": "shell",
-        "key": "{$2}{icon}{$3}",
-        "keyColor": "yellow"
-    },
-    "break",
-    {
-      "type": "custom",
-      "key": "\u001b[34m「 {#1}UI{#1} 」"
-    },
-    {
-      "type": "wm",
-      "key": "{icon}{$4}",
-      "keyColor": "blue"
-    },
-    {
-        "type": "wmtheme",
-        "key": "{$1}󰉼{$3}",
-        "keyColor": "blue"
-    },
-    {
-        "type": "icons",
-        "key": "{$1}󰀻{$3}",
-        "keyColor": "blue"
-    },
-    {
-        "type": "cursor",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "blue",
-    },
-    {
-        "type": "terminalfont",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "blue",
-    },
-    {
-        "type": "terminal",
-        "key": "{$2}{icon}{$3}",
-        "keyColor": "blue"
-    },
-    "break",
-    {
-      "type": "custom",
-      "format": "\u001b[32m「 {#1}SYSTEM{#1} 」",
-    },
-    {
-      "type": "host",
-      "key": "{icon}{$4}",
-      "keyColor": "green"
-    },
-    {
-        "type": "cpu",
-        "key": "{$1}󰻠{$3}",
-        "keyColor": "green",
-        "format": "{name} ({cores-physical}C/{cores-logical}T) @ {freq-max}"
-    },
-    {
-        "type": "gpu",
-        "key": "{$1}󰻑{$3}",
-        "keyColor": "green",
-        "format": "{2}"
-    },
-    {
-        "type": "display",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "green",
-        "compactType": "original-with-refresh-rate"
-    },
-    {
-        "type": "memory",
-        "key": "{$1}󰾆{$3}",
-        "keyColor": "green", 
-        "percent": {
-          "type": 3,
-          "green": 30,   // Values below 30% in green
-          "yellow": 70   // 30-70% in yellow, >70% in red
-        }
-    },
-    {
-        "type": "swap",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "green"
-    },
-    {
-        "type": "uptime",
-        "key": "{$2}󰅐{$3}",
-        "keyColor": "green"
-    },
-    "break",
-    {
-      "type": "custom",
-      "key": "\u001b[35m「 {#1}AUDIO{#1} 」"
-    },
-    {
-      "type": "sound",
-      "key": "{icon}{$4}",
-      "keyColor": "magenta",
-      "format": "{2}"
-    },
-    {
-        "type": "player",
-        "key": "{$1}{icon}{$3}",
-        "keyColor": "magenta"
-    },
-    {
-        "type": "media",
-        "key": "{$2}{icon}{$3}",
-        "keyColor": "magenta"
-    },
-    "break",
-    {
-      "type": "custom",
-      "format": "\u001b[90m  \u001b[31m  \u001b[32m  \u001b[33m  \u001b[34m  \u001b[35m  \u001b[36m  \u001b[37m  \u001b[38m  \u001b[39m  \u001b[39m    \u001b[38m  \u001b[37m  \u001b[36m  \u001b[35m  \u001b[34m  \u001b[33m  \u001b[32m  \u001b[31m  \u001b[90m "
-    },
-    "break",
-    ]
+  // ── WELCOME: quién, cuándo y qué tiempo hace ────────────────────────────────────────────────
+  { "type": "custom", "outputColor": "light_red", "format": "「{#1}WELCOME{#22} 」" },
+  { "type": "title", "key": "{$4}", "keyColor": "light_red", "format": "{#1}{#light_red}{user-name}{#22}{#light_black} @ {#1}{#yellow}{host-name}{#22}" },
+  { "type": "command", "key": "{$1}󰥔{$3}", "keyColor": "light_black", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/greeting.sh" },
+  { "type": "command", "key": "{$2}󰍎{$3}", "keyColor": "light_black", "outputColor": "cyan", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/weather.sh" },
+  "break",
+
+  // ── OS ──────────────────────────────────────────────────────────────────────────────────────
+  { "type": "custom", "outputColor": "yellow", "format": "「{#1}OS{#22} 」" },
+  { "type": "os", "key": "{icon}{$4}", "keyColor": "yellow", "format": "{name} {version}" },
+  { "type": "kernel", "key": "{$1}{icon}{$3}", "keyColor": "yellow" },
+  { "type": "packages", "key": "{$1}{icon}{$3}", "keyColor": "yellow" },
+  // Última actualización completa y última instantánea de snapper (scripts/).
+  { "type": "command", "key": "{$1}󰚰{$3}", "keyColor": "yellow", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/last-upgrade.sh" },
+  { "type": "command", "key": "{$1}󰆓{$3}", "keyColor": "yellow", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/snapshot.sh" },
+  // Días desde la instalación: fecha de creación de /, nativo, sin lanzar procesos.
+  { "type": "disk", "key": "{$1}{$3}", "keyColor": "yellow", "folders": "/", "format": "{days} días {#dim_default}({create-time:10})" },
+  { "type": "shell", "key": "{$2}{icon}{$3}", "keyColor": "yellow" },
+  "break",
+
+  // ── UI ──────────────────────────────────────────────────────────────────────────────────────
+  // wmtheme no sabe leer niri («Unknown WM: niri»); theme da lo que de verdad pinta noctalia.
+  // Fuera icons y cursor: los dos decían Adwaita, el valor por defecto del sistema.
+  { "type": "custom", "outputColor": "blue", "format": "「{#1}UI{#22} 」" },
+  { "type": "wm", "key": "{icon}{$4}", "keyColor": "blue" },
+  { "type": "theme", "key": "{$1}󰉼{$3}", "keyColor": "blue" },
+  { "type": "terminalfont", "key": "{$1}{icon}{$3}", "keyColor": "blue" },
+  { "type": "editor", "key": "{$1}{icon}{$3}", "keyColor": "blue" },
+  { "type": "terminal", "key": "{$2}{icon}{$3}", "keyColor": "blue" },
+  "break",
+
+  // ── SYSTEM ──────────────────────────────────────────────────────────────────────────────────
+  { "type": "custom", "outputColor": "green", "format": "「{#1}SYSTEM{#22} 」" },
+  { "type": "host", "key": "{icon}{$4}", "keyColor": "green", "format": "{family}" },
+  // {name~27} quita «11th Gen Intel(R) Core(TM) ». La temperatura sale casi gratis (coretemp); la
+  // de la GPU no se muestra: NVML cuesta 20-46 ms en cada terminal.
+  { "type": "cpu", "key": "{$1}󰻠{$3}", "keyColor": "green", "temp": { "green": 70, "yellow": 85 },
+    "format": "{name~27} {#dim_default}({cores-physical}C/{cores-logical}T) @ {freq-max}{#} {temperature}" },
+  { "type": "gpu", "key": "{$1}󰻑{$3}", "keyColor": "green", "format": "{name} {#dim_default}{type}" },
+  // Una línea por monitor, con su nombre: los dos verticales se distinguen.
+  { "type": "display", "key": "{$1}{icon}{$3}", "keyColor": "green", "compactType": "none",
+    "format": "{name} {width}x{height} {#dim_default}@ {refresh-rate} Hz{?rotation} · {rotation}°{?}" },
+  { "type": "memory", "key": "{$1}󰾆{$3}", "keyColor": "green", "percent": { "green": 50, "yellow": 80 } },
+  { "type": "btrfs", "key": "{$1}󰋊{$3}", "keyColor": "green", "format": "{used-percentage-bar} {used} / {total} ({used-percentage})" },
+  // Batería: el módulo nativo no imprime nada (Lua sin return lo oculta) y deja su barra y su
+  // carga en la variable bat; la línea siguiente marca el tope de carga dentro de la barra (┃) y
+  // añade estado, salud y perfil (scripts/battery.sh y scripts/battery.lua).
+  { "type": "battery", "format": "lua:bat = ..." },
+  { "type": "command", "key": "{$1}󰁹{$3}", "keyColor": "green", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/battery.sh",
+    "format": "lua:return barra_bateria(...)" },
+  { "type": "uptime", "key": "{$2}󰅐{$3}", "keyColor": "green" },
+  "break",
+
+  // ── NETWORK ─────────────────────────────────────────────────────────────────────────────────
+  // bluetooth desaparece si no hay nada conectado: va en medio, para que el └ siempre salga.
+  { "type": "custom", "outputColor": "cyan", "format": "「{#1}NETWORK{#22} 」" },
+  { "type": "wifi", "key": "{icon}{$4}", "keyColor": "cyan", "format": "{ssid} {#dim_default}{band} GHz{#} {signal-quality}" },
+  { "type": "bluetooth", "key": "{$1}{icon}{$3}", "keyColor": "cyan", "format": "{name}{?battery-percentage} {battery-percentage}{?}" },
+  { "type": "localip", "key": "{$2}{icon}{$3}", "keyColor": "cyan", "format": "{ipv4} {#dim_default}{ifname}" },
+  "break",
+
+  // ── AUDIO ───────────────────────────────────────────────────────────────────────────────────
+  // media solo sale si algo suena. player sobraba: es un alias de media.
+  { "type": "custom", "outputColor": "magenta", "format": "「{#1}AUDIO{#22} 」" },
+  { "type": "sound", "key": "{icon}{$4}", "keyColor": "magenta", "format": "{name} {volume-percentage}" },
+  { "type": "media", "key": "{$2}{icon}{$3}", "keyColor": "magenta" },
+  "break",
+
+  // Tira de colores: la de siempre, con nombres de la paleta en vez de códigos a mano.
+  { "type": "custom", "format": "{#light_black}  {#red}  {#green}  {#yellow}  {#blue}  {#magenta}  {#cyan}  {#white}  {#default}    {#default}  {#white}  {#cyan}  {#magenta}  {#blue}  {#yellow}  {#green}  {#red}  {#light_black}" },
+  "break"
+]
 }

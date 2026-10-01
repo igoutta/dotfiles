@@ -641,8 +641,8 @@ dibujando en ella, nunca).
 #   wine y juegos de 32 bits (multilib)
 # "nvidia-prime" el comando prime-run: `prime-run juego` lo lanza en la NVIDIA. Con niri dibujando en ella
 #   (abajo) el escritorio, Xwayland y las apps ya van ahí sin él; vuelve a hacer falta si niri vuelve a la Intel
-# "libva-nvidia-driver" VA-API sobre NVDEC: con niri en la NVIDIA lo usan los fondos de vídeo (hwdec=vaapi);
-#   Zen no, porque bloquea la decodificación por hardware en NVIDIA salvo forzarla
+# "libva-nvidia-driver" VA-API sobre NVDEC. Hoy nada lo usa por defecto: los fondos van con el nvdec propio
+#   de mpv (con AV1 de 10 bits este driver fallaba) y Zen bloquea la decodificación por hardware en NVIDIA
 # "vulkan-intel" y "lib32-vulkan-intel": sin ellos el único dispositivo Vulkan es la NVIDIA y cualquier app
 #   Vulkan (mpv con hwdec=auto, por ejemplo) cae en ella sin querer; con niri en la NVIDIA van ahí de todos
 #   modos, porque eligen la GPU del compositor. "vulkan-tools": vulkaninfo para comprobar
@@ -676,10 +676,11 @@ cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status   # active con niri e
 
 Con niri en la Intel, las apps que usan libmpv o Vulkan pueden caer en la NVIDIA sin querer,
 porque mpv prefiere el contexto Vulkan y libmpv carga el interop CUDA al arrancar: el fondo de
-vídeo de noctalia se fija en la Intel con `gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi`
-(`30-plugins.toml`). Con niri en la NVIDIA eso ya no lo lleva a la Intel. Comprobado el
-2026-09-30: los fondos pintan y descodifican en la NVIDIA; mpv y Zen dibujan en ella y
-descodifican en el procesador (mpv sin config no usa hardware; Zen lo bloquea en NVIDIA).
+vídeo de noctalia se fija en la Intel con `gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi`.
+Con niri en la NVIDIA los fondos van con `hwdec=nvdec,nvdec-copy gpu-hwdec-interop=cuda`
+(`30-plugins.toml`): por VA-API sobre la NVIDIA (libva-nvidia-driver) los AV1 de 10 bits
+parpadeaban en azul. Comprobado el 2026-09-30: mpv y Zen dibujan en la NVIDIA y descodifican en
+el procesador (mpv sin config no usa hardware; Zen lo bloquea en NVIDIA).
 Comprobar quién tiene abierta la GPU: `ls -l /proc/*/fd 2>/dev/null | rg nvidia0`.
 
 Si la pantalla no enciende o sale en blanco al entrar, es un problema conocido de Intel +

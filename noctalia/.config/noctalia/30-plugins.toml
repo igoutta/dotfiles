@@ -27,23 +27,22 @@ enabled = [
 video_directory = "/home/ga/Videos/Wallpapers"
 # auto_pause: "full" (por defecto) pausa con una ventana a pantalla completa; "max" también con
 # una maximizada. niri publica ese estado, pero solo para columnas en modo maximizado. Sin probar.
-# Pensado para dejar el fondo en la Intel mientras niri dibujaba en ella. Sin esto mpvpaper cayó
-# con segfault en libnvidia-glcore (2026-09-25) y mantenía la RTX encendida solo para el fondo,
-# por tres vías:
-# gpu-context=wayland: EGL de la GPU en la que dibuja niri; sin fijarlo mpv elige Vulkan y su
-# dispositivo es la NVIDIA.
-# hwdec=vaapi: descodificación por VA-API en esa misma GPU, en vez del hwdec=auto del plugin
-# (van después y ganan).
-# gpu-hwdec-interop=vaapi: libmpv carga todos los interops al arrancar, y el de CUDA abre la
-# NVIDIA aunque no se use; limitado a vaapi no la toca.
-# Desde el 2026-09-30 niri dibuja en la NVIDIA (startup.kdl) y las dos primeras siguen a la
-# pantalla: los tres fondos pintan y descodifican en la NVIDIA (libva-nvidia-driver, unos 630 MiB
-# de memoria de vídeo cada uno). Si niri vuelve a la Intel, ellos también.
+# GPU del fondo, con niri dibujando en la NVIDIA (desde el 2026-09-30, startup.kdl):
+# gpu-context=wayland: EGL de la GPU en la que dibuja niri; sin fijarlo mpv elige Vulkan.
+# hwdec=nvdec,nvdec-copy: descodifica con NVDEC, el de la propia NVIDIA, en vez del hwdec=auto
+# del plugin (van después y ganan); nvdec-copy solo si falla el enlace directo. Con hwdec=vaapi
+# iba por libva-nvidia-driver, que con AV1 de 10 bits a veces no consigue memoria para los
+# fotogramas (nv_alloc_object failed) y el fondo parpadeaba en azul (red-sun-astronaut,
+# ling-cage-bai-yuekui); NVDEC los descodifica igual que el procesador (comprobado 2026-09-30).
+# gpu-hwdec-interop=cuda: carga solo el enlace directo de CUDA con OpenGL, el que usa nvdec.
+# Si niri vuelve a la Intel: "hwdec=vaapi gpu-hwdec-interop=vaapi", que deja el fondo entero en
+# la Intel; con nvdec la NVIDIA no se dormiría, y abrirla desde un fondo pintado en la Intel
+# acabó en segfault en libnvidia-glcore (2026-09-25).
 # Render barato, lo mismo que el perfil «fast» de mpv: escalado bilineal (a 2:1 exacto es
 # promediar cuatro píxeles, se ve igual), sin dither, sin escalar en luz lineal ni sigmoide. Con
 # esto un 4K cuesta menos que el mismo vídeo a 1080p con los filtros por defecto (medido el
 # 2026-09-25 por el socket IPC; tabla en el README). Es un fondo, no un visor.
-mpv_options = "gpu-context=wayland hwdec=vaapi gpu-hwdec-interop=vaapi scale=bilinear dscale=bilinear dither=no correct-downscaling=no linear-downscaling=no sigmoid-upscaling=no"
+mpv_options = "gpu-context=wayland hwdec=nvdec,nvdec-copy gpu-hwdec-interop=cuda scale=bilinear dscale=bilinear dither=no correct-downscaling=no linear-downscaling=no sigmoid-upscaling=no"
 
 [plugin_settings."noctalia/screen_recorder"]
 hide_inactive = true

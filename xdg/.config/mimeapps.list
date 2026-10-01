@@ -47,3 +47,7 @@ application/pdf=io.github.JakubMelka.Pdf4qt.Pdf4QtEditor.desktop
 model/stl=f3d.desktop
 model/step=f3d.desktop
 application/vnd.step=f3d.desktop
+# Enlaces claude-cli:// (botones de la web de Claude que abren una sesión en Claude Code): la
+# línea y ~/.local/share/applications/claude-code-url-handler.desktop las escribe Claude Code al
+# arrancar; ese .desktop no está en el repo. Si no estuviera aquí, el archivo saldría modificado.
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop

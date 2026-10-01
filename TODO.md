@@ -14,10 +14,9 @@ espera a la reinstalación.
 - [~] **Qué instalar y qué no** (inventario del 2026-09-24 contra lo que necesita un portátil ASUS
       con niri, Btrfs y LUKS; la base de audio, red, bluetooth, portales, llavero y polkit está
       completa). Decidido ese día; cada cosa entra en su fase de INSTALL.md al hacerse:
-      - Instalando: `snapper snap-pac fwupd ffmpegthumbnailer webp-pixbuf-loader gvfs-mtp
-        wl-clipboard` y `photoqt` (AUR) como visor de imágenes; hoy png y jpg abren con f3d, un
-        visor 3D. Loupe descartado. snap-pac avisa en cada pacman hasta que exista la config de
-        snapper (tarea «Snapper»). fwupd: `fwupdmgr get-devices`, luego `update`.
+      - Instalados (comprobado el 2026-10-01): `snapper snap-pac fwupd ffmpegthumbnailer
+        webp-pixbuf-loader gvfs-mtp wl-clipboard` y `photoqt` (AUR) como visor de imágenes.
+        Loupe descartado. Falta fwupd: `fwupdmgr get-devices`, luego `update`.
       - Con yazi como gestor principal, no Nautilus: `udiskie` sí. Nautilus solo monta un USB al
         pulsarlo en su barra lateral, que con yazi no existe; udiskie lo monta al conectarlo y
         avisa, y hay plugin de noctalia `aristides/udiskie` para la barra. El móvil por USB va
@@ -35,16 +34,25 @@ espera a la reinstalación.
         de teclado. supergfxctl cambia el modo de la GPU (integrated, hybrid, vfio) descargando
         y cargando el driver NVIDIA, con cierre de sesión; en este portátil integrated deja sin
         señal el USB-C del tercer monitor.
-- [ ] **Snapper**: analizado el 2026-09-24 en `docs/snapper.md` contrastando SysGuides (Fedora):
+- [~] **Snapper**: analizado el 2026-09-24 en `docs/snapper.md` contrastando SysGuides (Fedora):
       configs `root` (pacman 20+5 importantes, una diaria 7 días) y `home` (12 h, 7 d, 4 sem),
       sin cuotas Btrfs, `~/.cache` y contenedores fuera como subvolúmenes, hook que copia
-      `/boot` (vfat, fuera de Btrfs) tras cada kernel, drop-in de mkinitcpio que solo añade
-      `grub-btrfs-overlayfs` (`resume` y `btrfs` se deciden con la hibernación), vuelta atrás
-      renombrando `@`. Pendiente de discutir junto a la hibernación (hook `resume`). Todo en
-      `etc/` y los pasos en «Mantenimiento» de INSTALL.md; falta ejecutarlos (sudo) y probar
-      arrancar una instantánea desde GRUB. Después, valorar `snapper-rollback` (AUR).
-- [ ] **Límite de carga 80 %**: `etc/tmpfiles.d/charge-limit.conf` preparado; instalar con la
-      línea de la sección Dotfiles. Hoy marca 80 pero nada lo fija al arrancar.
+      `/boot` (vfat, fuera de Btrfs) tras cada kernel, vuelta atrás renombrando `@`. Aplicado
+      (comprobado el 2026-10-01): configs `root` y `home` en `/etc/snapper/configs` (sin sudo no
+      se pudieron comparar con las del repo), snap-pac hace el par pre/post en cada pacman, el
+      timer de snapper una por hora, `grub-btrfs` instalado, los hooks `91-grub-reinstall` y
+      `95-bootbackup` puestos, `/.bootbackup` existe y el drop-in de mkinitcpio con
+      `grub-btrfs-overlayfs` (y `resume`) en `/etc/mkinitcpio.conf.d/dotfiles.conf`. Falta:
+      probar arrancar una instantánea desde GRUB y, después, valorar `snapper-rollback` (AUR).
+- [ ] **Audio, que se vea bien** (2026-10-01): casi sin usar hasta ahora; Gustavo quiere un
+      sistema de audio vistoso. Hay PipeWire 1.6 con wireplumber y pipewire-pulse, `cava`
+      (visualizador en la terminal) y en la barra de noctalia los widgets de volumen y
+      multimedia. Salidas: los altavoces del portátil (silenciados) y el audio del ViewSonic por
+      USB-C. Falta todo lo demás: mezclador con niveles por app y por dispositivo (pwvucontrol o
+      pavucontrol), ecualizador y efectos (easyeffects, que noctalia ya sabe manejar con
+      `noctalia msg effects-profile-set`), grafo de conexiones (qpwgraph o helvum), cava con la
+      paleta de noctalia, y quizá un visualizador en el fondo o en la barra. Antes de instalar,
+      hablar qué se quiere ver y dónde.
 - [ ] **Texto a voz**, necesario: `speech-dispatcher` (extra) como servicio de voz del sistema,
       que es lo que Zen/Firefox y las apps usan para «leer en voz alta», y `piper-tts` (AUR,
       `piper-tts-bin`) como motor neuronal local, con voces en español de rhasspy/piper-voices
@@ -127,14 +135,10 @@ espera a la reinstalación.
       busybox), swapfile (por preferencia), swap nueva encogiendo la raíz (una hora con riesgo
       para algo que la reinstalación da gratis). Al reinstalar: `suspend-then-hibernate` en
       logind y en el idle de noctalia.
-- [ ] **ghostmirror, aplicar los units revisados** (análisis cerrado el 2026-09-25, ver Hecho):
-      `sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror*.{service,timer} &&
-      sudo systemctl disable ghostmirror.service ghostmirror-deep.service && sudo systemctl
-      daemon-reload && sudo systemctl restart ghostmirror.timer ghostmirror-deep.timer && sudo
-      systemctl start ghostmirror-deep.service ghostmirror.service`; luego `head -20
-      /etc/pacman.d/mirrorlist` debería mezclar Worldwide, EE. UU. y algo de Brasil o Chile.
 - [~] **Temperatura**: el paquete de la CPU a 83-96 °C con poca carga y el ventilador a
-      4000-4700 RPM (2026-09-25). thermald instalado y activo ese día. Veredictos, medidos:
+      4000-4700 RPM (2026-09-25). thermald instalado y activo ese día. **2026-09-30: limpieza y
+      pasta térmica nueva** (servicio técnico): volver a medir en los próximos días, en vacío y
+      con carga, con el mismo perfil, y comparar con lo de abajo. Veredictos, medidos:
       - **asusctl: no, y la culpa es del firmware, no del programa.** El kernel pide las curvas
         de ventilador al BIOS (316, 06/2025) y responde «sin datos» (`fan_curve_get_factory_default
         … failed: -61` en `journalctl -k`), así que no existe el hwmon `asus_custom_fan_curve` que
@@ -284,9 +288,9 @@ espera a la reinstalación.
       - Wine y juegos: wine-staging winetricks wine-gecko wine-mono bottles winegui vkd3d
         vkd3d-docs lib32-vkd3d ares
       - Drones / ArduPilot: ardupilot-mission-planner qgroundcontrol-bin python-wxpython
-        python-scipy opencv gdal openbox gtk2 (openbox: sin uso desde el 2026-10-01, cuando
-        Mission Planner dejó de necesitar su propio Xwayland: candidato a desinstalar; gtk2: lo
-        cargan System.Windows.Forms de mono y SkiaSharp.Views.Gtk de Mission Planner)
+        python-scipy opencv gdal gtk2 (gtk2: lo cargan System.Windows.Forms de mono y
+        SkiaSharp.Views.Gtk de Mission Planner; openbox desinstalado el 2026-10-01, cuando
+        Mission Planner dejó de necesitar su propio Xwayland)
       - Desarrollo: uv python-pip python-virtualenv ccache visual-studio-code-bin itstool
         (mise ya en «Desarrollo»)
       - Utilidades CLI: fd trash-cli unrar patool toilet tealdeer vivid pacman-contrib
@@ -296,6 +300,15 @@ espera a la reinstalación.
       - Fuentes: gsfonts opendesktop-fonts woff2-cascadia-code wqy-bitmapfont wqy-microhei
         wqy-zenhei
       - Remoto y repos: rustdesk blackarch-mirrorlist
+      - Repos de terceros, decidido el 2026-10-01: **BlackArch y arch4edu se quedan**. Falta en
+        INSTALL.md el porqué de cada uno (hoy se añaden sin explicarlo). Qué llega de cada uno,
+        comprobado ese día: de BlackArch, `ares`, `python-fpdf2` (dependencia de `ocrmypdf`),
+        `gtk2` y `yay` (estos dos también en arch4edu); de arch4edu, `gtk2`,
+        `onedrive-abraunegg`, `rustdesk` y `yay`. La lista de espejos de BlackArch tenía un solo
+        servidor activo (ftp.halifax.rwth-aachen.de); al caerse ese día, `pacman -Syu` falló
+        entero. Dejar al menos dos activos (mirror.cedia.org.ec y mirror.cyberbits.eu estaban al
+        día) y anotarlo en INSTALL.md; ghostmirror solo ordena la lista de Arch, no la de
+        BlackArch.
 
 ## Dotfiles
 
@@ -303,8 +316,8 @@ espera a la reinstalación.
       greetd con la config declarativa y `adw-gtk-theme` ya se probaron ese día. Falta:
       - Fondos de vídeo: no estaba roto. Con vídeo asignado noctalia retira su capa de fondo y
         las imágenes no se ven hasta parar el vídeo (Stop / `clear-all`); documentado en el
-        README de noctalia el 2026-09-24. Falta `sudo pacman -S socat` si se usan presentaciones
-        (ya en INSTALL.md) y decidir `extract_last_frame`.
+        README de noctalia el 2026-09-24. socat ya instalado (comprobado el 2026-10-01);
+        falta decidir `extract_last_frame`.
       - Teclas Fn del TUF, hechas el 2026-09-25: Fn+F9 proyectar, Fn+F10 touchpad y Fn+F12 aviso
         del modo avión, sin atajos Mod repetidos (una tecla por acción); scripts en `niri/.local/bin`.
         Cadena verificada sin pulsar: keymap de asus-nb-wmi (0x61, 0x6B, 0x88), udev sin remapeos
@@ -361,10 +374,16 @@ espera a la reinstalación.
       (`Tab:layout` en init.lua, copia del preset de 26.9.1: comparar en cada yazi nuevo): ≥ 100
       columnas los tres, 60-99 sin la carpeta de arriba, < 60 solo la lista (T la vista previa);
       auto-layout.yazi descartado (14 meses parado). Texto de `ficha` partido según el ancho.
-- [ ] **kitty**: desinstalar, `sudo pacman -Rns kitty`. No se usa y ghostty ya está integrado
-      (tema por noctalia, shell integration, GTK4). En velocidad real están a la par: los dos
-      renderizan en GPU; kitty gana en pruebas sintéticas de caudal, no en uso. Con él se va
-      `kitty-open.desktop`, que abría las carpetas.
+- [ ] **kitty o ghostty: medir antes de decidir** (2026-10-01). Nunca se midió en esta
+      máquina; lo que decía esta tarea («a la par en uso real») no salía de ninguna prueba. Lo
+      publicado, viejo o sin versiones: en caudal kitty gana su propia prueba y ghostty gana
+      vtebench (marzo de 2026); en latencia, datos de 2024 a favor de kitty. Para un uso tipo
+      tmux, kitty 0.49 trae sesiones guardables, disposiciones, control remoto y terminal
+      desplegable que funciona en niri; ghostty 1.3.1 en Linux tiene buenos splits pero ni
+      sesiones ni control remoto útil. Ninguno se separa y vuelve como tmux. Medir caudal (`cat`,
+      `kitten __benchmark__`, vtebench), arranque y memoria con la misma fuente y opacidad; la
+      latencia, con el móvil a 240 fps. Si se queda ghostty: `sudo pacman -Rns kitty`, y con él
+      se va `kitty-open.desktop`.
 - [ ] **starship**: rehacer la configuración desde cero.
 - [ ] **atuin**: mejorar, solo si algo molesta al usarlo.
 - [ ] **nvim**: nunca configurado; decidir si se usa junto a Helix.
@@ -416,28 +435,53 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
       ahora y sugiere un script por IPC). Probado el 2026-10-01 y descartado: la ventana se ve
       un instante como columna nueva antes de saltar a la otra. Aportar el caso de uso: hecho
       dentro de niri no saltaría.
-- [ ] **niri con dos GPU: salida de la NVIDIA a 1366 de ancho sale corrupta si dibuja la Intel**
-      (sin reporte parecido el 2026-10-01). ViewSonic VA1903 por USB-C (cableado a la NVIDIA):
-      1366x768 sale como basura, 1280x720 limpio; `disable-direct-scanout` no cambia nada;
-      modos a medida 1360x768, TestFailed. Con `render-drm-device` en la NVIDIA sale bien. Datos:
-      niri 26.04, nvidia-open 615.71.09, Intel Tiger Lake (i915). Reportarlo en niri-wm/niri.
+- [ ] **Dos GPU: el ViewSonic a 1366 sale corrupto si niri dibuja en la Intel** (analizado el
+      2026-10-01). Culpa del EGL de NVIDIA (cerrado, nvidia-utils 615.71.09): no admite filas que
+      no sean múltiplo de 32 bytes, pero en vez de rechazar el búfer lo lee redondeando hacia
+      abajo; a 1366 px cada fila ocupa 5464 bytes, la lee como 5440 y la imagen sale cizallada.
+      1280 y 1360 son múltiplos y salen bien. La copia entre GPU la hace Smithay (la biblioteca
+      de niri), que pide el búfer de la Intel solo para dibujar; pedido también como imagen de
+      pantalla (SCANOUT), la Intel rellena las filas a 5632 y se ve bien (reproducido fuera de
+      pantalla con la misma Smithay de niri 26.04). Dónde: (1) contestar en el hilo del foro de
+      NVIDIA que ya existe,
+      https://forums.developer.nvidia.com/t/egl-import-via-egl-ext-image-dma-buf-import-modifiers-ignores-explicit-stride-causes-image-distortion-in-virtio-gpu-venus/364360
+      (otro usuario lo confirmó el 2026-09-26 con 615.71.09; NVIDIA no ha contestado); (2) issue
+      nuevo en https://github.com/Smithay/smithay/issues para esquivarlo (SCANOUT o alinear el
+      stride); a niri solo si Smithay dice que le toca a niri. Precedentes: Mesa #15149 (cerrado,
+      «nvidia-proprietary») y canonical/mir#4035. **Smithay y niri no aceptan texto de issues
+      escrito por una IA**: el reporte lo escribe Gustavo (traducir un texto suyo sí vale). El
+      equipo de niri suele pedir probarlo antes en cosmic-comp o sway.
 - [ ] **xwayland-satellite: arrastrar entre apps de Wayland y de X11**
       ([#133](https://github.com/Supreeeme/xwayland-satellite/issues/133), abierta desde 2025-03).
       Bloquea arrastrar archivos desde yazi (`e`) a f3d. Votar y seguir.
-- [ ] **libva-nvidia-driver: AV1 de 10 bits no consigue memoria** (sin reporte el 2026-10-01).
-      0.0.18, backend direct, nvidia-open 615.71.09, RTX 3050 Ti: `nv_alloc_object failed: 51`
-      al crear los fotogramas de un AV1 4K de 10 bits, con 1,5 GB libres; en mpv
-      (`hwdec=vaapi`) el fondo parpadeaba en azul. Con el NVDEC propio de mpv va bien. Reportarlo
-      en elFarto/nvidia-vaapi-driver con el log de `NVD_LOG=1`.
-- [ ] **f3d 3.5: no abre STEP aunque el plugin OpenCASCADE coincida** (sin reporte el
-      2026-10-01). «unknown format» con el glob de `/etc/f3d/config.d/10_occt.json` coincidiendo;
-      con `--force-reader=STEP` funciona (paquete stow `f3d/`). Mirar antes si es del paquete de
-      Arch y reportarlo en f3d-app/f3d o en el paquete.
+- [ ] **libva-nvidia-driver: AV1 de 10 bits no consigue memoria** (analizado el 2026-10-01).
+      0.0.18, backend direct: `nv_alloc_object failed: 51` (sin memoria) al crear los fotogramas
+      de un AV1 4K de 10 bits; en mpv con `hwdec=vaapi` el fondo parpadeaba en azul (hoy los
+      fondos van con NVDEC y no lo usan). Sin reporte abierto: issue nuevo en
+      https://github.com/elFarto/nvidia-vaapi-driver/issues, pero antes probar su versión de
+      desarrollo (AUR `libva-nvidia-driver-git`), que trae dos cambios posteriores a 0.0.18 justo
+      en esa reserva de memoria (#461 y #456). Con el log de `NVD_LOG=1`. Ese día el kernel
+      también avisó dos veces «[nvidia-drm] Failed to allocate NVKMS video memory»: la memoria de
+      vídeo va justa con tres fondos 4K.
+- [ ] **f3d 3.5: no abre STEP** (analizado el 2026-10-01). Ya reportado
+      (f3d-app/f3d#3087) y arreglado en su rama principal (#3104, 2026-05-04), aún sin versión
+      publicada: nada que reportar. Cuando llegue una versión con el arreglo (probablemente la
+      4.0), quitar el `force-reader` de `f3d/.config/f3d/config.json` y de `ficha` y comprobar
+      que los STEP abren solos.
+- [ ] **noctalia: la ubicación por IP sale en Puyo estando en Guayaquil** (2026-10-01). Con
+      `[location] auto_locate = true`, noctalia pregunta a su propio servicio
+      (`https://api.noctalia.dev/geolocate`, cada 6 h), que da Puyo; con la misma IP (Telconet)
+      ip-api.com e ipinfo.io dan Guayaquil. Afecta al tiempo, a la luz nocturna y al cambio de
+      tema por el atardecer. Reportarlo en noctalia-dev/noctalia con el ISP y lo que dan los
+      otros servicios (sin poner la IP en público).
 - [ ] **noctalia-greeter: formulario abajo a la izquierda**: ver «Greeter, formulario abajo a
       la izquierda» en Sistema (abrir sugerencia).
 
 ## Hecho
 
+- 2026-10-01 **Límite de carga al 80 % fijo al arrancar**: `etc/tmpfiles.d/charge-limit.conf`
+  instalado en `/etc/tmpfiles.d/` (igual al del repo, comprobado); el umbral de asus-wmi vuelve a
+  80 en cada arranque.
 - 2026-10-01 **Mission Planner sin script**: los menús que no se dibujaban eran una regresión de
   xwayland-satellite 0.8.2 (Supreeeme/xwayland-satellite#468), arreglada en 0.8.3. Con 0.8.3
   Mission Planner funciona abierto directo (probado por Gustavo), así que se quitan
@@ -445,6 +489,11 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
   regla de niri que maximizaba ese Xwayland; vuelve la entrada del paquete (`mono` directo).
   Tras actualizar xwayland-satellite hay que cerrarlo para que niri arranque el nuevo
   (`pkill -x xwayland-satell`): se cierran con él las apps de X11 abiertas.
+- 2026-10-01 **ghostmirror, units revisados aplicados** (comprobado ese día; instalados el
+  2026-09-25): los cuatro en `/etc/systemd/system`, los timers activos (mensual por latencia,
+  semanal por velocidad) y la lista de espejos al día. `ghostmirror-deep.service` del sistema
+  solo difiere del repo en un comentario (el del repo es más nuevo: lo del espejo de Ecuador);
+  reinstalarlo es opcional.
 - 2026-09-30 **ViewSonic a 1366x768 por USB-C**: con niri dibujando en la Intel, su nativa
   salía como basura por el USB-C (cableado a la NVIDIA); 1280x720 iba limpio, y modos a medida
   y `disable-direct-scanout` no sirvieron. Solución: niri dibuja en la NVIDIA

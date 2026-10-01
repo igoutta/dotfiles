@@ -252,6 +252,22 @@ espera a la reinstalación.
       `noctalia msg greeter-sync` para que el greeter tome la disposición nueva, y confirmar
       que `displaylink` y `evdi-dkms` no sirven para nada más antes de desinstalarlos
       (auditoría).
+- [ ] **Samsung por HDMI→VGA sin depender del convertidor** (2026-10-01; de momento no).
+      El convertidor HDMI→VGA hace saltar la señal de conexión del HDMI: el kernel lo registró
+      (`i915: HPD interrupt storm detected on connector HDMI-A-1`), pasó a sondear y dejó el
+      HDMI desconectado, sin EDID; niri no lo ve porque el kernel no lo ve. Ese día bastó
+      cambiar de convertidor. Arreglo de fondo, sin tocar hardware: que el kernel dé el HDMI por
+      conectado y use el EDID del Samsung desde un archivo, con
+      `video=HDMI-A-1:e drm.edid_firmware=HDMI-A-1:edid/samsung-s19d300.bin` en
+      `GRUB_CMDLINE_LINUX_DEFAULT` (kernel con `CONFIG_DRM_LOAD_EDID_FIRMWARE=y`, comprobado).
+      El EDID tiene que ser el de esta unidad (niri la reconoce por la serie H4LFA04245):
+      copiarlo con el monitor detectado, `cp /sys/class/drm/card1-HDMI-A-1/edid`, a
+      `etc/firmware/edid/` e instalarlo en `/usr/lib/firmware/edid/` (i915 carga tras montar la
+      raíz, sin `kms` en el initramfs). Antes, probar si el convertidor deja pasar imagen aunque
+      falle: `echo on | sudo tee /sys/class/drm/card1-HDMI-A-1/status` (deshacer con `detect`).
+      Precio: sin nada en el HDMI, niri cree que hay un monitor a la derecha; una tecla que
+      apague y encienda esa salida (`niri msg output HDMI-A-1 off`/`on`). Alternativa de
+      hardware: un convertidor con alimentación micro-USB.
 - [ ] **Auditoría de paquetes**: 71 instalados explícitamente que la guía no menciona. El
       que se quede entra en su fase con su comentario; el resto se desinstala.
       Además, `pacman -Qtdq` lista 38 huérfanos: 11 `-debug` de compilar AUR con la opción
@@ -382,6 +398,47 @@ espera a la reinstalación.
 - Idioma: interfaces en inglés (`LC_MESSAGES=en_US` con `LANG=es_EC`; `lang = "en"` en
   noctalia, cuya traducción va al 79 %; niri no tiene idioma). En español solo lo del repo:
   chuletas, comentarios, README, títulos de `Mod+F1` y commits.
+
+## Upstream
+
+Lo que hay que reportar, preguntar o, más adelante, ayudar a programar en otros proyectos para
+que funcionen como queremos sin parches nuestros. Antes de abrir nada, volver a buscar si ya
+existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
+
+- [ ] **niri: tira vertical en monitores verticales** ([#1071](https://github.com/niri-wm/niri/issues/1071),
+      abierta desde 2025-01, 192 votos). Que en un monitor vertical las columnas crezcan hacia
+      abajo en vez de hacia la derecha. El autor dice que es reescribir mucho del código de la
+      distribución; lo que ya existe es `layout {}` por salida (desde 25.11). Aportar: votar y
+      contar el caso (dos verticales de 768x1366 a los lados del portátil). Si algún día se
+      ayuda a programar, es aquí.
+- [ ] **niri: abrir la ventana nueva en la columna actual** (discusión
+      [#1125](https://github.com/niri-wm/niri/discussions/1125); el FAQ de niri lo descarta por
+      ahora y sugiere un script por IPC). Probado el 2026-10-01 y descartado: la ventana se ve
+      un instante como columna nueva antes de saltar a la otra. Aportar el caso de uso: hecho
+      dentro de niri no saltaría.
+- [ ] **niri con dos GPU: salida de la NVIDIA a 1366 de ancho sale corrupta si dibuja la Intel**
+      (sin reporte parecido el 2026-10-01). ViewSonic VA1903 por USB-C (cableado a la NVIDIA):
+      1366x768 sale como basura, 1280x720 limpio; `disable-direct-scanout` no cambia nada;
+      modos a medida 1360x768, TestFailed. Con `render-drm-device` en la NVIDIA sale bien. Datos:
+      niri 26.04, nvidia-open 615.71.09, Intel Tiger Lake (i915). Reportarlo en niri-wm/niri.
+- [ ] **xwayland-satellite: menús de WinForms que no se dibujan** (sin reporte el 2026-10-01).
+      Mission Planner (mono) bajo xwayland-satellite: los menús no aparecen; por eso
+      `mission-planner` usa un Xwayland propio con openbox. Reportarlo en
+      Supreeeme/xwayland-satellite con la versión y un caso mínimo.
+- [ ] **xwayland-satellite: arrastrar entre apps de Wayland y de X11**
+      ([#133](https://github.com/Supreeeme/xwayland-satellite/issues/133), abierta desde 2025-03).
+      Bloquea arrastrar archivos desde yazi (`e`) a f3d. Votar y seguir.
+- [ ] **libva-nvidia-driver: AV1 de 10 bits no consigue memoria** (sin reporte el 2026-10-01).
+      0.0.18, backend direct, nvidia-open 615.71.09, RTX 3050 Ti: `nv_alloc_object failed: 51`
+      al crear los fotogramas de un AV1 4K de 10 bits, con 1,5 GB libres; en mpv
+      (`hwdec=vaapi`) el fondo parpadeaba en azul. Con el NVDEC propio de mpv va bien. Reportarlo
+      en elFarto/nvidia-vaapi-driver con el log de `NVD_LOG=1`.
+- [ ] **f3d 3.5: no abre STEP aunque el plugin OpenCASCADE coincida** (sin reporte el
+      2026-10-01). «unknown format» con el glob de `/etc/f3d/config.d/10_occt.json` coincidiendo;
+      con `--force-reader=STEP` funciona (paquete stow `f3d/`). Mirar antes si es del paquete de
+      Arch y reportarlo en f3d-app/f3d o en el paquete.
+- [ ] **noctalia-greeter: formulario abajo a la izquierda**: ver «Greeter, formulario abajo a
+      la izquierda» en Sistema (abrir sugerencia).
 
 ## Hecho
 

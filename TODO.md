@@ -62,7 +62,7 @@ espera a la reinstalación.
       `ga` (`usermod --add-subuids 100000-165535 --add-subgids 100000-165535 ga`), red con passt,
       almacén en `~/.local/share/containers` (el subvolumen `@containers` de la guía es el de
       root; valorar otro para el usuario). Fedora/Ubuntu: podman en sus repos.
-- [ ] **KDE Connect**, decidido: `kdeconnect` (extra); `kdeconnectd` al entrar (spawn-at-startup
+- [ ] **KDE Connect**, decidido, a muy largo plazo (2026-10-01): `kdeconnect` (extra); `kdeconnectd` al entrar (spawn-at-startup
       en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). firewalld ya está
       activo (2026-10-01): falta añadir `<service name="kdeconnect"/>` (puertos 1714-1764 tcp/udp) a
       etc/firewalld/zones/home.xml.
@@ -218,11 +218,18 @@ espera a la reinstalación.
       `powercfg /h off` como administrador. Hace falta también para el disco de Windows (abajo).
       Si vuelve a pasar: `sudo modprobe -r mt7921e && sudo modprobe mt7921e` antes de reiniciar.
 - [ ] **Bluetooth dual con Windows**: compartir las claves de emparejamiento (chntpw
-      sobre el registro, o bt-dualboot) para no re-emparejar en cada cambio de sistema.
-- [ ] **Disco de Windows fijo**: `nvme0n1p3` (NTFS, 476 G). fstab con `ntfs3` del
-      kernel, punto tipo `/mnt/windows`, `nofail`; desactivar el inicio rápido de Windows.
-- [ ] **user-dirs.dirs**: tiene `XDG_PROJECTS_DIR="$HOME/"` a mano, que apunta al home entero.
-      No se versiona (lo reescribe xdg-user-dirs); revisar y documentar el comando.
+      sobre el registro, o bt-dualboot) para no re-emparejar en cada cambio de sistema. Sin
+      prisa: el 2026-10-01 no había ningún dispositivo emparejado. Cuando haya uno que se use en
+      los dos (auriculares): emparejar en Arch, luego en Windows, y copiar la clave de Windows a
+      `/var/lib/bluetooth/<adaptador>/<dispositivo>/info`. Necesita leer el disco de Windows (abajo).
+- [ ] **Disco de Windows fijo**: `nvme0n1p3` (NTFS, 476 G, UUID `EAD4AABED4AA8BFF`). Primero
+      desactivar el inicio rápido de Windows (arriba): con él, Windows deja el disco hibernado y
+      ntfs3 no lo monta con escritura. Luego, con sudo:
+      `sudo mkdir -p /mnt/windows`, añadir a `/etc/fstab`
+      `UUID=EAD4AABED4AA8BFF /mnt/windows ntfs3 noauto,nofail,x-systemd.automount,x-systemd.idle-timeout=10min,uid=1000,gid=1000,umask=022,windows_names,noatime 0 0`,
+      `sudo systemctl daemon-reload` y probar con `ls /mnt/windows`. Se monta al entrar en la
+      carpeta (no frena el arranque), se desmonta tras 10 min sin uso, y `windows_names` impide
+      crear nombres que Windows no acepta. ntfs3 es el driver del kernel 7.2, sin paquetes.
 - [~] **USB en la barra**: plugin `aristides/udiskie` activado el 2026-09-25 (widget `usb`, oculto
       sin dispositivos; monta y expulsa con `udisksctl`, avisa por notificación). `udiskie`
       instalado ese día; falta probar con un USB. En la barra van también `temp`, `cpu` y
@@ -492,6 +499,11 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
 
 ## Hecho
 
+- 2026-10-01 **Carpeta de proyectos**: `XDG_PROJECTS_DIR` apuntaba a todo `$HOME/` (puesto a mano).
+  Creada `~/Projects` y fijada con `xdg-user-dirs-update --set PROJECTS "$HOME/Projects"`.
+  user-dirs.dirs no se versiona (lo reescribe xdg-user-dirs); en una instalación nueva,
+  `xdg-user-dirs-update` (0.19 o posterior) ya crea Projects solo. `~/dotfiles` y `~/sim` se
+  quedan donde están: mover dotfiles rompería todos los enlaces de stow.
 - 2026-10-01 **firewalld activo**: zonas propias en `etc/firewalld/zones/`. `home` para las redes
   de confianza (Robiotec, Claro_ALVARADO0000251833, Sala_Reuniones_PB_5G y el cable, con
   `connection.zone home` en NetworkManager): SSH, mDNS y DHCPv6. `public`, la de por defecto,

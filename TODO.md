@@ -63,8 +63,9 @@ espera a la reinstalación.
       almacén en `~/.local/share/containers` (el subvolumen `@containers` de la guía es el de
       root; valorar otro para el usuario). Fedora/Ubuntu: podman en sus repos.
 - [ ] **KDE Connect**, decidido: `kdeconnect` (extra); `kdeconnectd` al entrar (spawn-at-startup
-      en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). Necesita
-      firewalld con el servicio `kdeconnect` (puertos 1714-1764 tcp/udp): va con esa tarea.
+      en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). firewalld ya está
+      activo (2026-10-01): falta añadir `<service name="kdeconnect"/>` (puertos 1714-1764 tcp/udp) a
+      etc/firewalld/zones/home.xml.
 - [ ] **Utilidad de discos**: gnome-disk-utility (LUKS, SMART, imágenes ISO) o solo
       `udisksctl`/`cryptsetup` en terminal. Decidir.
 - [ ] **Documentos de oficina**: libreoffice-fresh (libre) u onlyoffice-bin (fiel a MS Office);
@@ -208,7 +209,6 @@ espera a la reinstalación.
 - [ ] **Servicios en la guía**: `bluetooth` está activo y la guía no lo activa; añadirlo a los
       `systemctl enable` del chroot (greetd ya está en «Escritorio»; avahi-daemon y cups.socket,
       en «Impresión, escáner y PDF»).
-- [ ] **firewalld**: instalado y apagado. Activar y abrir lo que se use (ssh, kdeconnect).
 - [ ] **Inicio rápido de Windows: desactivarlo** (2026-09-30). Tras volver de Windows, el
       Wi-Fi de Arch salió encendido pero sin redes: el kernel no pudo tomar la tarjeta MediaTek
       MT7921 (`mt7921e: driver own failed`, `probe … failed with error -5`, arranque -1 de ese
@@ -492,6 +492,13 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
 
 ## Hecho
 
+- 2026-10-01 **firewalld activo**: zonas propias en `etc/firewalld/zones/`. `home` para las redes
+  de confianza (Robiotec, Claro_ALVARADO0000251833, Sala_Reuniones_PB_5G y el cable, con
+  `connection.zone home` en NetworkManager): SSH, mDNS y DHCPv6. `public`, la de por defecto,
+  para cualquier otra red: solo DHCPv6, sin SSH (entra con contraseña). Comprobado: wlan0 en
+  home, la impresora se sigue resolviendo por mDNS. Ojo: «Wired connection 1» es el perfil
+  genérico del cable, así que todo cable cuenta como de confianza. KDE Connect, cuando se
+  instale: `<service name="kdeconnect"/>` en home.xml.
 - 2026-10-01 **Límite de carga al 80 % fijo al arrancar**: `etc/tmpfiles.d/charge-limit.conf`
   instalado en `/etc/tmpfiles.d/` (igual al del repo, comprobado); el umbral de asus-wmi vuelve a
   80 en cada arranque.

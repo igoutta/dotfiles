@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- /etc/firewalld/zones/public.xml — la zona por defecto: cualquier red que no sea de confianza
+     (cafeterías, aeropuertos, redes nuevas). Respecto a la de fábrica: fuera SSH, que aquí solo
+     entra con contraseña y quedaría expuesto a cualquiera de esa red. Sin mDNS: en estas redes
+     no se buscan impresoras. Mismo archivo en Ubuntu/Fedora. -->
+<zone>
+  <short>Public</short>
+  <description>Redes que no son de confianza: solo DHCPv6 entrante.</description>
+  <service name="dhcpv6-client"/>
+  <forward/>
+</zone>

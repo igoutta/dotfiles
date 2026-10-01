@@ -899,6 +899,11 @@ sudo install -Dm644 etc/udev/rules.d/61-gpu-names.rules /etc/udev/rules.d/61-gpu
 sudo install -Dm755 etc/greetd/greeter-intel-first /usr/local/bin/greeter-intel-first           # greeter en la Intel
 sudo install -Dm440 -t /etc/sudoers.d etc/sudoers.d/10-wheel etc/sudoers.d/20-defaults && sudo visudo -c
 sudo install -Dm644 etc/security/faillock.conf /etc/security/faillock.conf
+sudo install -Dm644 -t /etc/firewalld/zones etc/firewalld/zones/home.xml etc/firewalld/zones/public.xml   # home: SSH y mDNS; public, la de por defecto: cerrada
+sudo systemctl enable --now firewalld
+# Las redes de confianza a la zona home (los nombres son los de cada máquina: nmcli connection show);
+# cualquier otra red cae en public. La conexión activa toma la zona con `nmcli device reapply <interfaz>`.
+for c in "Robiotec" "Claro_ALVARADO0000251833" "Sala_Reuniones_PB_5G" "Wired connection 1"; do sudo nmcli connection modify "$c" connection.zone home; done
 sudo install -Dm644 -t /etc/systemd/system etc/systemd/system/ghostmirror.service etc/systemd/system/ghostmirror.timer etc/systemd/system/ghostmirror-deep.service etc/systemd/system/ghostmirror-deep.timer
 sudo systemctl enable --now ghostmirror.timer ghostmirror-deep.timer   # espejos de pacman: mensual por latencia, semanal por velocidad; los .service no se habilitan
 sudo systemctl start ghostmirror-deep.service ghostmirror.service      # primera lista ya, sin esperar al día 1

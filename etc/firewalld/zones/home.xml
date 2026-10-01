@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- /etc/firewalld/zones/home.xml — redes de confianza (casa y trabajo). NetworkManager pone en
+     esta zona las conexiones con connection.zone=home (INSTALL, sección Dotfiles); cualquier
+     otra red cae en public, la zona por defecto. Respecto a la de fábrica: fuera samba-client
+     (no hay recursos compartidos de Windows). KDE Connect, cuando se instale: añadir
+     <service name="kdeconnect"/> (puertos 1714-1764). Mismo archivo en Ubuntu/Fedora. -->
+<zone>
+  <short>Home</short>
+  <description>Redes de confianza: SSH, mDNS (la impresora y el escáner se buscan por nombre .local) y DHCPv6.</description>
+  <service name="ssh"/>
+  <service name="mdns"/>
+  <service name="dhcpv6-client"/>
+  <forward/>
+</zone>

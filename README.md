@@ -10,7 +10,7 @@ los enlaces simbólicos y el repo queda como única fuente de verdad.
 | --- | --- |
 | `zsh/` | Shell: `.zshenv`, `.zshrc` modular (`conf.d/NN-*.zsh`), config por máquina en `hosts/`, prompt `starship.toml`, `CHEATSHEET.md` |
 | `atuin/` | Historial de shell sincronizable |
-| `fastfetch/` | Banner de sistema: una Eva al azar como logo (`images/`, PNG con fondo transparente), secciones en árbol con batería, snapper, tiempo y red, y lo que necesita shell en `scripts/`; logos de texto en `text/`; README propio |
+| `fastfetch/` | Banner de sistema: una Eva al azar como logo (`images/`, PNG con fondo transparente), secciones en árbol con batería, snapper, tiempo y red, y lo que necesita shell en `scripts/`; por SSH, `ssh.jsonc`: «usuario @ equipo» en grande, servicios y últimos accesos; logos de texto en `text/`; README propio |
 | `ghostty/` | Terminal: fuente, ventana para niri, shell integration y teclas; el tema lo pone noctalia |
 | `tealdeer/` | Cliente tldr (`Alt-h` en zsh) con caché automática |
 | `niri/` | Compositor: `config.kdl` solo incluye módulos (`input`, `outputs`, `layout`, `rules`, `binds`, `startup`); los colores los pone noctalia. En `.local/bin`, los scripts de proyectar, touchpad y modo avión |

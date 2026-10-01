@@ -1,6 +1,10 @@
-# System banner on new terminals. Skipped for nested shells, tmux, VS Code and SSH
-# (SSH sessions get a MOTD from rust-motd instead; see the rust-motd package).
-if (( $+commands[fastfetch] )) && [[ -o interactive && -z $FASTFETCH_SHOWN && -z $TMUX && -z $SSH_CONNECTION && $TERM_PROGRAM != vscode ]]; then
+# Banner al abrir una terminal (fastfetch). Por SSH, la variante ssh.jsonc: «usuario @ equipo» en
+# grande, servicios y últimos accesos (paquete fastfetch/). No en shells anidadas, tmux ni VS Code.
+if (( $+commands[fastfetch] )) && [[ -o interactive && -z $FASTFETCH_SHOWN && -z $TMUX && $TERM_PROGRAM != vscode ]]; then
     export FASTFETCH_SHOWN=1
-    fastfetch                  # reads $XDG_CONFIG_HOME/fastfetch/config.jsonc
+    if [[ -n $SSH_CONNECTION ]]; then
+        fastfetch -c "${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/ssh.jsonc"
+    else
+        fastfetch                  # lee $XDG_CONFIG_HOME/fastfetch/config.jsonc
+    fi
 fi

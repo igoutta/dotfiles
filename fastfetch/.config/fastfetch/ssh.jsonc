@@ -1,0 +1,109 @@
+// ~/.config/fastfetch/ssh.jsonc — banner al entrar por SSH (zsh/conf.d/80-fastfetch.zsh lo elige
+// cuando hay $SSH_CONNECTION). Es config.jsonc con estos cambios: arriba «usuario @ equipo» en
+// grande (figlet, lolcat y gum) en vez de la Eva; sin WELCOME, UI, AUDIO ni monitores, que a distancia no
+// sirven y lo alargaban (45 líneas en vez de 57); y al final SERVICES y LOGINS. OS, SYSTEM y
+// NETWORK son copia de config.jsonc (fastfetch no sabe incluir otro archivo): si se cambian
+// allí, cambiarlas aquí. Necesita una
+// Nerd Font en el equipo desde el que se entra. Probar: `fastfetch -c ~/.config/fastfetch/ssh.jsonc`.
+{
+"$schema": "https://github.com/fastfetch-cli/fastfetch/raw/2.69.0/doc/json_schema.json",
+"general": {
+  "processingTimeout": 300,
+  // Rutas absolutas: aquí fastfetch no expande $XDG_CONFIG_HOME; en otra máquina, cambiar el usuario.
+  "preload": { "lua": "dofile('/home/ga/.config/fastfetch/scripts/battery.lua'); dofile('/home/ga/.config/fastfetch/scripts/ssh.lua')" }
+},
+"logo": {
+  // «usuario @ equipo»: figlet, arcoíris de fondo de lolcat y borde grueso de gum de un color al
+  // azar (scripts/ssh-logo.sh; la fuente es su argumento).
+  "type": "command-raw",
+  "source": "$XDG_CONFIG_HOME/fastfetch/scripts/ssh-logo.sh ansi-shadow",
+  "position": "top",
+  "padding": { "left": 0, "top": 0 }
+},
+"display": {
+  // Cabeceras «「OS 」»: 「 y 」 ocupan dos columnas y la fuente los dibuja en la mitad izquierda,
+  // así que 「 ya deja su hueco detrás y solo hace falta un espacio antes de 」.
+  // Decoración: la primera línea de cada sección es «icono  󰋘  valor» ($4) y las demás cuelgan
+  // del árbol «├─ icono ❯  valor» ($1/$2 y $3). Todo de FiraCode Nerd Font: los 🜋 y ⎔ de antes
+  // no estaban en la fuente y ghostty los tomaba de otra, más finos y a otra altura.
+  "constants": [ "├─ ", "└─ ", " ❯  ", "  󰋘  " ],
+  "separator": "",
+  // Porcentajes con número de color según el valor y barra (sin "num" las variables {…percentage}
+  // salen vacías). La barra toma el mismo color por umbral ("auto").
+  "percent": {
+    "type": ["num", "num-color", "bar"],
+    "color": { "green": "green", "yellow": "light_yellow", "red": "light_red" }
+  },
+  "bar": {
+    "border": { "left": "[", "leftElapsed": "[", "right": "]", "rightElapsed": "]" },
+    "char": { "elapsed": "─", "total": "─" },
+    "color": { "elapsed": "auto", "total": "light_black" },
+    "width": 16
+  },
+  "temp": { "unit": "C", "ndigits": 0, "color": { "green": "green", "yellow": "light_yellow", "red": "light_red" } },
+  "duration": { "abbreviation": true }
+},
+"modules": [
+  "break",
+
+  // ── OS ──────────────────────────────────────────────────────────────────────────────────────
+  { "type": "custom", "outputColor": "yellow", "format": "「{#1}OS{#22} 」" },
+  { "type": "os", "key": "{icon}{$4}", "keyColor": "yellow", "format": "{name} {version}" },
+  { "type": "kernel", "key": "{$1}{icon}{$3}", "keyColor": "yellow" },
+  { "type": "packages", "key": "{$1}{icon}{$3}", "keyColor": "yellow" },
+  // Última actualización completa y última instantánea de snapper (scripts/).
+  { "type": "command", "key": "{$1}󰚰{$3}", "keyColor": "yellow", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/last-upgrade.sh" },
+  { "type": "command", "key": "{$1}󰆓{$3}", "keyColor": "yellow", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/snapshot.sh" },
+  // Días desde la instalación: fecha de creación de /, nativo, sin lanzar procesos.
+  { "type": "disk", "key": "{$1}{$3}", "keyColor": "yellow", "folders": "/", "format": "{days} días {#dim_default}({create-time:10})" },
+  { "type": "shell", "key": "{$2}{icon}{$3}", "keyColor": "yellow" },
+  "break",
+
+  // ── SYSTEM ──────────────────────────────────────────────────────────────────────────────────
+  { "type": "custom", "outputColor": "green", "format": "「{#1}SYSTEM{#22} 」" },
+  { "type": "host", "key": "{icon}{$4}", "keyColor": "green", "format": "{family}" },
+  // {name~27} quita «11th Gen Intel(R) Core(TM) ». La temperatura sale casi gratis (coretemp); la
+  // de la GPU no se muestra: NVML cuesta 20-46 ms en cada terminal.
+  { "type": "cpu", "key": "{$1}󰻠{$3}", "keyColor": "green", "temp": { "green": 70, "yellow": 85 },
+    "format": "{name~27} {#dim_default}({cores-physical}C/{cores-logical}T) @ {freq-max}{#} {temperature}" },
+  { "type": "gpu", "key": "{$1}󰻑{$3}", "keyColor": "green", "format": "{name} {#dim_default}{type}" },
+  { "type": "memory", "key": "{$1}󰾆{$3}", "keyColor": "green", "percent": { "green": 50, "yellow": 80 } },
+  { "type": "btrfs", "key": "{$1}󰋊{$3}", "keyColor": "green", "format": "{used-percentage-bar} {used} / {total} ({used-percentage})" },
+  // Batería: el módulo nativo no imprime nada (Lua sin return lo oculta) y deja su barra y su
+  // carga en la variable bat; la línea siguiente marca el tope de carga dentro de la barra (┃) y
+  // añade estado, salud y perfil (scripts/battery.sh y scripts/battery.lua).
+  { "type": "battery", "format": "lua:bat = ..." },
+  { "type": "command", "key": "{$1}󰁹{$3}", "keyColor": "green", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/battery.sh",
+    "format": "lua:return barra_bateria(...)" },
+  { "type": "uptime", "key": "{$2}󰅐{$3}", "keyColor": "green" },
+  "break",
+
+  // ── NETWORK ─────────────────────────────────────────────────────────────────────────────────
+  // bluetooth desaparece si no hay nada conectado: va en medio, para que el └ siempre salga.
+  { "type": "custom", "outputColor": "cyan", "format": "「{#1}NETWORK{#22} 」" },
+  { "type": "wifi", "key": "{icon}{$4}", "keyColor": "cyan", "format": "{ssid} {#dim_default}{band} GHz{#} {signal-quality}" },
+  { "type": "bluetooth", "key": "{$1}{icon}{$3}", "keyColor": "cyan", "format": "{name}{?battery-percentage} {battery-percentage}{?}" },
+  { "type": "localip", "key": "{$2}{icon}{$3}", "keyColor": "cyan", "format": "{ipv4} {#dim_default}{ifname}" },
+  "break",
+
+  // ── SERVICES: estado de systemd (scripts/service.sh), en color (scripts/ssh.lua) ──────────
+  { "type": "custom", "outputColor": "light_red", "format": "「{#1}SERVICES{#22} 」" },
+  { "type": "command", "key": "󰒋{$4}", "keyColor": "light_red", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/service.sh SSH sshd", "format": "lua:return estado_servicio(...)" },
+  { "type": "command", "key": "{$1}󰒘{$3}", "keyColor": "light_red", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/service.sh Firewall firewalld", "format": "lua:return estado_servicio(...)" },
+  { "type": "command", "key": "{$1}󰌘{$3}", "keyColor": "light_red", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/service.sh Network NetworkManager", "format": "lua:return estado_servicio(...)" },
+  { "type": "command", "key": "{$1}󰏊{$3}", "keyColor": "light_red", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/service.sh OneDrive onedrive --user", "format": "lua:return estado_servicio(...)" },
+  { "type": "command", "key": "{$2}󰝚{$3}", "keyColor": "light_red", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/service.sh PipeWire pipewire --user", "format": "lua:return estado_servicio(...)" },
+  "break",
+
+  // ── LOGINS: los últimos accesos por SSH, sin contar este (scripts/ssh-login.sh) ──────────────
+  { "type": "custom", "outputColor": "magenta", "format": "「{#1}LOGINS{#22} 」" },
+  { "type": "command", "key": "󰀄{$4}", "keyColor": "magenta", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/ssh-login.sh 1" },
+  { "type": "command", "key": "{$1}󰀄{$3}", "keyColor": "magenta", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/ssh-login.sh 2" },
+  { "type": "command", "key": "{$2}󰀄{$3}", "keyColor": "magenta", "text": "$XDG_CONFIG_HOME/fastfetch/scripts/ssh-login.sh 3" },
+  "break",
+
+  // Tira de colores: la de siempre, con nombres de la paleta en vez de códigos a mano.
+  { "type": "custom", "format": "{#light_black}  {#red}  {#green}  {#yellow}  {#blue}  {#magenta}  {#cyan}  {#white}  {#default}    {#default}  {#white}  {#cyan}  {#magenta}  {#blue}  {#yellow}  {#green}  {#red}  {#light_black}" },
+  "break"
+]
+}

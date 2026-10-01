@@ -260,6 +260,8 @@ cat !$
 # "mandoc" provides man (instead of man-db), "man-pages" the pages themselves
 # "navi" is an interactive cheatsheet tool for the command-line (Ctrl-G in zsh)
 # "vivid" LS_COLORS themes, "tealdeer" tldr client (Alt-h in zsh), "less" pager: the dotfiles expect them
+# "figlet" letras grandes, "lolcat" arcoíris y "gum" bordes y colores: el logo «usuario @ equipo» del banner de
+#   fastfetch por SSH (fastfetch/ssh.jsonc)
 # "git" to install the git vcs, "stow" to deploy the dotfiles
 # "pkgstats" to help arch4edu learn the trends of the packages they maintain
 
@@ -279,7 +281,7 @@ pacstrap -iK /mnt base base-devel \
                   terminus-font ttf-dejavu ttf-firacode-nerd \
                   micro helix neovim \
                   bat zoxide fzf eza ripgrep direnv rsync jq btop yazi udisks2 vivid tealdeer less \
-                  mandoc man-pages navi lsb-release fastfetch \
+                  mandoc man-pages navi lsb-release fastfetch figlet lolcat gum \
                   openssh git stow pkgstats
 ~~~
 

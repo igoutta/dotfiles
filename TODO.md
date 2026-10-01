@@ -294,7 +294,9 @@ espera a la reinstalación.
       - Desarrollo: uv python-pip python-virtualenv ccache visual-studio-code-bin itstool
         (mise ya en «Desarrollo»)
       - Utilidades CLI: fd trash-cli unrar patool toilet tealdeer vivid pacman-contrib
-        rust-motd-bin exhibit qalculate-qt
+        (toilet y cowsay sin uso desde el 2026-10-01: el logo SSH es figlet, lolcat y gum, ya
+        en INSTALL; cowsay se instaló para probar: candidatos a desinstalar)
+        exhibit qalculate-qt (rust-motd-bin desinstalado el 2026-10-01: el banner por SSH es fastfetch)
       - Hardware: linux-firmware-intel lvm2 (ddcutil ya en «Escritorio»). Sobran salvo otro aparato DisplayLink:
         displaylink evdi-dkms (el MB169CK no los usa; ver «Tercer monitor»)
       - Fuentes: gsfonts opendesktop-fonts woff2-cascadia-code wqy-bitmapfont wqy-microhei
@@ -351,8 +353,19 @@ espera a la reinstalación.
 - [ ] **zsh, segunda vuelta**: usarlo unos días y anotar aquí la fricción real; luego
       pasar los comentarios de `conf.d/*.zsh` y `.zshenv` al español (hoy en inglés); luego
       compararlo con otras configs públicas y copiar solo lo que la resuelva.
-- [ ] **rust-motd**: paquete stow y que funcione al entrar por SSH, donde hoy no hay banner
-      (fastfetch se salta en SSH desde `80-fastfetch.zsh`).
+- [~] **Banner por SSH con fastfetch** (2026-10-01), en vez de rust-motd. Se probó rust-motd 2.1.2
+      solo con lo de serie: no tiene batería, temperaturas, snapper ni actualizaciones, fechas y
+      títulos en inglés, línea en blanco entre componentes, last-login sin filtrar y el tiempo por
+      internet (~0,7 s). No es un servidor, así que fuera: desinstalado, con su timer, /etc/motd y
+      /etc/rust-motd.kdl (hecho por Gustavo el 2026-10-01). Ahora zsh elige por SSH
+      `fastfetch/ssh.jsonc`: la config de siempre con «ga @ tuf» arriba en vez de la Eva: ANSI
+      Shadow de figlet (fonts/ansi-shadow.flf, bloques con sombra), arcoíris de lolcat de fondo y
+      borde grueso de gum de un color al azar, que cambian en cada entrada (scripts/ssh-logo.sh); sin
+      WELCOME, UI, AUDIO ni monitores (46 líneas: cabe a media pantalla); y SERVICES (estado en
+      color) y LOGINS (los últimos accesos con IP, IPv6 acortadas) al final. Probado simulando
+      SSH; Gustavo entró con `ssh localhost` ese día. Necesita una Nerd Font en el equipo desde el
+      que se entra. Idea sin hacer: con la terminal ancha (115 columnas o más), el logo a la
+      derecha en vez de arriba (`--logo-position right` desde zsh).
 - [ ] **yazi, lo que falta** (2026-09-30): ripdrag en `e` (arrastrar lo marcado a otra app) y
       `E` (soltar aquí, script `soltar-aqui`): `e` hacia el navegador probado por Gustavo el
       2026-09-30 y funciona; `E` sin probar (hacia f3d no hay arrastre posible: es X11 y

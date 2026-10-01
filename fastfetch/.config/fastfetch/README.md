@@ -7,6 +7,8 @@ SSH, tmux ni VS Code). Este paquete stow contiene:
 | ---- | ------ |
 | `config.jsonc` | Logo, formato de las barras y lista de módulos, en un solo archivo por secciones |
 | `scripts/` | Lo que necesita shell (batería, snapper, última actualización, tiempo, saludo): cada uno se prueba solo |
+| `fonts/` | Fuentes de figlet que no trae el paquete: `ansi-shadow.flf` (bloques con sombra, de la colección xero/figlet-fonts; autor desconocido, de las fuentes de TheDraw) |
+| `ssh.jsonc` | La variante para SSH (zsh la elige con `$SSH_CONNECTION`): «usuario @ equipo» con la fuente ANSI Shadow de figlet, arcoíris de lolcat de fondo y borde grueso de gum de un color al azar, que cambian en cada entrada; OS, SYSTEM (sin monitores), NETWORK, SERVICES y LOGINS, 46 líneas. OS, SYSTEM y NETWORK son copia de los de `config.jsonc` |
 | `text/` | Logos de texto (arte braille): `.txt` monocromo, `.ansi` con sus propios códigos de color |
 | `images/` | Logos de imagen: PNG con fondo transparente para usar, y los originales |
 
@@ -171,6 +173,9 @@ también. Medidos el 2026-10-01: el total pasó de unos 21 a 34 ms por terminal.
 | `last-upgrade.sh` | Última actualización completa | El log de pacman (`starting full system upgrade`) |
 | `snapshot.sh` | Última instantánea de snapper | `/.snapshots/<n>/info.xml` (legible para ga por la ACL de snapper) |
 | `battery.sh` + `battery.lua` | La barra de carga con el tope marcado dentro (┃), estado, salud y perfil. La carga y la barra son del módulo `battery`; el `.lua` (cargado con `general.preload.lua`) marca el tope y junta el texto del `.sh` | `/sys/class/power_supply/BAT1` y `/sys/firmware/acpi/platform_profile` |
+| `service.sh` + `ssh.lua` | (SSH) Estado de un servicio de systemd en color: verde activo, rojo fallado, amarillo lo demás | `systemctl is-active` |
+| `ssh-login.sh N` | (SSH) El acceso SSH número N, sin contar este | `last` (wtmp), solo los que traen IP |
+| `ssh-logo.sh [fuente]` | (SSH) El logo: figlet dibuja, lolcat pone el arcoíris de fondo y gum el borde grueso de un color al azar; rellena un rectángulo exacto para que el arcoíris llene el borde parejo | `fonts/` y luego las de figlet |
 
 fastfetch lanza sus comandos con `LANG=C.UTF-8`: un script que dependa del idioma (la fecha)
 tiene que leerlo de `locale.conf`, como `greeting.sh`.

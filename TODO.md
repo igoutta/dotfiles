@@ -284,9 +284,9 @@ espera a la reinstalación.
       - Wine y juegos: wine-staging winetricks wine-gecko wine-mono bottles winegui vkd3d
         vkd3d-docs lib32-vkd3d ares
       - Drones / ArduPilot: ardupilot-mission-planner qgroundcontrol-bin python-wxpython
-        python-scipy opencv gdal openbox gtk2 (openbox: gestor de ventanas del Xwayland con
-        ventana raíz que lanza `~/.local/bin/mission-planner`; gtk2: lo cargan
-        System.Windows.Forms de mono y SkiaSharp.Views.Gtk de Mission Planner)
+        python-scipy opencv gdal openbox gtk2 (openbox: sin uso desde el 2026-10-01, cuando
+        Mission Planner dejó de necesitar su propio Xwayland: candidato a desinstalar; gtk2: lo
+        cargan System.Windows.Forms de mono y SkiaSharp.Views.Gtk de Mission Planner)
       - Desarrollo: uv python-pip python-virtualenv ccache visual-studio-code-bin itstool
         (mise ya en «Desarrollo»)
       - Utilidades CLI: fd trash-cli unrar patool toilet tealdeer vivid pacman-contrib
@@ -421,10 +421,6 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
       1366x768 sale como basura, 1280x720 limpio; `disable-direct-scanout` no cambia nada;
       modos a medida 1360x768, TestFailed. Con `render-drm-device` en la NVIDIA sale bien. Datos:
       niri 26.04, nvidia-open 615.71.09, Intel Tiger Lake (i915). Reportarlo en niri-wm/niri.
-- [ ] **xwayland-satellite: menús de WinForms que no se dibujan** (sin reporte el 2026-10-01).
-      Mission Planner (mono) bajo xwayland-satellite: los menús no aparecen; por eso
-      `mission-planner` usa un Xwayland propio con openbox. Reportarlo en
-      Supreeeme/xwayland-satellite con la versión y un caso mínimo.
 - [ ] **xwayland-satellite: arrastrar entre apps de Wayland y de X11**
       ([#133](https://github.com/Supreeeme/xwayland-satellite/issues/133), abierta desde 2025-03).
       Bloquea arrastrar archivos desde yazi (`e`) a f3d. Votar y seguir.
@@ -442,6 +438,13 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
 
 ## Hecho
 
+- 2026-10-01 **Mission Planner sin script**: los menús que no se dibujaban eran una regresión de
+  xwayland-satellite 0.8.2 (Supreeeme/xwayland-satellite#468), arreglada en 0.8.3. Con 0.8.3
+  Mission Planner funciona abierto directo (probado por Gustavo), así que se quitan
+  `bin/.local/bin/mission-planner` (Xwayland propio en :10 con openbox), su `.desktop` y la
+  regla de niri que maximizaba ese Xwayland; vuelve la entrada del paquete (`mono` directo).
+  Tras actualizar xwayland-satellite hay que cerrarlo para que niri arranque el nuevo
+  (`pkill -x xwayland-satell`): se cierran con él las apps de X11 abiertas.
 - 2026-09-30 **ViewSonic a 1366x768 por USB-C**: con niri dibujando en la Intel, su nativa
   salía como basura por el USB-C (cableado a la NVIDIA); 1280x720 iba limpio, y modos a medida
   y `disable-direct-scanout` no sirvieron. Solución: niri dibuja en la NVIDIA

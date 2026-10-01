@@ -9,6 +9,10 @@ por eso aquí se usan `F1`, `+`, `,` y `.` donde la plantilla de niri usaba otro
 portátil (TUF F15) `Inicio`, `Fin`, `RePág` y `AvPág` van con `Fn`+flechas, así que tampoco:
 primera/última columna en `Mod+A`/`Mod+E` y workspaces en `Mod+U`/`Mod+I`.
 
+Monitores verticales (ViewSonic y Samsung): cada columna ocupa todo el ancho. Para poner una
+ventana debajo de la de su izquierda, `Mod+Shift+,`; para sacarla otra vez a su columna,
+`Mod+Shift+.`.
+
 ## noctalia
 
 | Tecla | Acción |

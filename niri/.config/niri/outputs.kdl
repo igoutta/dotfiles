@@ -33,6 +33,12 @@ output "ViewSonic Corporation VA1903 Series VR4211621658" {
     mode "1366x768@59.790"
     transform "270"
     position x=0 y=0
+    // Vertical: cada columna ocupa todo el ancho; para apilar una ventana debajo de la de su
+    // izquierda, Mod+Shift+, (niri 26.04 no abre en la columna actual: TODO, «Upstream»).
+    // layout {} por salida desde niri 25.11.
+    layout {
+        default-column-width { proportion 1.0; }
+    }
 }
 
 // Samsung S19D300 en vertical, a la derecha del portátil (768 + 1920), por el HDMI (Intel)
@@ -42,6 +48,12 @@ output "Samsung Electric Company S19D300 H4LFA04245" {
     mode "1366x768@59.790"
     transform "270"
     position x=2688 y=0
+    // Vertical: cada columna ocupa todo el ancho; para apilar una ventana debajo de la de su
+    // izquierda, Mod+Shift+, (niri 26.04 no abre en la columna actual: TODO, «Upstream»).
+    // layout {} por salida desde niri 25.11.
+    layout {
+        default-column-width { proportion 1.0; }
+    }
 }
 
 // ASUS MB169CK (portátil, USB-C) siempre en horizontal, a la derecha del portátil: 768 + 1920.

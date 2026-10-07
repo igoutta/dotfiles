@@ -1,5 +1,8 @@
 # yazi: teclas
 
+Se abre con `Mod+Y` desde niri (si ya está abierto, lo enfoca) o con `y` en una terminal, que
+al salir deja la terminal en la carpeta donde estabas.
+
 Dentro de yazi, `~` o `F1` lista todas las teclas y se filtra escribiendo. Al empezar una
 secuencia (`g`, `c`, `m`, `,`, `t`) aparece un menú con lo que sigue. El ratón también
 funciona: clic, rueda y arrastrar. Las marcadas con ★ son propias (`keymap.toml`); el resto
@@ -138,12 +141,15 @@ udiskie ya monta solo el USB al conectarlo; el panel sirve para desmontar y expu
 | --- | --- |
 | `;` | Correr un comando (`%s` son los seleccionados, `%h` el de debajo del cursor) |
 | `:` | Igual, esperando a que termine y mostrando la salida |
-| `Ctrl+z` | Dejar yazi en segundo plano; `fg` en la terminal para volver |
+| `!` ★ | Abrir la terminal (zsh) en esta carpeta; `exit` o `Ctrl+D` vuelve a yazi |
+| `Ctrl+z` | Dejar yazi en segundo plano; `fg` en la terminal para volver (solo si yazi se abrió desde una terminal) |
 
 ## Plugins
 
 Oficiales de `yazi-rs/plugins`, con versión fijada en `package.toml`: mount, smart-enter,
 git (estado de git junto al nombre dentro de un repo), full-border (bordes), toggle-pane
-y mime-ext (tipo de archivo por la extensión, más rápido en carpetas grandes). Propio, en
-`plugins/ficha.yazi` y fuera de `ya pkg`: ficha (las vistas previas con datos).
+y mime-ext (tipo de archivo por la extensión, más rápido en carpetas grandes). De terceros,
+también fijado: starship (`Rolv-Apneseth/starship.yazi`), que pone arriba el prompt de starship
+en vez de la ruta; no hay uno oficial. Propio, en `plugins/ficha.yazi` y fuera de `ya pkg`:
+ficha (las vistas previas con datos).
 Reinstalar: `ya pkg install`. Actualizar: `ya pkg upgrade`, y probar antes de commitear.

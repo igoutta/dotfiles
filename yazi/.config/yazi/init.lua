@@ -38,5 +38,11 @@ end
 -- bordes alrededor de los paneles
 require("full-border"):setup()
 
+-- Cabecera con el prompt de starship en vez de la ruta (Rolv-Apneseth/starship.yazi, fijado en
+-- package.toml). Excepción a «solo plugins oficiales», decidida el 2026-10-07: no hay uno
+-- oficial. Usa $STARSHIP_CONFIG (zsh/starship.toml), que niri y zsh exportan; lanza starship
+-- en cada cambio de carpeta. Tras cada yazi nuevo, comprobar que sigue funcionando.
+require("starship"):setup()
+
 -- estado de git junto al nombre (M, A, ?, …) al entrar en un repo, como ~/dotfiles
 require("git"):setup { order = 1500 }

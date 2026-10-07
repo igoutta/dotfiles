@@ -47,9 +47,12 @@ binds {
     // ---------- programas ----------
     Mod+T hotkey-overlay-title="Terminal: ghostty" { spawn "ghostty"; }
     // Navegador y editor: si ya hay una ventana, la enfocan (la última usada) en vez de abrir
-    // otra; niri-focus-or-spawn en niri/.local/bin. B de browser, D de desarrollo.
+    // otra; niri-focus-or-spawn en niri/.local/bin. B de browser, D de desarrollo, Y de yazi.
     Mod+B hotkey-overlay-title="Navegador: Zen" repeat=false { spawn "niri-focus-or-spawn" "zen" "zen-browser"; }
     Mod+D hotkey-overlay-title="Editor: VS Code" repeat=false { spawn "niri-focus-or-spawn" "com.microsoft.VSCode" "code"; }
+    // Y de yazi: en un ghostty con su propio app-id (--class), para enfocarlo y no confundirlo con
+    // las demás terminales. Otra ventana de yazi: una pestaña dentro (tt) o Mod+T y luego y.
+    Mod+Y hotkey-overlay-title="Archivos: yazi" repeat=false { spawn "niri-focus-or-spawn" "com.ga.yazi" "ghostty" "--class=com.ga.yazi" "--title=yazi" "-e" "yazi"; }
     // Bloqueo por noctalia (antes swaylock, que no está instalado).
     Mod+Alt+Escape hotkey-overlay-title="Bloquear pantalla" { spawn-sh "noctalia msg session lock"; }
 

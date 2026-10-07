@@ -37,6 +37,7 @@ ventana debajo de la de su izquierda, `Mod+Shift+,`; para sacarla otra vez a su 
 | `Mod+T` | Terminal (ghostty) |
 | `Mod+B` | Navegador (Zen); si ya está abierto, lo enfoca |
 | `Mod+D` | Editor (VS Code); si ya está abierto, enfoca la última ventana usada |
+| `Mod+Y` | Archivos (yazi, en su propio ghostty); si ya está abierto, lo enfoca |
 | `Mod+F1` | Lista de teclas en pantalla |
 
 ## Ventanas y foco

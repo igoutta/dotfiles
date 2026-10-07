@@ -23,6 +23,11 @@ prepend_keymap = [
 	{ on = "e", run = "shell --orphan -- ripdrag --and-exit --all-compact --no-click %s", desc = "Arrastrar a otra app" },
 	{ on = "E", run = "shell --block -- soltar-aqui", desc = "Soltar aquí archivos de otra app" },
 
+	# La terminal en la carpeta actual (la que sugiere la documentación de yazi: la 26.9 no trae
+	# tecla). exit o Ctrl+D vuelve a yazi donde estaba. Sin fastfetch: 80-fastfetch.zsh mira
+	# YAZI_LEVEL, que yazi pone a lo que lanza. Si se cambia de carpeta dentro, yazi no la sigue.
+	{ on = "!", run = 'shell "$SHELL" --block', desc = "Abrir la terminal aquí (exit vuelve a yazi)" },
+
 	# Scripts de bin/: imprimir pide confirmación; pdf-ocr deja una copia -ocr.pdf al lado
 	{ on = "i", run = "shell --block -- imprimir %s", desc = "Imprimir en la Epson (pide confirmación)" },
 	{ on = "R", run = "shell --block -- pdf-ocr %s",  desc = "OCR: copia del PDF con texto buscable" },

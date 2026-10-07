@@ -209,27 +209,12 @@ espera a la reinstalación.
 - [ ] **Servicios en la guía**: `bluetooth` está activo y la guía no lo activa; añadirlo a los
       `systemctl enable` del chroot (greetd ya está en «Escritorio»; avahi-daemon y cups.socket,
       en «Impresión, escáner y PDF»).
-- [ ] **Inicio rápido de Windows: desactivarlo** (2026-09-30). Tras volver de Windows, el
-      Wi-Fi de Arch salió encendido pero sin redes: el kernel no pudo tomar la tarjeta MediaTek
-      MT7921 (`mt7921e: driver own failed`, `probe … failed with error -5`, arranque -1 de ese
-      día). Con el inicio rápido Windows no apaga del todo el hardware y deja la tarjeta en un
-      estado que Linux no retoma; reiniciar desde Arch la resetea. En Windows: Opciones de
-      energía → comportamiento de los botones → desmarcar «Activar inicio rápido», o
-      `powercfg /h off` como administrador. Hace falta también para el disco de Windows (abajo).
-      Si vuelve a pasar: `sudo modprobe -r mt7921e && sudo modprobe mt7921e` antes de reiniciar.
 - [ ] **Bluetooth dual con Windows**: compartir las claves de emparejamiento (chntpw
       sobre el registro, o bt-dualboot) para no re-emparejar en cada cambio de sistema. Sin
       prisa: el 2026-10-01 no había ningún dispositivo emparejado. Cuando haya uno que se use en
       los dos (auriculares): emparejar en Arch, luego en Windows, y copiar la clave de Windows a
-      `/var/lib/bluetooth/<adaptador>/<dispositivo>/info`. Necesita leer el disco de Windows (abajo).
-- [ ] **Disco de Windows fijo**: `nvme0n1p3` (NTFS, 476 G, UUID `EAD4AABED4AA8BFF`). Primero
-      desactivar el inicio rápido de Windows (arriba): con él, Windows deja el disco hibernado y
-      ntfs3 no lo monta con escritura. Luego, con sudo:
-      `sudo mkdir -p /mnt/windows`, añadir a `/etc/fstab`
-      `UUID=EAD4AABED4AA8BFF /mnt/windows ntfs3 noauto,nofail,x-systemd.automount,x-systemd.idle-timeout=10min,uid=1000,gid=1000,umask=022,windows_names,noatime 0 0`,
-      `sudo systemctl daemon-reload` y probar con `ls /mnt/windows`. Se monta al entrar en la
-      carpeta (no frena el arranque), se desmonta tras 10 min sin uso, y `windows_names` impide
-      crear nombres que Windows no acepta. ntfs3 es el driver del kernel 7.2, sin paquetes.
+      `/var/lib/bluetooth/<adaptador>/<dispositivo>/info`. El registro de Windows está en
+      `/mnt/windows/Windows/System32/config/SYSTEM` (disco montado desde el 2026-10-02).
 - [~] **USB en la barra**: plugin `aristides/udiskie` activado el 2026-09-25 (widget `usb`, oculto
       sin dispositivos; monta y expulsa con `udisksctl`, avisa por notificación). `udiskie`
       instalado ese día; falta probar con un USB. En la barra van también `temp`, `cpu` y
@@ -499,6 +484,14 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
 
 ## Hecho
 
+- 2026-10-02 **Windows: inicio rápido apagado y su disco montado**. `powercfg /h off` en Windows
+  (el inicio rápido dejaba el Wi-Fi MT7921 sin redes al volver a Arch y el disco hibernado). Disco
+  C: (`nvme0n1p3`, UUID `EAD4AABED4AA8BFF`) en `/etc/fstab` con ntfs3:
+  `noauto,nofail,x-systemd.automount,x-systemd.idle-timeout=10min,uid=1000,gid=1000,umask=022,windows_names,noatime`.
+  Se monta al entrar en `/mnt/windows`, con escritura y a nombre de ga, y se desmonta tras 10
+  min sin uso. Tras añadir la línea, además de `daemon-reload` hace falta
+  `sudo systemctl start mnt-windows.automount` (o reiniciar). Si el Wi-Fi vuelve a fallar tras
+  Windows: `sudo modprobe -r mt7921e && sudo modprobe mt7921e`.
 - 2026-10-01 **Carpeta de proyectos**: `XDG_PROJECTS_DIR` apuntaba a todo `$HOME/` (puesto a mano).
   Creada `~/Projects` y fijada con `xdg-user-dirs-update --set PROJECTS "$HOME/Projects"`.
   user-dirs.dirs no se versiona (lo reescribe xdg-user-dirs); en una instalación nueva,

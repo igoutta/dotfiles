@@ -10,7 +10,7 @@ author = "ga"
 license = "MIT"
 icon = "cloud"
 description = "OneDrive for the abraunegg client: status, pause, which folders to keep, notifications and activity."
-dependencies = ["onedrive", "onedrive-ctl", "systemctl", "journalctl", "rg", "xdg-open"]
+dependencies = ["onedrive", "onedrive-ctl", "systemctl", "journalctl", "rg", "gio", "xdg-open"]
 
 [[service]]
 id = "service"

@@ -82,7 +82,7 @@ local function cabecera(st, resumen)
     elseif kind ~= "noinstall" then
         local pausado = (kind == "paused" or kind == "failed")
         table.insert(botones, ui.button({ text = pausado and tr("btn_resume") or tr("btn_pause"), glyph = pausado and "player-play" or "player-pause", variant = "outline", onClick = function() orden(pausado and "resume" or "pause") end }))
-        table.insert(botones, ui.button({ text = tr("btn_open_folder"), glyph = "folder", variant = "ghost", onClick = function() noctalia.runAsync({ "sh", "-c", 'xdg-open "$HOME/OneDrive"' }); panel.close() end }))
+        table.insert(botones, ui.button({ text = tr("btn_open_folder"), glyph = "folder", variant = "ghost", onClick = function() noctalia.runAsync({ "sh", "-c", 'gio open "$HOME/OneDrive"' }); panel.close() end }))
     end
     table.insert(botones, ui.button({ text = tr("btn_web"), glyph = "world", variant = "ghost", onClick = function() noctalia.runAsync({ "xdg-open", "https://www.office.com/launch/onedrive" }); panel.close() end }))
     table.insert(filas, ui.row({ gap = 8, align = "center" }, botones))

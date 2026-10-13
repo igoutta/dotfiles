@@ -56,6 +56,11 @@ type = "noctalia/mpvpaper:mpvpaper"
 # nativo temp de noctalia (00-shell.toml); CPU y RAM con systempulse, más abajo.
 [plugin_settings."aristides/udiskie"]
 enable_notifications = true
+# «Open» abre la carpeta del disco con gio open (GLib), no con xdg-open: las carpetas van a
+# yazi.desktop (Terminal=true, xdg/mimeapps.list) y xdg-open fuera de GNOME/KDE ignora
+# Terminal=true y lanza yazi sin terminal, que muere al instante. GLib la abre en ghostty con
+# xdg-terminal-exec. Ubuntu/Fedora: igual.
+file_manager_cmd = "gio open"
 
 [widget.usb]
 type = "aristides/udiskie:status"

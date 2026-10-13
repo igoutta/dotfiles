@@ -1,6 +1,8 @@
 # ~/.config/mimeapps.list — qué app abre cada tipo de archivo (xdg-open, gio, navegadores).
 # Imágenes en PhotoQt; carpetas en yazi (yazi.desktop del paquete: Terminal=true, que GLib abre
-# en ghostty con xdg-terminal-exec y xdg-terminals.list, en este mismo paquete); html y enlaces
+# en ghostty con xdg-terminal-exec y xdg-terminals.list, en este mismo paquete; xdg-open no: fuera
+# de GNOME/KDE ignora Terminal=true y yazi muere sin terminal, así que para abrir una carpeta
+# desde un programa, gio open — el panel de USB y el de OneDrive ya lo usan); html y enlaces
 # en Zen; PDF en el Editor de PDF4QT (el LaunchPad también se anuncia para PDF y en 1.6.0 no abre
 # nada); modelos STL y STEP en f3d; texto en Helix por defecto del sistema. xdg-open necesita
 # perl-file-mimeinfo para ver model/step y model/stl (INSTALL).

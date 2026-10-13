@@ -4,13 +4,26 @@ Cada tarea vive en una sola sección. Dentro de cada sección, el orden es la pr
 terminado baja a «Hecho» con fecha. Lo de «Sistema» se hace en la máquina y, a la vez, se
 escribe en `INSTALL.md` en su fase, con el porqué de cada paquete.
 
-**En curso**, en este orden: (1) OneDrive (2026-09-28); (2) sistema menor: servicios,
-firewalld, bluetooth, Windows, user-dirs, portapapeles; (3) auditoría de paquetes; después
-ghostty y zsh segunda vuelta. NVIDIA y la pasada visual quedaron cerradas; la hibernación
-espera a la reinstalación.
+**En curso**, en este orden: (1) el apagado que se colgó con niri en la NVIDIA (2026-10-07);
+(2) sistema menor: portapapeles (firewalld, Windows y la carpeta de proyectos, hechos; el
+bluetooth espera a tener un dispositivo); (3) auditoría de paquetes; después ghostty y zsh
+segunda vuelta. OneDrive solo espera a probar «Apply». La hibernación espera a la reinstalación.
 
 ## Sistema
 
+- [ ] **Apagado colgado: niri atascado en el driver de NVIDIA** (2026-10-07). Reinicio pedido a
+      las 15:31; niri no se cerró en 90 s, systemd lo mató (SIGKILL) y siguió vivo, atascado
+      dentro del driver (`nvidia-modeset: Lost display notification`, `Page flip commit failed`
+      justo antes). Como seguía usando `/home`, no se pudo desmontar y el apagado esperó hasta
+      que Gustavo lo apagó a mano a las 15:45. Primera vez en 15 apagados; el kernel no dejó la
+      traza de proceso bloqueado. Sospecha: niri en la NVIDIA más la suspensión. Ese arranque
+      fue el único con una suspensión antes de apagar (15:05, la NVIDIA dio errores al
+      suspender), y el otro intento de suspender desde el cambio a la NVIDIA (2026-10-03, por la
+      noche) no volvió nunca. Son dos casos: correlación, no prueba. Propuesto, sin hacer:
+      (1) red de seguridad: el watchdog de hardware de 10 a 2 min (`RebootWatchdogSec`, drop-in
+      en `etc/systemd/system.conf.d/`) y las teclas SysRq de emergencia («REISUB»,
+      `kernel.sysrq` en `etc/sysctl.d/`); (2) probar a propósito suspender, volver y reiniciar;
+      (3) si se confirma, niri a la Intel (el ViewSonic vuelve a 1280x720) o reportarlo con datos.
 - [~] **Qué instalar y qué no** (inventario del 2026-09-24 contra lo que necesita un portátil ASUS
       con niri, Btrfs y LUKS; la base de audio, red, bluetooth, portales, llavero y polkit está
       completa). Decidido ese día; cada cosa entra en su fase de INSTALL.md al hacerse:
@@ -66,8 +79,6 @@ espera a la reinstalación.
       en niri) y `kdeconnect-indicator` en la bandeja de noctalia (no hay plugin). firewalld ya está
       activo (2026-10-01): falta añadir `<service name="kdeconnect"/>` (puertos 1714-1764 tcp/udp) a
       etc/firewalld/zones/home.xml.
-- [ ] **Utilidad de discos**: gnome-disk-utility (LUKS, SMART, imágenes ISO) o solo
-      `udisksctl`/`cryptsetup` en terminal. Decidir.
 - [ ] **Documentos de oficina**: libreoffice-fresh (libre) u onlyoffice-bin (fiel a MS Office);
       o solo web. Decidir.
 - [ ] **keepassxc**: sin decidir. Contraseñas hoy en el llavero de GNOME (seahorse); keepassxc
@@ -224,7 +235,13 @@ espera a la reinstalación.
       velocidad»: cmd 1 guarda en BIOS, modo 0 color fijo) y `kbd_rgb_state` («cmd arranque activo
       suspensión teclado»). Naranja fijo de la paleta: `echo "1 0 255 96 0 0" | sudo tee …/kbd_rgb_mode`;
       como se guarda en el BIOS basta una vez, o una línea `w` en tmpfiles.d como charge-limit.
-- [ ] **Portapapeles, elegir a conciencia**: hoy lo lleva noctalia (`clipboard_enabled`):
+- [ ] **Portapapeles, elegir a conciencia** (revisado el 2026-10-07 en el código de noctalia
+      5.2: el historial guarda solo texto plano, hasta 4 MB, e imágenes PNG, JPEG y JXL, hasta
+      32 MB; ni texto con formato ni listas de archivos. El pegado normal sí lleva todos los
+      formatos. Recomendación: quedarse con noctalia; CopyQ solo si hace falta recuperar texto
+      con formato o archivos copiados hace rato. Falta la prueba de pegar desde el historial
+      una negrita de una web, una imagen del navegador y un archivo copiado en yazi). Hoy lo
+      lleva noctalia (`clipboard_enabled`):
       historial de 100 entradas con anclados y búsqueda, imágenes (`clipboard_image_action_command`
       para abrirlas, capturas como PNG), `clipboard_keep_from_closed_apps` para no perder lo
       copiado al cerrar la app, y almacenamiento cifrado con el llavero. Probar con casos
@@ -379,6 +396,11 @@ espera a la reinstalación.
       (`Tab:layout` en init.lua, copia del preset de 26.9.1: comparar en cada yazi nuevo): ≥ 100
       columnas los tres, 60-99 sin la carpeta de arriba, < 60 solo la lista (T la vista previa);
       auto-layout.yazi descartado (14 meses parado). Texto de `ficha` partido según el ancho.
+      Pendiente (2026-10-07): (1) yazi 26.9.1 no decodifica imágenes de más de 10 000 px
+      (`[tasks] image_bound = [10000, 10000]`, más `image_alloc` de 512 MB): una de 16 233 px
+      salió sin vista previa. Propuesto `image_bound = [20000, 20000]` e `image_alloc` de 2 GB,
+      sin hacer. (2) `ficha` podría avisar «solo en la nube» en los archivos de la OneDrive de
+      Windows (ocupan 0 bytes en disco y se leen como ceros), en vez de «0×0».
 - [ ] **kitty o ghostty: medir antes de decidir** (2026-10-01). Nunca se midió en esta
       máquina; lo que decía esta tarea («a la par en uso real») no salía de ninguna prueba. Lo
       publicado, viejo o sin versiones: en caudal kitty gana su propia prueba y ghostty gana
@@ -479,11 +501,31 @@ existe (búsqueda hecha el 2026-10-01) y llevar versiones y datos concretos.
       ip-api.com e ipinfo.io dan Guayaquil. Afecta al tiempo, a la luz nocturna y al cambio de
       tema por el atardecer. Reportarlo en noctalia-dev/noctalia con el ISP y lo que dan los
       otros servicios (sin poner la IP en público).
+- [ ] **PDF4QT: iconos invisibles con una paleta oscura del sistema** (2026-10-07). PDF4QT 1.6.0
+      usa la paleta de qt6ct (la de noctalia, negra) pero solo aclara sus iconos si Qt le dice
+      que el tema es oscuro, y qt6ct no se lo dice: iconos negros sobre negro. Si se lo dice
+      (opción «Color scheme: Dark»), cambia la paleta entera por la suya, fija en el código
+      (`PDFWidgetUtils::setDarkTheme`). Pedir en JakubMelka/PDF4QT que en modo oscuro aclare los
+      iconos sin tocar la paleta del sistema. Mientras: «Color scheme: Dark» en sus opciones
+      (recomendado, sin aplicar), y el gris alrededor de la página es su ajuste de fondo.
 - [ ] **noctalia-greeter: formulario abajo a la izquierda**: ver «Greeter, formulario abajo a
       la izquierda» en Sistema (abrir sugerencia).
 
 ## Hecho
 
+- 2026-10-08 **Discos y USB**: `gnome-disk-utility` (formatear, particiones, LUKS, SMART, ISO; por
+  udisks2 y polkit, sin abrir nada como root), `mintstick` (AUR: formateador y grabador solo de
+  USB) y `exfatprogs` y `dosfstools` para crear exFAT y FAT32. Ningún plugin de yazi formatea;
+  mount.yazi (`M`) solo monta. Falta en la fase «Escritorio» de INSTALL.md.
+- 2026-10-08 **Flashear controladoras STM32 desde el navegador** (WebUSB en Vivaldi): en modo DFU
+  (`0483:df11`) el dispositivo era de root. `dfu-util` (extra) trae `60-dfuse.rules` con
+  `TAG+="uaccess"`, que da el acceso al usuario de la sesión; Arch no usa el grupo `plugdev`. El
+  grupo `uucp` cubre los puertos serie (`/dev/ttyACM*`). Falta en INSTALL.md.
+- 2026-10-08 **Abrir carpetas con gio open**: el «Open» del panel de USB y el «Abrir carpeta» del
+  panel de OneDrive usaban xdg-open, que lanza yazi sin terminal. «Mostrar en la carpeta» de Zen
+  y VS Code va por otro camino (D-Bus FileManager1) y sigue abriendo Nautilus.
+- 2026-10-07 **yazi**: `!` abre zsh en la carpeta actual; la cabecera muestra el prompt de
+  starship (`starship.yazi`, de terceros, aprobado); `Mod+Y` en niri abre o enfoca yazi.
 - 2026-10-02 **Windows: inicio rápido apagado y su disco montado**. `powercfg /h off` en Windows
   (el inicio rápido dejaba el Wi-Fi MT7921 sin redes al volver a Arch y el disco hibernado). Disco
   C: (`nvme0n1p3`, UUID `EAD4AABED4AA8BFF`) en `/etc/fstab` con ntfs3:
